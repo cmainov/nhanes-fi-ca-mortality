@@ -142,7 +142,7 @@ for( i in 1:length( dir.files ) ){
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-left_join( d, datout %>% mutate( seqn = as.numeric( seqn ) ), by = "seqn" ) %>%
+dat <- left_join( d, datout %>% mutate( seqn = as.numeric( seqn ) ), by = "seqn" ) %>%
   
   # survival time computed as time since diagnosis
   mutate( stime = permth_int + timesincecadxmn,
@@ -168,108 +168,166 @@ left_join( d, datout %>% mutate( seqn = as.numeric( seqn ) ), by = "seqn" ) %>%
                               is.na( cvdstat ), 0, cvdstat ),
           
           dmstat = ifelse( !is.na( mortstat ) & is.na( ucod_leading ) &
-                             is.na( dmstat ), 0, dmstat ) ) %>%
+                             is.na( dmstat ), 0, dmstat ) )
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+### Fix Issues with Duplicates in Mortality-Linked Data ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# separate those with mortstat == 1 and mortstat == 0 and mortstat == NA
+
+( d.01 <- dat %>%
+    filter( mortstat == 1 ) ) %>%
+  summarise( n.total = n(), unique = length( unique( .$seqn ) ),
+             duplicated = n.total - unique )
+
+
+( d.00 <- dat %>%
+    filter( mortstat == 0 ) ) %>%
+  summarise( n.total = n(), unique = length( unique( .$seqn ) ),
+             duplicated = n.total - unique )
+
+( d.na <- dat %>%
+    filter( is.na( mortstat) ) ) %>%
+  summarise( n.total = n(), unique = length( unique( .$seqn ) ),
+             duplicated = n.total - unique )
+
+
+## Mortstat == 0 first ##
+
+
+# look at columns of interest first
+d.00 %>%
+  filter( duplicated( seqn ) ) %>%
+  select( seqn, mortstat, permth_int, hyperten, ucod_leading, age, diabetes ) 
+
+# looks like issue is with follow up time: there are several follow up times provided for some individuals
+# we will take the largest follow up time from the set to rectify this
+
+
+( d.00.1 <- d.00 %>%
+    group_by( seqn ) %>%
+    filter( permth_int == max( permth_int, na.rm = T ) ) %>%
+    ungroup() ) %>%
+  summarise( n.total = n(), unique = length( unique( .$seqn ) ),
+             duplicated = n.total - unique )
+# 67 duplicates remain
+
+d.00.1 %>%
+  filter( duplicated( seqn ) ) %>%
+  select( seqn, mortstat, permth_int, hyperten, ucod_leading, age, diabetes, stime, castat, cvdstat, dmstat, eligstat )
+
+# it looks like the remaining duplicates have same value for permth_int in their duplications. Thus, we should be able to use 
+# distinc() to solve the issue
+
+( d.00.2 <- d.00.1 %>%
+    distinct() ) %>%
+  summarise( n.total = n(), unique = length( unique( .$seqn ) ),
+             duplicated = n.total - unique )
+# 35 remain duplicated
+
+d.00.2 %>%
+  filter( duplicated( seqn ) ) 
+
+# remaining issue appears to be in the permth_exm column which we are not using, so we should be able to remove this column and 
+# then use distinct() again
+
+( d.00.3 <- d.00.2 %>%
+    select( -permth_exm ) %>%
+    distinct() ) %>%
+  summarise( n.total = n(), unique = length( unique( .$seqn ) ),
+             duplicated = n.total - unique )
+
+# resolved
+
+
+## Mortstat == 1 ## 
+
+# look at columns of interest first
+d.01 %>%
+  filter( duplicated( seqn ) ) %>%
+  select( seqn, mortstat, permth_int, hyperten, ucod_leading, age, diabetes, permth_exm ) 
+
+# looks like it is similar issues with permth_int and permth_exm columns. we will use similar approach as above
+
+( d.01.1 <- d.01 %>%
+    group_by( seqn ) %>%
+    select( -permth_exm ) %>%
+    filter( permth_int == max( permth_int, na.rm = T) ) %>%
+    ungroup() ) %>%
+  summarise( n.total = n(), unique = length( unique( .$seqn ) ),
+             duplicated = n.total - unique )
+
+# duplicates resolved
+
+
+## Mortstat == NA ##
+
+# look at columns of interest first
+d.na %>%
+  filter( duplicated( seqn ) ) %>%
+  select( seqn, mortstat, permth_int, hyperten, ucod_leading, age, diabetes, permth_exm ) 
+
+# doesn't appear to be any differences within duplicates. will try using distinct()
+
+( d.na.1 <- d.na %>%
+    distinct() ) %>%
+  summarise( n.total = n(), unique = length( unique( .$seqn ) ),
+             duplicated = n.total - unique )
+
+# 36 remain duplicated. let's look at those columns again
+d.na.1.dups <- d.na.1[ duplicated( d.na.1$seqn ), "seqn"]
+
+d.na.1 %>%
+  filter( seqn %in% d.na.1.dups ) %>% arrange( seqn ) %>%
+  select( seqn, mortstat, permth_int, hyperten, ucod_leading, age, diabetes, permth_exm, eligstat ) 
+# issue is with the eligstat column. some individuals have both 2 and 3 (both of which indicate ineligible)
+# we will keep only one
+
+( d.na.2 <- d.na.1 %>%
+    filter( seqn %in% d.na.1.dups ) %>%
+    group_by( seqn ) %>%
+    filter( eligstat == min( eligstat ) ) %>%
+    ungroup() %>%
+    rbind( ., d.na.1 %>% filter( seqn %notin% d.na.1.dups ) ) ) %>%
+  summarise( n.total = n(), unique = length( unique( .$seqn ) ),
+             duplicated = n.total - unique )
+# resolved
+
+
+## Bind data with non-duplicates back together ##
+
+( d.1 <- bind_rows( d.na.2, d.01.1, d.00.3 ) %>% data.frame() ) %>%
+  summarise( n.total = n(), unique = length( unique( .$seqn ) ),
+             duplicated = n.total - unique )
+
+# we still have some duplicates meaning that there must be individuals with different mortstat indicators
+
+d.1.dups <- d.1[ duplicated( d.1$seqn ), "seqn"]
+
+(d.1.1 <- d.1 %>%
+    filter( seqn %in% d.1.dups ) %>%
+    group_by( seqn )%>%
+    filter( mortstat == max( mortstat, na.rm = T ) ) %>%
+    ungroup()) %>%
+  summarise( n.total = n(), unique = length( unique( .$seqn ) ),
+             duplicated = n.total - unique )
+
+# bind non-duplicates with rectified duplicates data frame
+( d.2 <- ( d.1.2 <- d.1 %>%
+            filter( seqn %notin% d.1.dups ) ) %>%
+    rbind( ., d.1.1 ) ) %>%
+  summarise( n.total = n(), unique = length( unique( .$seqn ) ),
+             duplicated = n.total - unique )
+# duplicates have been rectified and d.2 is final
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 ### Save ###  
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
-saveRDS( "02-Data-Wrangled/01-covariate-mortality-linkage.rds")
+saveRDS( d.2, "02-Data-Wrangled/01-covariate-mortality-linkage.rds")
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
-
-d.1 <- left_join( d, datout %>% mutate( seqn = as.numeric( seqn ) ), 
-                  by = "seqn" ) %>%
-  
-  # create survival time variable as time since diagnosis
-  mutate( stime = permth_int + timesincecadxmn,
-          
-          # generate cancer mortality indicator for cancer-mortality analysis
-          castat = ifelse( ucod_leading == 2, 1, 
-                           ifelse( !is.na( mortstat ) & !is.na( ucod_leading ) & ucod_leading != 2, 0, NA ) ) ) %>%
-  
-  # address remaining un labeled subjects
-  mutate( castat = ifelse( !is.na( mortstat ) & is.na( ucod_leading ) &
-                             is.na( castat ), 0, castat ) ) 
-
-###ID model for later use in GGplot construction--see end of program
-modelfullaid<-svycoxph(Surv(stime,mortstat)~factor(FS_ENet_q)+Race+Gender+Age+BMXBMI+SmokStat+fipr+
-                         KCAL+WeekMetMin+Education2+PrimaryCAGroup+CCI_Score+SEQN,design=mod1)
-#bind rownumber and ID #
-idmod<-data.frame(id=modelfullaid$model[,14],rownm=rownames(modelfullaid$model))
-
-mortdat$include<-ifelse(mortdat$SEQN %in% idmod$id,1,0)
-
-
-d.1 <- left_join( d, datout %>% mutate( seqn = as.numeric( seqn ) ), by = "seqn" ) %>%
-
-  # survival time computed as time since diagnosis
-  mutate( stime = permth_int + timesincecadxmn,
-          
-          ## indicators for cause-specific mortality analyses ##
-          # death from malignant neoplasm indicator
-          castat = ifelse( ucod_leading == 2, 1, 
-                           ifelse( !is.na( mortstat ) & !is.na( ucod_leading ) & ucod_leading != 2, 0, NA ) ),
-          
-          # death from cardiovascular disease indicator (heart and cerebrovascular dz)
-          cvdstat = ifelse( ucod_leading %in% c( 1, 5 ), 1, 
-                            ifelse( !is.na( mortstat ) & !is.na( ucod_leading ) & ucod_leading %notin% c( 1, 5 ), 0, NA ) ),
-          
-          # death from diabetes mellitus indicator
-          dmstat = ifelse( ucod_leading == 2, 1, 
-                           ifelse( !is.na( mortstat ) & !is.na( ucod_leading ) & ucod_leading != 2, 0, NA ) )) %>%
-  
-  # clean up those not recognized in above script
-   mutate( castat = ifelse( !is.na( mortstat ) & is.na( ucod_leading ) &
-                             is.na( castat ), 0, castat ),
-          
-          cvdstat = ifelse( !is.na( mortstat ) & is.na( ucod_leading ) &
-                             is.na( cvdstat ), 0, cvdstat ),
-          
-          dmstat = ifelse( !is.na( mortstat ) & is.na( ucod_leading ) &
-                             is.na( dmstat ), 0, dmstat ) ) 
-
-
-d.try <- d.1 %>%
-  filter( !is.na( wtmec18yr))
-
-mod1<-svydesign(id = ~sdmvpsu, weights = ~wtmec18yr, strata = ~sdmvstra, 
-                nest = TRUE, survey.lonely.psu = "adjust", data = d.try)
-mod1<-subset(mod1,ca==1)#inclusions
-
-
-
-covars.logit <- tolower( c( 'race', 'Gender', 'Age', 'BMXBMI', 'HHSize',
-                   'SmokStat', 'fipr', 'KCAL', 'WeekMetMin', 'Education_bin',
-                   'CCI_Score', "alc_cat" ) )
-
-
-
-d.1$fs_enet <- as.vector(d.1$fs_enet)
-jj<-as.vector(d.1$fs_enet)
-
-mod.id<-svycoxph(formula( paste0( "Surv(stime,mortstat) ~ binfoodsechh + seqn +", paste0( covars.logit, collapse = " + ") ) ),
-         design=mod1)
-
-idmod<-data.frame(id=mod.id$model[,3],rownm=rownames(mod.id$model))
-
-d.2 <- d.1%>%
-  mutate( include = ifelse( seqn %in% idmod$id, 1, 0 ) ) %>%
-  filter( include == 1 & !is.na( fs_enet) & !is.na( wtdr18yr)) %>%
-  mutate( fs.enet.q = as.factor( quant_cut( var = "hhs_enet", x = 5, df = . ) ) ) %>%
-  select(fs.enet.q, seqn, include) %>%
-  left_join(d.1, ., by = "seqn") %>%
-  filter(!is.na(wtdr18yr))
-
-
-
-mod2<-svydesign(id = ~sdmvpsu, weights = ~wtdr18yr, strata = ~sdmvstra, 
-                nest = TRUE, survey.lonely.psu = "adjust", data = d.2)
-mod2<-subset(mod2,include == 1 & !is.na(age_enet) & !is.na( wtdr18yr) &
-               cycle %in% 1:10)#inclusions
-
-
-m.2 <- svycoxph(formula( paste0( "Surv(stime,mortstat) ~ fs.enet.q +cycle +", paste0( covars.logit, collapse = " + ") ) ),
-         design=mod2)
 
