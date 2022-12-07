@@ -66,6 +66,7 @@ trend_func<-function(rank.var,cont.var,df,trend.var,x){
 res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind ){
   require( tidyverse )
   require( glue )
+  require( splines )
   
   these <- which( eval( parse( text = ( paste0( "df$", subs ) ) ) ) )
   
@@ -80,24 +81,39 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind ){
   
   des <- subset( des, eval( parse( text = subs ) ) ) #inclusions
   
+  
+  ## Important function arguments ##
+  
   # standard deviation to scale continuous predictor
   x.scale <- sd( df[ these, x ] )
   
-  # knots at the quintiles
+  # knots at the quantiles
   kts <- paste0( levels( as.factor( d.1[[ paste0( x, ".trend" )]] ) ), collapse = ", " )
   
+  # levels of cat variable
+  cat.l <- levels( as.factor( d.1[[ paste0( x, ".q" ) ]] ) )
+  
+  ## Fit Models ##
   
   # quantile specification
   m.q <- svycoxph( formula( paste0( "Surv(", time, ",",mort.ind," ) ~ ", paste0( x, ".q" ), " + ", paste0( covars, collapse = " + ") ) ),
                    design = des )
   
+  sum.m.q <- summary( m.q )$coefficients %>% data.frame()
+  ci.m.q <- confint( m.q )
+  
   # trend test
   m.t <- svycoxph( formula( paste0( "Surv(", time, ",",mort.ind," ) ~ ", paste0( x, ".trend" ), " + ", paste0( covars, collapse = " + ") ) ),
                    design = des )
   
+  sum.m.t <- summary( m.t )$coefficients %>% data.frame()
+  
   # linear specification
   m.l <- svycoxph( formula( paste0( "Surv(", time, ",",mort.ind," ) ~ ", paste0( "I( ", x, "/", x.scale, ") + " ), paste0( covars, collapse = " + ") ) ),
                    design = des )
+  
+  sum.m.l <- summary( m.l )$coefficients %>% data.frame()
+  ci.m.l <- confint( m.l )
   
   # cubic polynomial
   m.c <- svycoxph( formula( paste0( "Surv(", time, ",",mort.ind," ) ~ ", paste0( "I( ", x, "/", x.scale, ") + " ), 
@@ -105,13 +121,97 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind ){
                                     paste0( covars, collapse = " + ") ) ),
                    design = des )
   
+  sum.m.c <- summary( m.c )$coefficients %>% data.frame()
+  
   # cubic spline 
   m.cs <- svycoxph( formula( paste0( "Surv(", time, ",",mort.ind," ) ~ ", paste0( "bs(", x,", knots = c(", kts, "), degree = 3 ) + " ), 
                                      paste0( covars, collapse = " + ") ) ),
                     design = des )
   
   
-  return( m.q )
+  
+  ## Generate Table ##
+  
+  
+  # first table for odds ratios across quantiles
+  res.mat.q <- matrix( ncol = 2 )
+  res.mat.q[, 1 ] <- x
+  res.mat.q[, 2 ] <- "1.00" # referent
+  
+  for( i in 2:cuts ){
+    
+    # model object row of interest
+    cut.obj <- sum.m.q[ which( str_detect( rownames( sum.m.q ) , paste0( x,".q", cat.l[i]) ) ), ]
+    
+    # confidence interval object row of interest
+    cut.ci <- exp( ci.m.q[ which( str_detect( rownames( sum.m.q ) , paste0( x,".q", cat.l[i]) ) ), ] )
+    
+    # put together row in table
+    res.mat.q <- cbind( res.mat.q, paste0( round( exp( cut.obj[, "coef" ] ), 2 ),
+                                           " (",
+                                           paste0( round( cut.ci[1], 2 ), "-", round( cut.ci[2], 2 ) ),
+                                           ")" ) )
+    # asterisk on significant results
+    if( cut.obj[, 6] < 0.05 & cut.obj[, 6] >= 0.01 ){
+      res.mat.q[, i] <- paste0( res.mat.q[, i], "*" )
+    }
+    
+    if( cut.obj[, 6] < 0.01 ){
+      res.mat.q[, i] <- paste0( res.mat.q[, i], "**" )
+    }
+    
+  }
+  
+  # add trend test p-value
+  t.obj <- sum.m.t[ which( str_detect( rownames( sum.m.t ) , paste0( x,".trend" ) ) ), ]
+  
+  res.mat <- cbind( res.mat.q, round( t.obj[, 6], 2 ) )
+  
+  # asteriks
+  if( t.obj[, 6] < 0.05 & t.obj[, 6] >= 0.01 ){
+    res.mat[, ncol( res.mat ) ] <- paste0( res.mat[, ncol( res.mat ) ], "*" )
+  }
+  
+  if( t.obj[, 6] < 0.01 ){
+    res.mat[, ncol( res.mat ) ] <-  paste0( "< 0.01**" )
+  }
+  
+  # add linear specification OR and 95% CI
+  l.obj <- sum.m.l[ which( str_detect( rownames( sum.m.l ) , paste0( x ) ) ), ]
+  l.ci <- exp( ci.m.l[ which( str_detect( rownames( sum.m.l ) , paste0( x ) ) ), ])
+  
+  res.mat <- cbind( res.mat, paste0( round( exp( l.obj[, "coef" ] ), 2 ),
+                            " (",
+                            paste0( round( l.ci[1], 2 ), "-", round( l.ci[2], 2 ) ),
+                            ")" ) )
+  
+  # asteriks
+  if( l.obj[, 6] < 0.05 & l.obj[, 6] >= 0.01 ){
+    res.mat[, ncol( res.mat ) ] <- paste0( res.mat[, ncol( res.mat ) ], "*" )
+  }
+  
+  if( l.obj[, 6] < 0.01 ){
+    res.mat[, ncol( res.mat ) ] <- paste0( res.mat[,ncol( res.mat ) ], "**" )
+  }
+  
+  # add cubic specification p-value
+  c.obj <- sum.m.c[ which( str_detect( rownames( sum.m.c ) , "\\^3" ) ), ]
+  
+  res.mat <- cbind( res.mat, round( c.obj[, 6], 2 ) )
+  
+  # asteriks
+  if( c.obj[, 6] < 0.05 & c.obj[, 6] >= 0.01 ){
+    res.mat[, ncol( res.mat ) ] <- paste0( res.mat[, ncol( res.mat ) ], "*" )
+  }
+  
+  if( c.obj[, 6] < 0.01 ){
+    res.mat[, ncol( res.mat ) ] <-  paste0( "< 0.01**" )
+  }
+  
+  # column names 
+  res.frame <- data.frame( res.mat )
+  colnames(res.frame) <- c( "index", paste0( "Q", 1:cuts ), "ptrend", "linear", "pcubic" )
+  return( res.frame )
 }
 
-# res( df = d, x = "fs_enet", subs = "inc == 1", cuts = 5, id.col = "seqn", covars = covars.logit, time = "stime", mort.ind = "mortstat")
+#res( df = d, x = "fs_enet", subs = "inc == 1", cuts = 5, id.col = "seqn", covars = covars.logit, time = "stime", mort.ind = "mortstat")
