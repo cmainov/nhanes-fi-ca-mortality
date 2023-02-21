@@ -6,7 +6,8 @@
 
 library( survey )
 library(tidyverse)
-
+library( RNHANES )
+library( haven )
 # read in helper functions
 source( "R/utils.R")
 
@@ -323,6 +324,35 @@ d.1.dups <- d.1[ duplicated( d.1$seqn ), "seqn"]
              duplicated = n.total - unique )
 # duplicates have been rectified and d.2 is final
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+### Biological Specimens Data ###  
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+yrs.nh <- c( "1999-2000", "2001-2002", "2003-2004", "2005-2006", "2007-2008",
+          "2009-2010", "2011-2012", "2013-2014" )
+
+these.i <- seq_along(yrs.nh)
+
+yrs.short <- c( 99,1,3,5,7,9,11,13 ) 
+yrs.short<- ifelse( yrs.short < 10 , paste0( "0", yrs.short ), yrs.short )
+
+gluc.surveys <- c( "LAB10AM", paste0( "L10AM_", LETTERS[2:3] ),
+                   paste0( "GLU_", LETTERS[4:8] ) )
+
+## Import glucose data ##
+d.gluc <- lapply( these.i,
+        
+        function(x){
+          
+          nhanes_load_data( gluc.surveys[x], yrs.nh[x], demographics = FALSE ) 
+          
+        }
+)
+
+d.gluc[[9]] <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/GLU_I.XPT" ) # manual 2015 data
+d.gluc[[10]] <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/GLU_J.XPT" ) # manual 2015 data
 
 
 ### Save ###  
