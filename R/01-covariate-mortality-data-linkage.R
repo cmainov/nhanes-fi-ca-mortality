@@ -338,11 +338,13 @@ these.i <- seq_along(yrs.nh)
 yrs.short <- c( 99,1,3,5,7,9,11,13 ) 
 yrs.short<- ifelse( yrs.short < 10 , paste0( "0", yrs.short ), yrs.short )
 
+
+## Import glucose data ##
+
 gluc.surveys <- c( "LAB10AM", paste0( "L10AM_", LETTERS[2:3] ),
                    paste0( "GLU_", LETTERS[4:8] ) )
 
-## Import glucose data ##
-d.gluc <- lapply( these.i,
+l.gluc <- lapply( these.i,
         
         function(x){
           
@@ -351,8 +353,43 @@ d.gluc <- lapply( these.i,
         }
 )
 
-d.gluc[[9]] <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/GLU_I.XPT" ) # manual 2015 data
-d.gluc[[10]] <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/GLU_J.XPT" ) # manual 2015 data
+l.gluc[[9]] <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/GLU_I.XPT" ) # manual 2015 data
+l.gluc[[10]] <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/GLU_J.XPT" ) # manual 2017 data
+
+# do `bind_rows` so we can see which variables are not consistent across cycles
+d.gluc <- do.call( "bind_rows", l.gluc ) %>%
+  rename( seqn = SEQN )%>%
+  select( -c( cycle, begin_year, end_year ) )
+
+## Import LDL/triglycerides data ##
+
+chol.surveys <- c( "LAB13AM", paste0( "L13AM_", LETTERS[2:3] ),
+                   paste0( "TRIGLY_", LETTERS[4:8] ) )
+
+l.chol <- lapply( these.i,
+                  
+                  function(x){
+                    
+                    nhanes_load_data( chol.surveys[x], yrs.nh[x], demographics = FALSE ) 
+                    
+                  }
+)
+
+l.chol[[9]] <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/TRIGLY_I.XPT" ) # manual 2015 data
+l.chol[[10]] <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/TRIGLY_J.XPT" ) # manual 2017 data
+
+# do `bind_rows` so we can see which variables are not consistent across cycles
+d.chol <- do.call( "bind_rows", l.chol ) %>%
+  rename( seqn = SEQN ) %>%
+  select( -c( cycle, begin_year, end_year ) )
+ 
+# join glucose and cholesterol data to working dataset
+( d.3 <- left_join( d.2, d.gluc ) %>%
+    left_join(., d.chol ) %>%
+    rename_all( tolower ) ) %>%
+  summarise( n.total = n(), unique = length( unique( .$seqn ) ),
+             duplicated = n.total - unique )
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 ### Save ###  
