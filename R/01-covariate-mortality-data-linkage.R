@@ -386,15 +386,51 @@ d.chol <- do.call( "bind_rows", l.chol ) %>%
 # join glucose and cholesterol data to working dataset
 ( d.3 <- left_join( d.2, d.gluc ) %>%
     left_join(., d.chol ) %>%
-    rename_all( tolower ) ) %>%
+    rename_all( tolower ) %>%
+    mutate( wtsaf18yr = ifelse( cycle %in% c( 1, 2 ), ( 2/10 ) * wtsaf4yr,  
+                               ifelse( cycle %in% c( 3:10 ), ( 8/10 ) * wtsaf2yr, NA ) ) ) ) %>%
+            
   summarise( n.total = n(), unique = length( unique( .$seqn ) ),
              duplicated = n.total - unique )
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+
+## Prescription medication data ##
+
+medic.surveys <- c( "RXQ_RX", paste0( "RXQ_RX_", LETTERS[2:8] ) )
+
+l.medic <- lapply( these.i,
+                  
+                  function(x){
+                    
+                    nhanes_load_data( medic.surveys[x], yrs.nh[x], demographics = FALSE ) 
+                    
+                  }
+)
+
+sapply( these.i,
+                   
+                   function(x){
+                     
+                     l.medic[[x]]$col.nms <- paste0( colnames( l.medic[[x]] ), collapse = ", " )
+                     
+                   }
+)
+
+l.medic[[9]] <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/RXQ_RX_I.XPT" ) # manual 2015 data
+l.medic[[10]] <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/RXQ_RX_J.XPT" ) # manual 2017 data
+
+# do `bind_rows` so we can see which variables are not consistent across cycles
+d.medic <- do.call( "bind_rows", l.medic ) %>%
+  rename( seqn = SEQN ) %>%
+  select( -c( cycle, begin_year, end_year ) )
+
+View(d.medic)
+
 ### Save ###  
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
-saveRDS( d.2, "02-Data-Wrangled/01-covariate-mortality-linkage.rds")
+saveRDS( d.3, "02-Data-Wrangled/01-covariate-mortality-linkage.rds")
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
