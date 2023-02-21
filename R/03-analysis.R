@@ -48,5 +48,21 @@ for( i in 1:length( indices ) ){
 }
 
 fin.res.ca <- do.call( "rbind", out.res.ca )
-View(fin.res.ca)
 
+
+# laboratories 
+
+d.lab <- d.1 %>%
+  filter( !is.na( wtsaf18yr ) )
+nh.design <- survey::svydesign(id = ~sdmvpsu, weights = ~wtsaf18yr, strata = ~sdmvstra, 
+                          nest = TRUE, survey.lonely.psu = "adjust", data = d.lab )
+
+
+'race', 'Gender', 'Age', 'BMXBMI', 'HHSize',
+'SmokStat', 'fipr', 'KCAL', 'WeekMetMin', 'Education_bin',
+'CCI_Score', "alc_cat" ) )
+
+
+glu.m <- svyglm( log( lbxglu ) ~ fs_enet + gender + age + bmxbmi + education_bin + weekmetmin, design = nh.design)
+
+summary(glu.m)
