@@ -5,8 +5,9 @@
 
 
 library( survey )
-library(tidyverse)
-
+library( tidyverse )
+library( RNHANES )
+library( haven )
 # read in helper functions
 source( "R/utils.R")
 
@@ -325,9 +326,55 @@ d.1.dups <- d.1[ duplicated( d.1$seqn ), "seqn"]
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+### Health Insurance Data ###
+
+yrs.nh <- c( "1999-2000", "2001-2002", "2003-2004", "2005-2006", "2007-2008",
+             "2009-2010", "2011-2012", "2013-2014" )
+
+these.i <- seq_along(yrs.nh)
+
+yrs.short <- c( 99,1,3,5,7,9,11,13 ) 
+yrs.short<- ifelse( yrs.short < 10 , paste0( "0", yrs.short ), yrs.short )
+
+## Import LDL/triglycerides data ##
+
+hiq.surveys <- c( "HIQ", paste0( "HIQ_", LETTERS[2:8] ) )
+
+l.hiq <- lapply( these.i,
+                  
+                  function(x){
+                    
+                    nhanes_load_data( hiq.surveys[x], yrs.nh[x], demographics = FALSE ) 
+                    
+                  }
+)
+
+l.hiq[[9]] <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/HIQ_I.XPT" ) # manual 2015 data
+l.hiq[[10]] <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/HIQ_J.XPT" ) # manual 2017 data
+
+# do `bind_rows` so we can see which variables are not consistent across cycles
+d.hiq <- do.call( "bind_rows", l.hiq ) %>%
+  rename( seqn = SEQN ) %>%
+  mutate( ins.status = ifelse( cycle %in% c( "1999-2000", "2001-2002", "2003-2004" ) & HID010 == 1, "Yes",
+                  ifelse( cycle %in% c( "1999-2000", "2001-2002", "2003-2004" ) & HID010 == 2, "No",
+                          ifelse( cycle %in% c( "1999-2000", "2001-2002", "2003-2004" ) & HID010 %in% c( 7, 9 ), NA, 
+                                  ifelse( cycle %notin% c( "1999-2000", "2001-2002", "2003-2004" ) & HIQ011 == 1, "Yes",
+                                          ifelse( cycle %notin% c( "1999-2000", "2001-2002", "2003-2004" ) & HIQ011 == 2, "No",
+                                                  ifelse( cycle %notin% c( "1999-2000", "2001-2002", "2003-2004" ) & HIQ011 %in% c( 7, 9 ), NA,
+                                                          NA )))))))
+
+
+
+# bind non-duplicates with rectified duplicates data frame
+( d.3 <- d.2 %>%
+    left_join(., d.hiq %>%
+                select( seqn, ins.status ) ) ) %>%
+  summarise( n.total = n(), unique = length( unique( .$seqn ) ),
+             duplicated = n.total - unique )
+
 ### Save ###  
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
-saveRDS( d.2, "02-Data-Wrangled/01-covariate-mortality-linkage.rds")
+saveRDS( d.3, "02-Data-Wrangled/01-covariate-mortality-linkage.rds")
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 

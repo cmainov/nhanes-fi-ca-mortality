@@ -12,7 +12,7 @@ d.1 <- d %>%
 # covariates to include in model
 covars.surv <- tolower( c( 'race', 'Gender', 'Age', 'BMXBMI', 'HHSize',
                             'SmokStat', 'fipr', 'KCAL', 'WeekMetMin', 'Education_bin',
-                            'CCI_Score', "alc_cat" ) )
+                            'CCI_Score', "alc_cat", "ins.status" ) )
 
 indices <- c( "fs_enet", "age_enet", "hhs_enet", "fdas_enet", "pc1", "pc2" )
 
