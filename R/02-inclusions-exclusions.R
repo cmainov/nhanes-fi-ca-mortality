@@ -1,7 +1,7 @@
 library( tidyverse ) 
 library( survey )    # for complex survey data model-fitting
 
-
+source( "R/utils.R" )
 
 ( d <- readRDS( "02-Data-Wrangled/01-covariate-mortality-linkage.rds" ) ) %>%
   summarise( n.total = n(), unique = length( unique( .$seqn ) ) ) 
@@ -82,6 +82,7 @@ ex.2c <- nrow( step2c.data )
               !is.na( hhsize ) &
               !is.na( agecat ) &
               !is.na( race ) &
+              !is.na( ins.status ) &
               !is.na( age ) &
               !is.na( bmxbmi ) &
               !is.na( smokstat ) &
@@ -113,7 +114,7 @@ ex.2c <- nrow( step2c.data )
 (d.1 <- d %>%
   filter( seqn %notin% step3.data$seqn ) %>%
   bind_rows( ., step3.data ) )%>%
-  summarise( final.n = n())
+  summarise( final.n = n())nrow
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 

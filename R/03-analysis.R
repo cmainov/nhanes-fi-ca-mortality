@@ -8,7 +8,7 @@ source( "R/utils.R" )
 d <- readRDS( "03-Data-Rodeo/01-analytic-data.rds")
 
 # covariates to include in model
-covars.surv <- tolower( c( 'race', 'Gender', 'Age', 'BMXBMI', 'HHSize', "indfmpir",
+covars.surv <- tolower( c( 'race', 'Gender', 'Age', 'BMXBMI', 'HHSize', "fipr",
                             'SmokStat', 'fipr', 'KCAL', 'WeekMetMin', 'Education_bin',
                             'CCI_Score', "alc_cat", "ins.status" ) )
 
