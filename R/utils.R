@@ -218,3 +218,64 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind ){
 }
 
 #res( df = d, x = "fs_enet", subs = "inc == 1", cuts = 5, id.col = "seqn", covars = covars.logit, time = "stime", mort.ind = "mortstat")
+
+
+
+####################################################################################################
+################################# Table 1 (Categorical Variables) ##################################
+####################################################################################################
+
+
+epitab <- function(var,data.fr,des,table.var){
+  
+  attach(data.fr)
+  
+  typ<-paste0('~',var)
+  sumcat=0
+  for (i in 1:length(levels(factor(data.fr[[var]])))){
+    sumcat<-sumcat+((svytable(formula(typ),design=des)[i]))
+  }
+  
+  wtpct<-vector()
+  
+  for (i in 1:length(levels(factor(data.fr[[var]])))){
+    wtpct[i]<-round((svytable(formula(typ),design=des)[i]/sumcat*100),digits=1)
+  }
+  wtpct
+  wtpct<-c(' ',wtpct,' ')
+  total<-vector()
+  
+  for (i in 1:length(levels(factor(data.fr[[var]])))){
+    total[i]<-table(des[["variables"]][var])[i]
+  }
+  total<-c(' ',total,' ')
+  
+  levelnames<-c(table.var,levels(as.factor(data.fr[[var]])),' ')
+  levelnames<-levelnames[!is.na(levelnames)==T]
+  levelnames<-levelnames[!levelnames=='Missing/unknown']
+  merged<-data.frame(cbind(levelnames,paste0(total,' (',wtpct,')')))
+  
+  colnames(merged)<-c('levelnames','mn')
+  merged
+  detach(data.fr)
+  return(merged)
+  
+}
+
+
+
+####################################################################################################
+################################## Table 1 (Continuous Variables) ##################################
+####################################################################################################
+
+epitab.means <- function(cont.var, des, table.var){
+  
+  mn<-paste0(round(svymean(as.formula(paste0('~',cont.var)),design = des,na.rm=T)[1],digits=1),
+             ' (',round(sqrt(svyvar(as.formula(paste0('~',cont.var)),design = des,na.rm=T))[1],digits=1),')')
+  
+  ms2<-data.frame(c('',table.var,''),c('',mn,''))
+  
+  colnames(ms2)<-c('levelnames','mn')
+  
+  return(ms2)
+}
