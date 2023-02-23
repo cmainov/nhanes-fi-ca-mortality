@@ -64,6 +64,7 @@ trend_func<-function(rank.var,cont.var,df,trend.var,x){
 
 
 res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind ){
+  
   require( tidyverse )
   require( glue )
   require( splines )
@@ -123,12 +124,15 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind ){
   
   sum.m.c <- summary( m.c )$coefficients %>% data.frame()
   
-  # cubic spline 
-  m.cs <- svycoxph( formula( paste0( "Surv(", time, ",",mort.ind," ) ~ ", paste0( "bs(", x,", knots = c(", kts, "), degree = 3 ) + " ), 
+  # natural cubic spline 
+  m.cs <- svycoxph( formula( paste0( "Surv(", time, ",",mort.ind," ) ~ ", paste0( "ns(", x,", knots = c(", kts, ") ) + " ), 
                                      paste0( covars, collapse = " + ") ) ),
                     design = des )
   
   
+  # Non-linearity Likelihood-Ratio test
+  p.nl <- pchisq( abs( m.l$ll[2] -  m.cs$ll[2]),
+                  df = m.l$degf.resid-m.cs$degf.resid, lower.tail = FALSE )
   
   ## Generate Table ##
   
@@ -195,22 +199,21 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind ){
   }
   
   # add cubic specification p-value
-  c.obj <- sum.m.c[ which( str_detect( rownames( sum.m.c ) , "\\^3" ) ), ]
   
-  res.mat <- cbind( res.mat, round( c.obj[, 6], 2 ) )
+  res.mat <- cbind( res.mat, round( p.nl, 2 ) )
   
   # asteriks
-  if( c.obj[, 6] < 0.05 & c.obj[, 6] >= 0.01 ){
+  if( p.nl < 0.05 & p.nl >= 0.01 ){
     res.mat[, ncol( res.mat ) ] <- paste0( res.mat[, ncol( res.mat ) ], "*" )
   }
   
-  if( c.obj[, 6] < 0.01 ){
+  if( p.nl < 0.01 ){
     res.mat[, ncol( res.mat ) ] <-  paste0( "< 0.01**" )
   }
   
   # column names 
   res.frame <- data.frame( res.mat )
-  colnames(res.frame) <- c( "index", paste0( "Q", 1:cuts ), "ptrend", "linear", "pcubic" )
+  colnames(res.frame) <- c( "index", paste0( "Q", 1:cuts ), "ptrend", "linear", "p.nonlinear" )
   return( res.frame )
 }
 
