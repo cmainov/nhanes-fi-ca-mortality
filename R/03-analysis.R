@@ -2,19 +2,24 @@ library( tidyverse )
 library( glue )
 library( splines )
 library( survey )
+library( survminer )
 
 source( "R/utils.R" )
 
 d <- readRDS( "03-Data-Rodeo/01-analytic-data.rds")
 
 # covariates to include in model
-covars.surv <- tolower( c( 'race', 'Gender', 'Age', 'BMXBMI', 'HHSize', "fipr",
-                            'SmokStat', 'fipr', 'KCAL', 'WeekMetMin', 'Education_bin',
-                            'CCI_Score', "alc_cat", "ins.status" ) )
+covars.surv <- c( 'race', 'gender', 'age', 'bmxbmi', 'hhsize', "fipr",
+                            'smokstat', 'kcal', 'weekmetmin', 'education_bin',
+                            'cci_score', "alc_cat", "ins.status" ) 
 
 # x variables
 indices <- c( "fs_enet", "age_enet", "hhs_enet", "fdas_enet", "pc1", "pc2" )
 
+
+
+
+### Analyses on the Cancer population
 # all-cause mortality
 out.res <- list()
 for( i in 1:length( indices ) ){

@@ -97,7 +97,7 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind ){
   ## Fit Models ##
   
   # quantile specification
-  m.q <- svycoxph( formula( paste0( "Surv(", time, ",",mort.ind," ) ~ ", paste0( x, ".q" ), " + ", paste0( covars, collapse = " + ") ) ),
+  m.q <- svykm( formula( paste0( "Surv(", time, ",",mort.ind," ) ~ ", paste0( x, ".q" ), " + ", paste0( covars, collapse = " + ") ) ),
                    design = des )
   
   sum.m.q <- summary( m.q )$coefficients %>% data.frame()

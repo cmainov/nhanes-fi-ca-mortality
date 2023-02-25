@@ -158,8 +158,12 @@ dat <- left_join( d, datout %>% mutate( seqn = as.numeric( seqn ) ), by = "seqn"
                             ifelse( !is.na( mortstat ) & !is.na( ucod_leading ) & ucod_leading %notin% c( 1, 5 ), 0, NA ) ),
           
           # death from diabetes mellitus indicator
-          dmstat = ifelse( ucod_leading == 2, 1, 
-                           ifelse( !is.na( mortstat ) & !is.na( ucod_leading ) & ucod_leading != 2, 0, NA ) )) %>%
+          dmstat = ifelse( ucod_leading == 7, 1, 
+                           ifelse( !is.na( mortstat ) & !is.na( ucod_leading ) & ucod_leading != 7, 0, NA ) ),
+          
+          # death from influenza/pneumonia indicator
+          pnstat = ifelse( ucod_leading == 8, 1, 
+                           ifelse( !is.na( mortstat ) & !is.na( ucod_leading ) & ucod_leading != 8, 0, NA ) ))%>%
   
   # clean up those not recognized in above script
   mutate( castat = ifelse( !is.na( mortstat ) & is.na( ucod_leading ) &
@@ -169,7 +173,10 @@ dat <- left_join( d, datout %>% mutate( seqn = as.numeric( seqn ) ), by = "seqn"
                               is.na( cvdstat ), 0, cvdstat ),
           
           dmstat = ifelse( !is.na( mortstat ) & is.na( ucod_leading ) &
-                             is.na( dmstat ), 0, dmstat ) )
+                             is.na( dmstat ), 0, dmstat ),
+          
+          pnstat = ifelse( !is.na( mortstat ) & is.na( ucod_leading ) &
+                             is.na( pnstat ), 0, pnstat ) )
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
