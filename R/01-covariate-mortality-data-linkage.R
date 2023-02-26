@@ -333,7 +333,10 @@ d.1.dups <- d.1[ duplicated( d.1$seqn ), "seqn"]
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+
+
 ### Health Insurance Data ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 yrs.nh <- c( "1999-2000", "2001-2002", "2003-2004", "2005-2006", "2007-2008",
              "2009-2010", "2011-2012", "2013-2014" )
@@ -378,10 +381,82 @@ d.hiq <- do.call( "bind_rows", l.hiq ) %>%
                 select( seqn, ins.status ) ) ) %>%
   summarise( n.total = n(), unique = length( unique( .$seqn ) ),
              duplicated = n.total - unique )
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+### Physical Functioning Survey (ADL Scale) ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+## Import PFQ surveys ##
+
+pfq.surveys <- c( "PFQ", paste0( "PFQ_", LETTERS[2:8] ) )
+
+l.pfq <- lapply( these.i,
+                 
+                 function(x){
+                   
+                   nhanes_load_data( pfq.surveys[x], yrs.nh[x], demographics = FALSE ) 
+                   
+                 }
+)
+
+l.pfq[[9]] <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/PFQ_I.XPT" ) # manual 2015 data
+l.pfq[[10]] <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/PFQ_J.XPT" ) # manual 2017 data
+
+
+# make 1999 names upper case bc they are not
+colnames( l.pfq[[1]] ) <- toupper( colnames( l.pfq[[1]]  ) )
+
+# columns to extract (column names of 19-items in the ADL scale)
+nms.adl.99 <- paste0( "PFQ060", LETTERS[1:19] ) #1999-2002
+nms.adl.05 <- paste0( "PFQ061", LETTERS[1:19] ) #2003-
+
+adl.out <- data.frame() #initialize empty data.frame for combining the results across cycles
+for( i in 1:length( l.pfq ) ){
+  
+  if ( i %in% 1:2 ) {
+    
+    
+    these.99 <- setNames( l.pfq[[i]][c( "SEQN", nms.adl.99 )],
+                          c( "SEQN", nms.adl.05 ) )
+    adl.out <- rbind( adl.out, these.99 )
+    
+  }
+  
+  if ( i > 3 ) {
+    
+    adl.out <- rbind( adl.out, l.pfq[[i]][c( "SEQN", nms.adl.05 )])
+  }
+                         
+}
+
+# set to missing values other than 1:4 for these columns
+adl.out[, 2:ncol(adl.out) ] <- sapply( 2:ncol(adl.out),
+       function(x){
+         adl.out[,x]<-ifelse( adl.out[,x] %notin% c(1:4), NA, adl.out[,x] )
+       }
+       ) %>%
+  data.frame()
+
+
+# merge
+d.4 <- adl.out %>%
+  rename( seqn = SEQN ) %>%
+  mutate( adl.score = PFQ061A + PFQ061B + PFQ061C + PFQ061D + 
+            PFQ061E + PFQ061F + PFQ061G + PFQ061H + PFQ061I + 
+            PFQ061J + PFQ061K + PFQ061L + PFQ061M + PFQ061N + 
+            PFQ061O + PFQ061P + PFQ061Q + PFQ061R + PFQ061S ) %>%
+  select( seqn, adl.score ) %>%
+  left_join( d.3, . )
+
+
 
 ### Save ###  
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
-saveRDS( d.3, "02-Data-Wrangled/01-covariate-mortality-linkage.rds")
+saveRDS( d.4, "02-Data-Wrangled/01-covariate-mortality-linkage.rds")
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 

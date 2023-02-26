@@ -114,7 +114,7 @@ ex.2c <- nrow( step2c.data )
 (d.1 <- d %>%
   filter( seqn %notin% step3.data$seqn ) %>%
   bind_rows( ., step3.data ) )%>%
-  summarise( final.n = n())nrow
+  summarise( final.n = n())
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 

@@ -1,4 +1,4 @@
-###---------------------------------------------------
+##---------------------------------------------------
 ###   RESULT-GENERATING AND OTHER HELPER FUNCTIONS
 ###---------------------------------------------------
 
@@ -97,7 +97,7 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind ){
   ## Fit Models ##
   
   # quantile specification
-  m.q <- svykm( formula( paste0( "Surv(", time, ",",mort.ind," ) ~ ", paste0( x, ".q" ), " + ", paste0( covars, collapse = " + ") ) ),
+  m.q <- svycoxph( formula( paste0( "Surv(", time, ",",mort.ind," ) ~ ", paste0( x, ".q" ), " + ", paste0( covars, collapse = " + ") ) ),
                    design = des )
   
   sum.m.q <- summary( m.q )$coefficients %>% data.frame()
@@ -115,6 +115,8 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind ){
   
   sum.m.l <- summary( m.l )$coefficients %>% data.frame()
   ci.m.l <- confint( m.l )
+  
+  n.table <- nrow( m.l$model )
   
   # cubic polynomial
   m.c <- svycoxph( formula( paste0( "Surv(", time, ",",mort.ind," ) ~ ", paste0( "I( ", x, "/", x.scale, ") + " ), 
@@ -157,11 +159,11 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind ){
                                            ")" ) )
     # asterisk on significant results
     if( cut.obj[, 6] < 0.05 & cut.obj[, 6] >= 0.01 ){
-      res.mat.q[, i] <- paste0( res.mat.q[, i], "*" )
+      res.mat.q[, (i+1)] <- paste0( res.mat.q[, (i+1)], "*" )
     }
     
     if( cut.obj[, 6] < 0.01 ){
-      res.mat.q[, i] <- paste0( res.mat.q[, i], "**" )
+      res.mat.q[, (i+1)] <- paste0( res.mat.q[, (i+1)], "**" )
     }
     
   }
@@ -185,9 +187,9 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind ){
   l.ci <- exp( ci.m.l[ which( str_detect( rownames( sum.m.l ) , paste0( x ) ) ), ])
   
   res.mat <- cbind( res.mat, paste0( round( exp( l.obj[, "coef" ] ), 2 ),
-                            " (",
-                            paste0( round( l.ci[1], 2 ), "-", round( l.ci[2], 2 ) ),
-                            ")" ) )
+                                     " (",
+                                     paste0( round( l.ci[1], 2 ), "-", round( l.ci[2], 2 ) ),
+                                     ")" ) )
   
   # asteriks
   if( l.obj[, 6] < 0.05 & l.obj[, 6] >= 0.01 ){
@@ -214,10 +216,17 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind ){
   # column names 
   res.frame <- data.frame( res.mat )
   colnames(res.frame) <- c( "index", paste0( "Q", 1:cuts ), "ptrend", "linear", "p.nonlinear" )
+  
+  
+  # add n to table
+  res.frame$n <- n.table
+  res.frame <- res.frame %>%
+    relocate( n, .before = Q1 )
+  
   return( res.frame )
 }
 
-#res( df = d, x = "fs_enet", subs = "inc == 1", cuts = 5, id.col = "seqn", covars = covars.logit, time = "stime", mort.ind = "mortstat")
+# res( df = d, x = "fs_enet", subs = "inc == 1", cuts = 5, id.col = "seqn", covars = covars.logit, time = "stime", mort.ind = "mortstat")
 
 
 
