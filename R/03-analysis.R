@@ -11,7 +11,7 @@ d <- readRDS( "03-Data-Rodeo/01-analytic-data.rds")
 # covariates to include in model
 covars.surv <- c( 'race', 'gender', 'age', 'bmxbmi', 'hhsize', "fipr",
                             'smokstat', 'kcal', 'weekmetmin', 'education_bin',
-                            'cci_score', "alc_cat", "ins.status" ) 
+                            'cci_score', "alc_cat", "ins.status", "binfoodsechh" ) 
 
 # x variables
 indices <- c( "fs_enet", "age_enet", "hhs_enet", "fdas_enet", "pc1", "pc2" )

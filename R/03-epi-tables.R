@@ -47,8 +47,14 @@ cafs_table1 <- function( design, df ){
   snap <- epitab( var = "foodasstpnowic", data.fr = df, des = design, table.var = "SNAP Assistance" )
   time <- epitab( var = "timecafactor", data.fr = df, des = design, table.var = "Years Since Diagnosis" )
   insur <- epitab( var = "ins.status", data.fr = df, des = design, table.var = "Health Insurance Status" )
+  ac.mort <- epitab( var = "mortstat", data.fr = df, des = design, table.var = "Deaths from All Causes" )
+  ca.mort <- epitab( var = "castat", data.fr = df, des = design, table.var = "Deaths Due to Cancer" )
+  cv.mort <- epitab( var = "cvdstat", data.fr = df, des = design, table.var = "Deaths Due to CVD" )
+  dm.mort <- epitab( var = "dmstat", data.fr = df, des = design, table.var = "Deaths Due to DM" )
   
-  table1 <- rbind( age, sex, race, education, income, insur, hhsize, bmi, metmins, calor, cci, snap, site, time, smokstat, alcuse )
+  table1 <- rbind( age, sex, race, education, income, insur, hhsize, bmi, metmins, 
+                   calor, cci, snap, site, time, smokstat, alcuse, ac.mort, ca.mort,
+                   cv.mort, dm.mort )
   
   return( table1 )
   
@@ -67,11 +73,13 @@ final.tab <- cbind( gen.tab, fiw.tab, fsw.tab )
 
 ## add column for p value for t tests and chi square test ##
 
-# vector of strings containing elements that singal to a given row in the table
+# vector of strings containing elements that maps to a given row in the table
 chi  <- c( "Smoking", "Alcohol", "Gender", "Income", "Size", "Education", "Race",
-           "Years", "Site", "SNAP", "Insurance" )
+           "Years", "Site", "SNAP", "Insurance", "All Causes", "Due to Cancer",
+           "Due to CVD", "Due to DM")
 these  <- c( "smokstat", "alc_cat", "gender", "fipr", "hhsize.bin", "education_bin", "race", 
-             "timecafactor", "primarycagroup", "foodasstpnowic", "ins.status" )
+             "timecafactor", "primarycagroup", "foodasstpnowic", "ins.status", "mortstat",
+             "castat", "cvdstat", "dmstat")
 
 # chi square
 for ( i in 1:length( chi ) ){
