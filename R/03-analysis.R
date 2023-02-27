@@ -33,12 +33,11 @@ for( i in 1:length( indices ) ){
      id.col = "seqn",      # subject id column
      covars = covars.surv, # covariates
      time = "stime",       # survival time column
-     mort.ind = "mortstat" )    # mortality indicator column
+     mort.ind = "mortstat",
+     sample.name = "All Cancer Survivors" )    # mortality indicator column
 }
 
 fin.res <- do.call( "rbind", out.res )
-View(fin.res)
-
 
 
 # cancer mortality
@@ -51,9 +50,11 @@ for( i in 1:length( indices ) ){
                        id.col = "seqn", 
                        covars = covars.surv, 
                        time = "stime", 
-                       mort.ind = "castat" ) 
+                       mort.ind = "castat",
+                       sample.name = "All Cancer Survivors" ) 
 }
 
+fin.res.ca <- do.call( "rbind", out.res.ca )
 
 
 # cvd mortality
@@ -66,11 +67,12 @@ for( i in 1:length( indices ) ){
                           id.col = "seqn", 
                           covars = covars.surv, 
                           time = "stime", 
-                          mort.ind = "cvdstat" ) 
+                          mort.ind = "cvdstat",
+                          sample.name = "All Cancer Survivors" ) 
 }
 
 fin.res.cvd <- do.call( "rbind", out.res.cvd )
-View(fin.res.cvd)
+
 
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -81,7 +83,10 @@ View(fin.res.cvd)
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # covariates to include in model
-covars.surv.fi <- c( 'race', 'gender', 'age' ) 
+covars.surv.fi <- c( 'race', 'gender', 'age', 'bmxbmi', 'hhsize', "fipr",
+                     'smokstat', 'kcal', 'weekmetmin', 'education_bin',
+                     'cci_score', "alc_cat", "ins.status",
+                     "foodasstpnowic"  ) 
 
 # all-cause mortality
 out.res.fi <- list()
@@ -93,11 +98,11 @@ for( i in 1:length( indices ) ){
                        id.col = "seqn",      # subject id column
                        covars = covars.surv.fi, # covariates
                        time = "stime",       # survival time column
-                       mort.ind = "mortstat" )    # mortality indicator column
+                       mort.ind = "mortstat",
+                       sample.name = "Food Insecure Cancer Survivors" )    # mortality indicator column
 }
 
 fin.res.fi <- do.call( "rbind", out.res.fi )
-View(fin.res.fi)
 
 
 
@@ -111,11 +116,12 @@ for( i in 1:length( indices ) ){
                           id.col = "seqn", 
                           covars = covars.surv.fi, 
                           time = "stime", 
-                          mort.ind = "castat" ) 
+                          mort.ind = "castat",
+                          sample.name = "Food Insecure Cancer Survivors" ) 
 }
 
 fin.res.ca.fi <- do.call( "rbind", out.res.fi.ca )
-View(fin.res.ca.fi)
+
 
 # cvd mortality
 out.res.fi.cvd <- list()
@@ -127,9 +133,26 @@ for( i in 1:length( indices ) ){
                            id.col = "seqn", 
                            covars = covars.surv.fi, 
                            time = "stime", 
-                           mort.ind = "cvdstat" ) 
+                           mort.ind = "cvdstat",
+                           sample.name = "Food Insecure Cancer Survivors" ) 
 }
 
 fin.res.cvd.fi <- do.call( "rbind", out.res.fi.cvd )
 View(fin.res.cvd.fi)
 
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+### Assemble Tables ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+## All-cause mortality ##
+ac.table <- bind_rows( out.res, out.res.fi ) %>%
+  data.frame() %>%
+  
+  # arrange tables first by custom order and second by sample so that ALL Survivors are situated next to estimates for FI CA survivors for a given diet index
+  arrange( factor(index, levels = c('fs_enet', 'age_enet', 'hhs_enet', 
+                                    'fdas_enet', 'pc1', 'pc2' ) ),
+                  sample )
