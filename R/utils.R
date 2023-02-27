@@ -63,7 +63,7 @@ trend_func<-function(rank.var,cont.var,df,trend.var,x){
 ####################################################################################################
 
 
-res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind ){
+res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name ){
   
   require( tidyverse )
   require( glue )
@@ -215,13 +215,45 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind ){
   
   # column names 
   res.frame <- data.frame( res.mat )
-  colnames(res.frame) <- c( "index", paste0( "Q", 1:cuts ), "ptrend", "linear", "p.nonlinear" )
+  colnames(res.frame) <- c( "index", paste0( "Q", 1:cuts ), "p.trend", "linear", "p.nonlinear" )
   
   
   # add n to table
   res.frame$n <- n.table
   res.frame <- res.frame %>%
     relocate( n, .before = Q1 )
+  
+  # add subsample name to table
+  res.frame$sample <- sample.name
+  res.frame <- res.frame %>%
+    relocate( sample, .before = n )
+  
+  ## Significant digits ##
+  
+  # column indices for odds ratio/ci
+  col.ind.q <- c( which( str_detect( colnames( res.frame ), "Q\\d" ) ), 
+                  which( str_detect( colnames( res.frame ), "^linear$" ) ) )
+  
+  # odds ratios and confidence intervals
+  for( i in col.ind.q ) {
+    res.frame[,i] <- str_replace( res.frame[,i], '(\\(\\d)\\,', "\\1\\.00," ) # match open parenthesis followed by a digit and then a comma. Retain everything except the comma and add ".00,"
+    res.frame[,i] <- str_replace( res.frame[,i], "(\\(\\d\\.\\d)\\,","\\10\\,") # match open parenthesis followed by a digit, period, digit, and then a comma. Retain everything except the comma and add ".0,"
+    res.frame[,i] <- str_replace( res.frame[,i], "(\\(\\d\\.\\d)\\,", "\\10\\," ) # match open parenthesis followed by digit, period, digit and comma.Retain everything except the comma and add "0,"
+    res.frame[,i] <- str_replace( res.frame[,i], "(\\d\\.\\d)\\s", "\\10 " ) # match digit, period, digit and space. Retain everything except space and add "0 "
+    res.frame[,i] <- str_replace( res.frame[,i], "^(\\d)\\s\\(", "\\1\\.00 \\(" ) # match beginning of string followed by single digit, followed by a space and parenthesis. Reatin the single digit and and ".00 ()
+    res.frame[,i] <- str_replace( res.frame[,i], "(\\d\\.\\d)\\)", "\\10\\)") # match digit, period, digit, close parenthesis. Retain everything except parenthesis and add "0)" to end
+    res.frame[,i] <- str_replace( res.frame[,i], "(\\,\\s\\d)\\)", "\\1.00\\)") # match comma, space, digit, close parenthesis. Retain everything except parenthesis and add ".00)" to end
+    res.frame[,i] <- str_replace( res.frame[,i], "(\\(\\d\\.\\d)\\-", "\\10\\-") # match digit, period, digit, close parenthesis. Retain everything except parenthesis and add "0)" to end
+    
+  }
+  
+  # column indices for columns containing p values 
+  col.ind.p <- which( str_detect( colnames( res.frame ), "p\\." ) )
+  
+  for( i in col.ind.p ){
+    res.frame[,i] <- str_replace( res.frame[,i], "(\\d\\.\\d)$", "\\10" ) # match digit, period, digit,end and add a 0 before the end
+    res.frame[,i] <- str_replace( res.frame[,i], "^1$", "0.99" ) # round down probabilities = 1
+  }
   
   return( res.frame )
 }

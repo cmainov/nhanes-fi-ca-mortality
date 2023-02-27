@@ -8,11 +8,6 @@ source( "R/utils.R" )
 
 d <- readRDS( "03-Data-Rodeo/01-analytic-data.rds")
 
-# covariates to include in model
-covars.surv <- c( 'race', 'gender', 'age', 'bmxbmi', 'hhsize', "fipr",
-                            'smokstat', 'kcal', 'weekmetmin', 'education_bin',
-                            'cci_score', "alc_cat", "ins.status", "binfoodsechh",
-                  "foodasstpnowic" ) 
 
 # x variables
 indices <- c( "fs_enet", "age_enet", "hhs_enet", "fdas_enet", "pc1", "pc2" )
@@ -22,6 +17,13 @@ indices <- c( "fs_enet", "age_enet", "hhs_enet", "fdas_enet", "pc1", "pc2" )
 
 ### Analyses on the Cancer population ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# covariates to include in model
+covars.surv <- c( "race", "gender", "age", "bmxbmi", "hhsize", "fipr",
+                  "smokstat", "kcal", "weekmetmin", "education_bin",
+                  "cci_score", "alc_cat", "ins.status", "binfoodsechh",
+                  "foodasstpnowic" ) 
+
 
 # all-cause mortality
 out.res <- list()
@@ -83,9 +85,9 @@ fin.res.cvd <- do.call( "rbind", out.res.cvd )
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # covariates to include in model
-covars.surv.fi <- c( 'race', 'gender', 'age', 'bmxbmi', 'hhsize', "fipr",
-                     'smokstat', 'kcal', 'weekmetmin', 'education_bin',
-                     'cci_score', "alc_cat", "ins.status",
+covars.surv.fi <- c( "race", "gender", "age", "bmxbmi", "hhsize", "fipr",
+                     "smokstat", "kcal", "weekmetmin", "education_bin",
+                     "cci_score", "alc_cat", "ins.status",
                      "foodasstpnowic"  ) 
 
 # all-cause mortality
@@ -148,11 +150,13 @@ View(fin.res.cvd.fi)
 ### Assemble Tables ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
+
 ## All-cause mortality ##
+
 ac.table <- bind_rows( out.res, out.res.fi ) %>%
   data.frame() %>%
   
   # arrange tables first by custom order and second by sample so that ALL Survivors are situated next to estimates for FI CA survivors for a given diet index
-  arrange( factor(index, levels = c('fs_enet', 'age_enet', 'hhs_enet', 
-                                    'fdas_enet', 'pc1', 'pc2' ) ),
+  arrange( factor(index, levels = c("fs_enet", "age_enet", "hhs_enet", 
+                                    "fdas_enet", "pc1", "pc2" ) ),
                   sample )
