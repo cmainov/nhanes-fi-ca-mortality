@@ -138,11 +138,9 @@ write.table( final.tab, "04-Tables-Figures/tables/01-table-1.txt", sep = ", ", r
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-### Correlation Matrix (Diet Patterns)
-# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-### Pearson Correlation Matrix (Table 2) ###
+### Correlation Matrix (Diet Patterns--(Table 2) ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # subset individuals meeting criteria
@@ -237,3 +235,63 @@ corr.matrix.b[ corr.matrix.b ==" NA" ] <- "--"
 
 # save table
 write.table( corr.matrix.b, "04-Tables-Figures/tables/02-table-2-corr.txt", sep =",", row.names = FALSE )
+
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+### Diet Patterns Across Food Security Status ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# diet pattern variable names
+diet.patt.names <- c( "fs_enet", "age_enet", 
+                      "fdas_enet", "hhs_enet", "pc1", "pc2" )
+
+# how we want them presented in the table
+diet.patt.names.table <- c( "Food Security Pattern", "Age Pattern", 
+                      "SNAP Pattern", "Household Size Pattern", "Modified Western Pattern",
+                      "Prudent Pattern" )
+
+diets.t <- data.frame() # initialize frame
+for ( i in seq_along( diet.patt.names ) ){
+  
+  # we use the three survey design objects already specified above( `fiw` `gen`, `fsw`)
+  fi.patt <- epitab.means( cont.var = diet.patt.names[i], des = fiw, table.var = diet.patt.names.table[i], dig = 2 )
+  fs.patt <- epitab.means( cont.var = diet.patt.names[i], des = fsw, table.var = diet.patt.names.table[i], dig = 2 )
+  gen.patt <- epitab.means( cont.var = diet.patt.names[i], des = gen, table.var = diet.patt.names.table[i], dig = 2 )
+  
+  all.three.c <- cbind( gen.patt, fi.patt, fs.patt )
+
+  diets.t <- rbind( diets.t, all.three.c )
+}
+
+
+# remove redundant "characteristics" columns
+not.these <- vector()
+for( i in 2:ncol( diets.t ) ){
+  
+  nt <- sum(str_detect( diets.t[,i], "[:alpha:]" ) )
+  not.these[i] <- ifelse( is.na( nt ), 0,
+                          ifelse( i == 1, 0,
+                                  ifelse( nt != 0, 1, 0 )))
+}
+
+these.cols <- which( not.these != 1 | is.na( not.these) )
+
+diets.t <- diets.t[, these.cols ] # subset and keep only non redundant columns
+
+
+# t test to compare across food security status
+for ( i in seq_along( diet.patt.names ) ){
+  
+  diets.t[ which( str_detect( diets.t[ , 1 ], diet.patt.names.table[i] ) ), 5 ] <- ifelse( svyttest( as.formula( paste0( diet.patt.names[i], "~binfoodsechh" ) ), design = gen )$p.value < 0.01, "< 0.01",
+                                                                            round( svyttest( as.formula( paste0( diet.patt.names[i], "~binfoodsechh" ) ), design = gen )$p.value, digits = 2 ) )
+  
+}
+
+# save table
+write.table( diets.t, "04-Tables-Figures/tables/03-table-3-diet-fi.txt", sep =",", row.names = FALSE )
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------

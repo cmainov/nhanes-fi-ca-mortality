@@ -309,10 +309,10 @@ epitab <- function(var,data.fr,des,table.var){
 ################################## Table 1 (Continuous Variables) ##################################
 ####################################################################################################
 
-epitab.means <- function(cont.var, des, table.var){
-  
-  mn<-paste0(round(svymean(as.formula(paste0('~',cont.var)),design = des,na.rm=T)[1],digits=1),
-             ' (',round(sqrt(svyvar(as.formula(paste0('~',cont.var)),design = des,na.rm=T))[1],digits=1),')')
+epitab.means <- function(cont.var, des, table.var, dig){ 
+  # dig is the number of digits to round to
+  mn<-paste0(round(svymean(as.formula(paste0('~',cont.var)),design = des,na.rm=T)[1],digits=dig),
+             ' (',round(sqrt(svyvar(as.formula(paste0('~',cont.var)),design = des,na.rm=T))[1],digits=dig),')')
   
   ms2<-data.frame(c('',table.var,''),c('',mn,''))
   

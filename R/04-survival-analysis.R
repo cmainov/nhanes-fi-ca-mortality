@@ -294,9 +294,9 @@ all.table <- bind_rows( data.frame( index = "All-Cause Mortality"),
 
 ## Save tables ##
 
-write.table( ac.table, "04-Tables-Figures/tables/02-table-4-ac.txt", sep = "," )
-write.table( ac.table, "04-Tables-Figures/tables/03-table-4-ca.txt", sep = "," )
-write.table( ac.table, "04-Tables-Figures/tables/04-table-4-cvd.txt", sep = "," )
-write.table( all.table, "04-Tables-Figures/tables/05-table-4-all.txt", sep = "," )
-write.table( s.table, "04-Tables-Figures/tables/06-table-s2.txt", sep = "," )
+write.table( ac.table, "04-Tables-Figures/tables/04-table-4-ac.txt", sep = "," )
+write.table( ac.table, "04-Tables-Figures/tables/05-table-4-ca.txt", sep = "," )
+write.table( ac.table, "04-Tables-Figures/tables/06-table-4-cvd.txt", sep = "," )
+write.table( all.table, "04-Tables-Figures/tables/07-table-4-all.txt", sep = "," )
+write.table( s.table, "04-Tables-Figures/tables/08-table-s2.txt", sep = "," )
 
