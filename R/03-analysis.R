@@ -12,7 +12,7 @@ d <- readRDS( "03-Data-Rodeo/01-analytic-data.rds")
 covars.surv <- c( 'race', 'gender', 'age', 'bmxbmi', 'hhsize', "fipr",
                             'smokstat', 'kcal', 'weekmetmin', 'education_bin',
                             'cci_score', "alc_cat", "ins.status", "binfoodsechh",
-                  "foodasstpnowic", "adl.score" ) 
+                  "foodasstpnowic" ) 
 
 # x variables
 indices <- c( "fs_enet", "age_enet", "hhs_enet", "fdas_enet", "pc1", "pc2" )
@@ -20,7 +20,9 @@ indices <- c( "fs_enet", "age_enet", "hhs_enet", "fdas_enet", "pc1", "pc2" )
 
 
 
-### Analyses on the Cancer population
+### Analyses on the Cancer population ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
 # all-cause mortality
 out.res <- list()
 for( i in 1:length( indices ) ){
@@ -52,21 +54,6 @@ for( i in 1:length( indices ) ){
                        mort.ind = "castat" ) 
 }
 
-# diabetes mortality
-out.res.dm <- list()
-for( i in 1:length( indices ) ){
-  
-  out.res.dm[[i]] <- res( df = d, x = indices[i], 
-                          subs = "inc == 1", 
-                          cuts = 5, 
-                          id.col = "seqn", 
-                          covars = covars.surv, 
-                          time = "stime", 
-                          mort.ind = "dmstat" ) 
-}
-
-fin.res.dm <- do.call( "rbind", out.res.dm )
-View(fin.res.dm)
 
 
 # cvd mortality
@@ -84,4 +71,65 @@ for( i in 1:length( indices ) ){
 
 fin.res.cvd <- do.call( "rbind", out.res.cvd )
 View(fin.res.cvd)
-fin.res.cvd$pcubic
+
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+### Analyses on the Food Insecure Cancer Survivor Population ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# covariates to include in model
+covars.surv.fi <- c( 'race', 'gender', 'age' ) 
+
+# all-cause mortality
+out.res.fi <- list()
+for( i in 1:length( indices ) ){
+  
+  out.res.fi[[i]] <- res( df = d, x = indices[i],   # data and x variable for model
+                       subs = c("inc == 1", "binfoodsechh == 'Low'"),    # subset of data to use
+                       cuts = 5,             # quantiles to use for categorization
+                       id.col = "seqn",      # subject id column
+                       covars = covars.surv.fi, # covariates
+                       time = "stime",       # survival time column
+                       mort.ind = "mortstat" )    # mortality indicator column
+}
+
+fin.res.fi <- do.call( "rbind", out.res.fi )
+View(fin.res.fi)
+
+
+
+# cancer mortality
+out.res.fi.ca <- list()
+for( i in 1:length( indices ) ){
+  
+  out.res.fi.ca[[i]] <- res( df = d, x = indices[i], 
+                          subs = "inc == 1", 
+                          cuts = 5, 
+                          id.col = "seqn", 
+                          covars = covars.surv.fi, 
+                          time = "stime", 
+                          mort.ind = "castat" ) 
+}
+
+fin.res.ca.fi <- do.call( "rbind", out.res.fi.ca )
+View(fin.res.ca.fi)
+
+# cvd mortality
+out.res.fi.cvd <- list()
+for( i in 1:length( indices ) ){
+  
+  out.res.fi.cvd[[i]] <- res( df = d, x = indices[i], 
+                           subs = "inc == 1", 
+                           cuts = 5, 
+                           id.col = "seqn", 
+                           covars = covars.surv.fi, 
+                           time = "stime", 
+                           mort.ind = "cvdstat" ) 
+}
+
+fin.res.cvd.fi <- do.call( "rbind", out.res.fi.cvd )
+View(fin.res.cvd.fi)
+

@@ -47,12 +47,13 @@ cafs_table1 <- function( design, df ){
   snap <- epitab( var = "foodasstpnowic", data.fr = df, des = design, table.var = "SNAP Assistance" )
   time <- epitab( var = "timecafactor", data.fr = df, des = design, table.var = "Years Since Diagnosis" )
   insur <- epitab( var = "ins.status", data.fr = df, des = design, table.var = "Health Insurance Status" )
+  disab <- epitab.means( cont.var = "adl.score", des = design, table.var = "NHANES ADL Score" )
   ac.mort <- epitab( var = "mortstat", data.fr = df, des = design, table.var = "Deaths from All Causes" )
   ca.mort <- epitab( var = "castat", data.fr = df, des = design, table.var = "Deaths Due to Cancer" )
   cv.mort <- epitab( var = "cvdstat", data.fr = df, des = design, table.var = "Deaths Due to CVD" )
   dm.mort <- epitab( var = "dmstat", data.fr = df, des = design, table.var = "Deaths Due to DM" )
   
-  table1 <- rbind( age, sex, race, education, income, insur, hhsize, bmi, metmins, 
+  table1 <- rbind( age, sex, race, education, income, insur, hhsize, disab, bmi, metmins, 
                    calor, cci, snap, site, time, smokstat, alcuse, ac.mort, ca.mort,
                    cv.mort, dm.mort )
   
@@ -89,8 +90,9 @@ for ( i in 1:length( chi ) ){
   
 } # error w/ cancer site
 
-tt  <- c( "Age", "BMI", "HHSize", "MET", "Calories", "CCI" )
-these.b  <- c( "age", "bmxbmi", "hhsize", "weekmetmin", "kcal", "cci_score" ) 
+# t test variables
+tt  <- c( "Age", "BMI", "HHSize", "MET", "Calories", "CCI", "ADL" )
+these.b  <- c( "age", "bmxbmi", "hhsize", "weekmetmin", "kcal", "cci_score", "adl.score" ) 
 
 
 # t test

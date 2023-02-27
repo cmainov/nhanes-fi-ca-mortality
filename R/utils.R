@@ -69,9 +69,9 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind ){
   require( glue )
   require( splines )
   
-  these <- which( eval( parse( text = ( paste0( "df$", subs ) ) ) ) )
+  these <- which( eval( parse( text = ( paste0( "df$", subs, collapse = " & " ) ) ) ) )
   
-  # compute quantile rank and trend variable
+  # compute quantile rank  and trend variable on subsample of interest and recombine
   d.1 <- df[ these, ] %>%
     mutate( !!paste0( x, ".q" ) := as.factor( quant_cut( var = x, x = cuts, df = . ) ) ) %>%
     bind_rows( df[ -these, ], . ) %>%
@@ -80,7 +80,7 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind ){
   des <- svydesign(id = ~sdmvpsu, weights = ~wtdr18yr, strata = ~sdmvstra, 
                    nest = TRUE, survey.lonely.psu = "adjust", data = d.1)
   
-  des <- subset( des, eval( parse( text = subs ) ) ) #inclusions
+  des <- subset( des, eval( parse( text = paste0( subs, collapse = " & " ) ) ) ) #inclusions
   
   
   ## Important function arguments ##
