@@ -1,6 +1,6 @@
 library( survey )
 library( tidyverse )
-
+library( jtools ) # for svycor function
 
 source( "R/utils.R" )
 
@@ -24,6 +24,8 @@ dat <- readRDS( "03-Data-Rodeo/01-analytic-data.rds") %>%
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+  
+  
 ### Table 1 ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -76,10 +78,10 @@ final.tab <- cbind( gen.tab, fiw.tab, fsw.tab )
 
 # vector of strings containing elements that maps to a given row in the table
 chi  <- c( "Smoking", "Alcohol", "Gender", "Income", "Size", "Education", "Race",
-           "Years", "Site", "SNAP", "Insurance", "All Causes", "Due to Cancer",
+           "Years", "SNAP", "Insurance", "All Causes", "Due to Cancer",
            "Due to CVD", "Due to DM")
 these  <- c( "smokstat", "alc_cat", "gender", "fipr", "hhsize.bin", "education_bin", "race", 
-             "timecafactor", "primarycagroup", "foodasstpnowic", "ins.status", "mortstat",
+             "timecafactor", "foodasstpnowic", "ins.status", "mortstat",
              "castat", "cvdstat", "dmstat")
 
 # chi square
@@ -88,7 +90,7 @@ for ( i in 1:length( chi ) ){
   final.tab[ which( str_detect( final.tab[ , 1 ], chi[i] ) ), 7 ] <- ifelse( svychisq( as.formula( paste0( "~binfoodsechh + ", these[i] ) ), design = gen )$p.value < 0.01, "< 0.01",
                                                                              round( svychisq( as.formula( paste0( "~binfoodsechh + ", these[i] ) ), design = gen )$p.value, digits = 2 ) )
   
-} # error w/ cancer site
+} 
 
 # t test variables
 tt  <- c( "Age", "BMI", "HHSize", "MET", "Calories", "CCI", "ADL" )
@@ -131,4 +133,107 @@ t.1 <- setNames( final.tab[, these.cols ],
                           "p" ) )
 
 # save
-write.table( final.tab, "04-Tables-Figures/tables/table-1.txt", sep = ", ", row.names = FALSE )
+write.table( final.tab, "04-Tables-Figures/tables/01-table-1.txt", sep = ", ", row.names = FALSE )
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+### Correlation Matrix (Diet Patterns)
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+### Pearson Correlation Matrix (Table 2) ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# subset individuals meeting criteria
+cordata <- dat[ which( dat$inc == 1 ), ]
+
+# food group column indices
+fdgrp.columns <- which( colnames( cordata ) %in% c( "processedmts", "meat", "poultry", 
+                                                    "fish_hi", "fish_lo", "eggs", 
+                                                    "solidfats", "oils", "milk", 
+                                                    "yogurt", "cheese", "alcohol", 
+                                                    "fruitother", "f_citmelber", 
+                                                    "tomatoes", "greenleafy", 
+                                                    "darkylveg", "otherveg", 
+                                                    "potatoes", "otherstarchyveg", 
+                                                    "legumes", "soy", "refinedgrain", 
+                                                    "wholegrain", "nuts", "addedsugars" ) )
+
+fdgrp.columns <- fdgrp.columns[ c( 1, 26, 2:25 ) ] # re-arrange so that Meat column index is second column index
+
+
+# center and scale food group variables before correlation analysis
+for ( j in fdgrp.columns ){# ensure proper variables are indicated by the column index in this line of code before proceeding
+  cordata[ , j ] <- ( cordata[ , j ] - mean( cordata[ , j ], na.rm = T ) ) / sd( cordata[ , j ], na.rm = T )
+}
+
+# re-join adjusted, centered, and scaled variables to original data
+cordat2 <- left_join( dat[ , -fdgrp.columns ], cordata[ , c( 1, fdgrp.columns ) ] )
+
+# subset since svy procedures require all rows in data
+# to have weights and no missing weights
+mod1 <- cordat2 %>%
+  filter( is.na( wtdr18yr ) == F) %>%
+  svydesign( id = ~sdmvpsu, weights = ~wtdr18yr, strata = ~sdmvstra, 
+             nest = TRUE, survey.lonely.psu = "adjust", data = . ) %>%
+  subset( ., inc == 1 )# inclusions
+
+
+
+fdgrp.diet.names <- c( "processedmts", "meat", "poultry", "fish_hi", "fish_lo", 
+                       "eggs", "solidfats", "oils", "milk", "yogurt", "cheese", 
+                       "alcohol", "fruitother", "f_citmelber", "tomatoes", 
+                       "greenleafy", "darkylveg", "otherveg", "potatoes", 
+                       "otherstarchyveg", "legumes", "soy", "refinedgrain", 
+                       "wholegrain", "nuts", "addedsugars", "fs_enet", "age_enet", 
+                       "fdas_enet", "hhs_enet", "pc1", "pc2" )
+
+diet.patt.names <- c( "fs_enet", "age_enet", 
+                      "fdas_enet", "hhs_enet", "pc1", "pc2" )
+
+## Loop to generate correlation matrix using svycor function ##
+
+# initialize matrix
+corr.matrix <- matrix( NA, ncol = length( diet.patt.names ), nrow = length( fdgrp.diet.names ) )
+
+for ( g in 1:length( diet.patt.names ) ){
+  
+  loadings.vector <- vector( )
+  
+  for ( i in 1:length( fdgrp.diet.names ) ){
+    
+    loadings.vector[ i ] <- round( svycor( as.formula( paste0( "~", fdgrp.diet.names[ i ], "+", diet.patt.names[ g ] ) ), design = mod1 )$cors[ 2 ], digits = 2 )
+    
+  }
+  
+  corr.matrix[ , g ] <- loadings.vector
+  
+}
+
+
+## text-process correlation matrix ##
+
+# assign column names and rownames to matrix
+
+colnames( corr.matrix ) <- diet.patt.names
+rownames( corr.matrix ) <- fdgrp.diet.names
+
+# fix significant digits and trailing zeros:
+corr.matrix.b <- print( formatC( corr.matrix, digits = 2, format ="fg", flag ="#" ) )
+
+# replace instances of "0" with "0.00"
+corr.matrix.b[ corr.matrix.b =="0" ] <- "0.00"
+
+# eliminate excess trailing zeros
+for ( i in 1:ncol( corr.matrix.b ) ){
+  
+  corr.matrix.b[ , i ] <- str_replace( corr.matrix.b[ , i ], "( ?<=\\.\\d\\d )0", "" )
+  
+}
+
+# replace NA"s with "--"
+corr.matrix.b[ corr.matrix.b ==" NA" ] <- "--"
+
+# save table
+write.table( corr.matrix.b, "04-Tables-Figures/tables/02-table-2-corr.txt", sep =",", row.names = FALSE )
