@@ -212,6 +212,69 @@ fin.res.s.cvd <- do.call( "rbind", out.res.s.cvd )
 
 
 
+
+
+### Stratify by Time Since Diagnosis (Only in Cancer Survivor Sample Given Sample Size) ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+time.levs <- levels(d$timecafactor) # levels of time since diagnosis factor
+out.time.res <- data.frame() # initialie results storage frame
+
+for( j in seq_along( time.levs ) ){
+  
+  # all-cause mortality
+  out.res.time <- list()
+  for( i in 1:length( indices ) ){
+    
+    out.res.time[[i]] <- res( df = d, x = indices[i],   # data and x variable for model
+                         subs = c( "inc == 1", paste0( "timecafactor == '", time.levs[j], "'" ) ),    # subset of data to use
+                         cuts = 5,             # quantiles to use for categorization
+                         id.col = "seqn",      # subject id column
+                         covars = covars.surv, # covariates
+                         time = "stime",       # survival time column
+                         mort.ind = "mortstat",
+                         sample.name = time.levs[j] )    # mortality indicator column
+  }
+  
+  fin.res.time <- do.call( "rbind", out.res.time )
+  
+  
+  # cancer mortality
+  out.res.time.ca <- list()
+  for( i in 1:length( indices ) ){
+    
+    out.res.time.ca[[i]] <- res( df = d, x = indices[i],   # data and x variable for model
+                                 subs = c( "inc == 1", paste0( "timecafactor == '", time.levs[j], "'" ) ),    # subset of data to use
+                                 cuts = 5,             # quantiles to use for categorization
+                                 id.col = "seqn",      # subject id column
+                                 covars = covars.surv, # covariates
+                                 time = "stime",       # survival time column
+                                 mort.ind = "castat",
+                                 sample.name = time.levs[j] )    # mortality indicator column
+  }
+  
+  fin.res.time.ca <- do.call( "rbind", out.res.time.ca )
+  
+
+
+  # combine results for different types of mortality
+  time.res <- bind_rows( data.frame( index = "All-Cause Mortality"),
+                         fin.res.time, 
+                        data.frame( index = "Cancer-Specific Mortality"),
+                        fin.res.time.ca )
+  
+  # bind results
+  out.time.res <- rbind( out.time.res, time.res )
+}
+
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
 ### Assemble Tables ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -282,7 +345,7 @@ ca.table[ca.table=="pc2"] <- "Prudent"
 cvd.table[cvd.table=="pc2"] <- "Prudent"
 
 
-## Generate one table with all causes of death
+## Generate one table with all causes of death ##
 
 all.table <- bind_rows( data.frame( index = "All-Cause Mortality"),
                         ac.table, 
@@ -292,6 +355,22 @@ all.table <- bind_rows( data.frame( index = "All-Cause Mortality"),
                       cvd.table )
 
 
+## Time since diagnosis supplementary table ##
+
+out.time.res[out.time.res=="fs_enet"] <- "Food Insecurity"
+
+out.time.res[out.time.res=="age_enet"] <- "Age"
+
+out.time.res[out.time.res=="fdas_enet"] <- "Food Assistance (SNAP)"
+
+out.time.res[out.time.res=="hhs_enet"] <- "Household Size"
+
+out.time.res[out.time.res=="pc1"] <- "Modified Western"
+
+out.time.res[out.time.res=="pc2"] <- "Prudent"
+
+
+
 ## Save tables ##
 
 write.table( ac.table, "04-Tables-Figures/tables/04-table-4-ac.txt", sep = "," )
@@ -299,4 +378,9 @@ write.table( ac.table, "04-Tables-Figures/tables/05-table-4-ca.txt", sep = "," )
 write.table( ac.table, "04-Tables-Figures/tables/06-table-4-cvd.txt", sep = "," )
 write.table( all.table, "04-Tables-Figures/tables/07-table-4-all.txt", sep = "," )
 write.table( s.table, "04-Tables-Figures/tables/08-table-s2.txt", sep = "," )
+write.table( out.time.res, "04-Tables-Figures/tables/09-table-s3.txt", sep = "," )
+
+
+
+### Survival Curves ###
 
