@@ -245,6 +245,7 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name 
     res.frame[,i] <- str_replace( res.frame[,i], "(\\,\\s\\d)\\)", "\\1.00\\)") # match comma, space, digit, close parenthesis. Retain everything except parenthesis and add ".00)" to end
     res.frame[,i] <- str_replace( res.frame[,i], "(\\(\\d\\.\\d)\\-", "\\10\\-") # open parenthesis, digit, period, digit, hypen. Retain everything except hyphen and add "0)" to end
     res.frame[,i] <- str_replace( res.frame[,i], "(\\-\\d)\\)", "\\1.00\\)") # match hyphen, digit, close parenthesis. Retain everything except parenthesis and add ".00)" to end
+    res.frame[,i] <- str_replace( res.frame[,i], "(\\(\\d)\\-", "\\1.00\\)") # match hyphen, digit, close parenthesis. Retain everything except parenthesis and add ".00)" to end
   }
   
   # column indices for columns containing p values 
@@ -255,7 +256,8 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name 
     res.frame[,i] <- str_replace( res.frame[,i], "^1$", "0.99" ) # round down probabilities = 1
   }
   
-  return( res.frame )
+  return( list( frame = res.frame, q.obj = m.q,
+                dat = des$variables ) )
 }
 
 # res( df = d, x = "fs_enet", subs = "inc == 1", cuts = 5, id.col = "seqn", covars = covars.logit, time = "stime", mort.ind = "mortstat")

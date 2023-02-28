@@ -2,9 +2,11 @@ library( tidyverse )
 library( glue )
 library( splines )
 library( survey )
-library( survminer )
+library( survminer ) # for adjusted survival curves
+library( ggsci )
 
-source( "R/utils.R" )
+source( "R/utils.R" ) # read in helper functions
+source( "R/surv-miner-bug-fix.R" ) # bug fix for generating survival curves with `survminer`
 
 d <- readRDS( "03-Data-Rodeo/01-analytic-data.rds")
 
@@ -27,6 +29,8 @@ covars.surv <- c( "race", "gender", "age", "bmxbmi", "hhsize", "fipr",
 
 # all-cause mortality
 out.res <- list()
+fin.res <-data.frame()
+
 for( i in 1:length( indices ) ){
   
   out.res[[i]] <- res( df = d, x = indices[i],   # data and x variable for model
@@ -37,13 +41,14 @@ for( i in 1:length( indices ) ){
      time = "stime",       # survival time column
      mort.ind = "mortstat",
      sample.name = "All Cancer Survivors" )    # mortality indicator column
+  
+  fin.res <- rbind( fin.res, out.res[[i]]$frame)
 }
-
-fin.res <- do.call( "rbind", out.res )
 
 
 # cancer mortality
 out.res.ca <- list()
+fin.res.ca <- data.frame()
 for( i in 1:length( indices ) ){
   
   out.res.ca[[i]] <- res( df = d, x = indices[i], 
@@ -54,13 +59,14 @@ for( i in 1:length( indices ) ){
                        time = "stime", 
                        mort.ind = "castat",
                        sample.name = "All Cancer Survivors" ) 
+  
+  fin.res.ca <- rbind( fin.res.ca, out.res.ca[[i]]$frame)
 }
-
-fin.res.ca <- do.call( "rbind", out.res.ca )
 
 
 # cvd mortality
 out.res.cvd <- list()
+fin.res.cvd <- data.frame()
 for( i in 1:length( indices ) ){
   
   out.res.cvd[[i]] <- res( df = d, x = indices[i], 
@@ -71,9 +77,10 @@ for( i in 1:length( indices ) ){
                           time = "stime", 
                           mort.ind = "cvdstat",
                           sample.name = "All Cancer Survivors" ) 
+  
+  fin.res.cvd <- rbind( fin.res.cvd, out.res.cvd[[i]]$frame )
 }
 
-fin.res.cvd <- do.call( "rbind", out.res.cvd )
 
 
 
@@ -94,6 +101,7 @@ covars.surv.fi <- c( "race", "gender", "age", "bmxbmi", "hhsize", "fipr",
 
 # all-cause mortality
 out.res.fi <- list()
+fin.res.fi <- data.frame()
 for( i in 1:length( indices ) ){
   
   out.res.fi[[i]] <- res( df = d, x = indices[i],   # data and x variable for model
@@ -104,14 +112,17 @@ for( i in 1:length( indices ) ){
                        time = "stime",       # survival time column
                        mort.ind = "mortstat",
                        sample.name = "Food Insecure Cancer Survivors" )    # mortality indicator column
+  
+  fin.res.fi <- rbind( fin.res.fi, out.res.fi[[i]]$frame )
+  
 }
-
-fin.res.fi <- do.call( "rbind", out.res.fi )
 
 
 
 # cancer mortality
 out.res.fi.ca <- list()
+fin.res.ca.fi <- data.frame()
+
 for( i in 1:length( indices ) ){
   
   out.res.fi.ca[[i]] <- res( df = d, x = indices[i], 
@@ -122,14 +133,15 @@ for( i in 1:length( indices ) ){
                           time = "stime", 
                           mort.ind = "castat",
                           sample.name = "Food Insecure Cancer Survivors" ) 
+  
+  fin.res.ca.fi <- rbind( fin.res.ca.fi, out.res.fi.ca[[i]]$frame)
 }
-
-fin.res.ca.fi <- do.call( "rbind", out.res.fi.ca )
 
 
 # cvd mortality
 ## NOTE: Too few deaths for this subanalysis, the model does not converge
 out.res.fi.cvd <- list()
+fin.res.cvd.fi <- data.frame()
 for( i in 1:length( indices ) ){
   
   out.res.fi.cvd[[i]] <- res( df = d, x = indices[i], 
@@ -140,9 +152,12 @@ for( i in 1:length( indices ) ){
                            time = "stime", 
                            mort.ind = "cvdstat",
                            sample.name = "Food Insecure Cancer Survivors" ) 
+  
+  fin.res.cvd.fi <- rbind( fin.res.cvd.fi, out.res.fi.cvd[[i]]$frame)
+  
 }
 
-fin.res.cvd.fi <- do.call( "rbind", out.res.fi.cvd )
+
 
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -158,6 +173,7 @@ covars.surv.s <- c( covars.surv, "adl.score" )
 
 # all-cause mortality
 out.res.s <- list()
+fin.res.s <- data.frame()
 for( i in 1:length( indices ) ){
   
   out.res.s[[i]] <- res( df = d, x = indices[i],   # data and x variable for model
@@ -168,13 +184,15 @@ for( i in 1:length( indices ) ){
                        time = "stime",       # survival time column
                        mort.ind = "mortstat",
                        sample.name = "All Cancer Survivors" )    # mortality indicator column
-}
-
-fin.res.s <- do.call( "rbind", out.res.s )
+  
+  fin.res.s <- rbind( fin.res.s, out.res.s[[i]]$frame)
+  
+  }
 
 
 # cancer mortality
 out.res.s.ca <- list()
+fin.res.s.ca <- data.frame()
 for( i in 1:length( indices ) ){
   
   out.res.s.ca[[i]] <- res( df = d, x = indices[i], 
@@ -185,13 +203,14 @@ for( i in 1:length( indices ) ){
                           time = "stime", 
                           mort.ind = "castat",
                           sample.name = "All Cancer Survivors" ) 
+  
+  fin.res.s.ca <- rbind( fin.res.s.ca, out.res.s.ca[[i]]$frame)
 }
-
-fin.res.s.ca <- do.call( "rbind", out.res.s.ca )
 
 
 # cvd mortality
 out.res.s.cvd <- list()
+fin.res.s.cvd <- data.frame()
 for( i in 1:length( indices ) ){
   
   out.res.s.cvd[[i]] <- res( df = d, x = indices[i], 
@@ -202,9 +221,10 @@ for( i in 1:length( indices ) ){
                            time = "stime", 
                            mort.ind = "cvdstat",
                            sample.name = "All Cancer Survivors" ) 
+  
+  fin.res.s.cvd <- rbind( fin.res.s.cvd, out.res.s.cvd[[i]]$frame )
+  
 }
-
-fin.res.s.cvd <- do.call( "rbind", out.res.s.cvd )
 
 
 
@@ -224,6 +244,7 @@ for( j in seq_along( time.levs ) ){
   
   # all-cause mortality
   out.res.time <- list()
+  fin.res.time <- data.frame()
   for( i in 1:length( indices ) ){
     
     out.res.time[[i]] <- res( df = d, x = indices[i],   # data and x variable for model
@@ -234,13 +255,15 @@ for( j in seq_along( time.levs ) ){
                          time = "stime",       # survival time column
                          mort.ind = "mortstat",
                          sample.name = time.levs[j] )    # mortality indicator column
-  }
   
-  fin.res.time <- do.call( "rbind", out.res.time )
+    fin.res.time <- rbind( fin.res.time, out.res.time[[i]]$frame)
+    
+    }
   
   
   # cancer mortality
   out.res.time.ca <- list()
+  fin.res.time.ca <- data.frame()
   for( i in 1:length( indices ) ){
     
     out.res.time.ca[[i]] <- res( df = d, x = indices[i],   # data and x variable for model
@@ -251,9 +274,10 @@ for( j in seq_along( time.levs ) ){
                                  time = "stime",       # survival time column
                                  mort.ind = "castat",
                                  sample.name = time.levs[j] )    # mortality indicator column
+    
+    fin.res.time.ca <- rbind( fin.res.time.ca, out.res.time.ca[[i]]$frame)
   }
   
-  fin.res.time.ca <- do.call( "rbind", out.res.time.ca )
   
 
 
@@ -270,6 +294,71 @@ for( j in seq_along( time.levs ) ){
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
+
+
+
+### Sensitivity Analysis: Only Those within 5 Years of a Primary Cancer Diagnosis ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+## All Cancer Survivors ##
+# all-cause mortality
+out.sens.res <- list()
+fin.res.sens <- data.frame()
+for( i in 1:length( indices ) ){
+  
+  out.sens.res[[i]] <- res( df = d, x = indices[i],   # data and x variable for model
+                       subs = c( "inc == 1", "timesincecadxmn <= 60" ),    # subset of data to use
+                       cuts = 5,             # quantiles to use for categorization
+                       id.col = "seqn",      # subject id column
+                       covars = covars.surv, # covariates
+                       time = "stime",       # survival time column
+                       mort.ind = "mortstat",
+                       sample.name = "All Cancer Survivors" )    # mortality indicator column
+  
+  fin.res.sens <- rbind( fin.res.sens, out.sens.res[[i]]$frame )
+}
+
+
+
+# cancer mortality
+out.sens.res.ca <- list()
+fin.res.sens.ca <- data.frame()
+for( i in 1:length( indices ) ){
+  
+  out.sens.res.ca[[i]] <- res( df = d, x = indices[i], 
+                          subs = c( "inc == 1", "timesincecadxmn <= 60" ), 
+                          cuts = 5, 
+                          id.col = "seqn", 
+                          covars = covars.surv, 
+                          time = "stime", 
+                          mort.ind = "castat",
+                          sample.name = "All Cancer Survivors" ) 
+  
+  fin.res.sens.ca <- rbind( fin.res.sens.ca, out.sens.res.ca[[i]]$frame )
+  
+}
+
+
+# cvd mortality
+out.sens.res.cvd <- list()
+fin.res.sens.cvd <- list()
+for( i in 1:length( indices ) ){
+  
+  out.sens.res.cvd[[i]] <- res( df = d, x = indices[i], 
+                           subs = c( "inc == 1", "timesincecadxmn <= 60" ), 
+                           cuts = 5, 
+                           id.col = "seqn", 
+                           covars = covars.surv, 
+                           time = "stime", 
+                           mort.ind = "cvdstat",
+                           sample.name = "All Cancer Survivors" ) 
+  
+  fin.res.sens.cvd <- rbind( fin.res.sens.cvd, out.sens.res.cvd[[i]]$frame )
+}
+
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
@@ -383,4 +472,47 @@ write.table( out.time.res, "04-Tables-Figures/tables/09-table-s3.txt", sep = ","
 
 
 ### Survival Curves ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+## FI pattern survival curves
+ggadjustedcurves( fit = out.sens.res[[1]]$q.obj,
+                 variable ="fs_enet.q",
+                 data = out.sens.res[[1]]$dat,
+                 method = "conditional",
+                 title = "Food Security Pattern",
+                 font.title = c(16, "bold"),
+                 legend.title = "Quintile",
+                 font.legend = c(10, "bold"),
+                 legend = c(0.14,0.25),
+                 ylab = "Adjusted Survival Rate",
+                 xlab = "Follow-up (Months)",
+                 size = 0.6) +
+  theme(text=element_text(family="Avenir") ) + 
+  scale_color_ordinal()
+
+ggsave( "04-Tables-Figures/figures/02a-fi-surv-curve.png", 
+        height = 7.21, 
+        width = 6.42 )
+
+# snap pattern survival curves
+ggadjustedcurves( fit = out.res[[4]]$q.obj,
+                 variable = "fdas_enet.q",
+                 data = out.res[[4]]$dat,
+                 method = "conditional",
+                 title = "SNAP Pattern",
+                 font.title = c(16, "bold"),
+                 legend.title = "Quintile",
+                 font.legend = c(10, "bold"),
+                 legend = c(0.14,0.25),
+                 ylab = "Adjusted Survival Rate",
+                 xlab = "Follow-up (Months)",
+                 size = 0.6) +
+  theme(text=element_text(family="Avenir") ) + 
+  scale_color_ordinal()
+
+ggsave( "04-Tables-Figures/figures/02b-snap-surv-curve.png", 
+        height = 7.21, 
+        width = 6.42 )
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
