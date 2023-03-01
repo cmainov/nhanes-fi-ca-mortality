@@ -475,7 +475,7 @@ write.table( out.time.res, "04-Tables-Figures/tables/09-table-s3.txt", sep = ","
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## FI pattern survival curves
-ggadjustedcurves( fit = out.sens.res[[1]]$q.obj,
+( fi.sc <- ggadjustedcurves( fit = out.sens.res[[1]]$q.obj,
                  variable ="fs_enet.q",
                  data = out.sens.res[[1]]$dat,
                  method = "conditional",
@@ -483,19 +483,19 @@ ggadjustedcurves( fit = out.sens.res[[1]]$q.obj,
                  font.title = c(16, "bold"),
                  legend.title = "Quintile",
                  font.legend = c(10, "bold"),
-                 legend = c(0.14,0.25),
+                 legend = c(0.14,0.34),
                  ylab = "Adjusted Survival Rate",
                  xlab = "Follow-up (Months)",
                  size = 0.6) +
   theme(text=element_text(family="Avenir") ) + 
-  scale_color_ordinal()
+  scale_color_ordinal() )
 
 ggsave( "04-Tables-Figures/figures/02a-fi-surv-curve.png", 
         height = 7.21, 
         width = 6.42 )
 
 # snap pattern survival curves
-ggadjustedcurves( fit = out.res[[4]]$q.obj,
+( snap.sc <- ggadjustedcurves( fit =  out.sens.res[[4]]$q.obj,
                  variable = "fdas_enet.q",
                  data = out.res[[4]]$dat,
                  method = "conditional",
@@ -503,16 +503,42 @@ ggadjustedcurves( fit = out.res[[4]]$q.obj,
                  font.title = c(16, "bold"),
                  legend.title = "Quintile",
                  font.legend = c(10, "bold"),
-                 legend = c(0.14,0.25),
+                 legend = c(0.14,0.31),
                  ylab = "Adjusted Survival Rate",
                  xlab = "Follow-up (Months)",
                  size = 0.6) +
   theme(text=element_text(family="Avenir") ) + 
-  scale_color_ordinal()
+  scale_color_ordinal() )
 
 ggsave( "04-Tables-Figures/figures/02b-snap-surv-curve.png", 
         height = 7.21, 
         width = 6.42 )
+
+
+## Arrange with Spline Plots (Only Food Insecurity and SNAP Patterns) ##
+
+# FI pattern
+fi.sp <- out.sens.res[[1]]$spline.plot +
+  xlab( "Food Insecurity Pattern Score" ) +
+  ylab( unname( TeX( "$\\lambda(t)$" ) ) ) +
+  theme( legend.position = c( 0.2, 0.9))
+
+# SNAP pattern
+snap.sp <- out.sens.res[[4]]$spline.plot +
+  xlab( "SNAP Pattern Score" ) +
+  ylab( unname( TeX( "$\\lambda(t)$" ) ) ) +
+  theme( legend.position = c( 0.15, 0.9))
+  
+ggarrange( ggarrange( fi.sc, fi.sp, nrow = 2, labels = list( "A", "B" ) ),
+           ggarrange( snap.sc, snap.sp, nrow = 2,labels = list( "C", "D" ) ),
+           nrow = 1, ncol = 2 )
+
+## arrange into large ggarrange object
+
+ggsave( "04-Tables-Figures/figures/03-surv-spline-comb.png",
+        height = 7.4, 
+        width = 8.96 )
+
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
