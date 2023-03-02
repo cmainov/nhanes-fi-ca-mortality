@@ -4,6 +4,7 @@ library( splines )
 library( survey )
 library( survminer ) # for adjusted survival curves
 library( ggsci )
+library( latex2exp )
 
 source( "R/utils.R" ) # read in helper functions
 source( "R/surv-miner-bug-fix.R" ) # bug fix for generating survival curves with `survminer`
@@ -29,7 +30,7 @@ covars.surv <- c( "race", "gender", "age", "bmxbmi", "hhsize", "fipr",
 
 # all-cause mortality
 out.res <- list()
-fin.res <-data.frame()
+fin.res <- data.frame()
 
 for( i in 1:length( indices ) ){
   
@@ -233,70 +234,6 @@ for( i in 1:length( indices ) ){
 
 
 
-
-### Stratify by Time Since Diagnosis (Only in Cancer Survivor Sample Given Sample Size) ###
-# ---------------------------------------------------------------------------------------------------------------------------------------------------------
-
-time.levs <- levels(d$timecafactor) # levels of time since diagnosis factor
-out.time.res <- data.frame() # initialie results storage frame
-
-for( j in seq_along( time.levs ) ){
-  
-  # all-cause mortality
-  out.res.time <- list()
-  fin.res.time <- data.frame()
-  for( i in 1:length( indices ) ){
-    
-    out.res.time[[i]] <- res( df = d, x = indices[i],   # data and x variable for model
-                         subs = c( "inc == 1", paste0( "timecafactor == '", time.levs[j], "'" ) ),    # subset of data to use
-                         cuts = 5,             # quantiles to use for categorization
-                         id.col = "seqn",      # subject id column
-                         covars = covars.surv, # covariates
-                         time = "stime",       # survival time column
-                         mort.ind = "mortstat",
-                         sample.name = time.levs[j] )    # mortality indicator column
-  
-    fin.res.time <- rbind( fin.res.time, out.res.time[[i]]$frame)
-    
-    }
-  
-  
-  # cancer mortality
-  out.res.time.ca <- list()
-  fin.res.time.ca <- data.frame()
-  for( i in 1:length( indices ) ){
-    
-    out.res.time.ca[[i]] <- res( df = d, x = indices[i],   # data and x variable for model
-                                 subs = c( "inc == 1", paste0( "timecafactor == '", time.levs[j], "'" ) ),    # subset of data to use
-                                 cuts = 5,             # quantiles to use for categorization
-                                 id.col = "seqn",      # subject id column
-                                 covars = covars.surv, # covariates
-                                 time = "stime",       # survival time column
-                                 mort.ind = "castat",
-                                 sample.name = time.levs[j] )    # mortality indicator column
-    
-    fin.res.time.ca <- rbind( fin.res.time.ca, out.res.time.ca[[i]]$frame)
-  }
-  
-  
-
-
-  # combine results for different types of mortality
-  time.res <- bind_rows( data.frame( index = "All-Cause Mortality"),
-                         fin.res.time, 
-                        data.frame( index = "Cancer-Specific Mortality"),
-                        fin.res.time.ca )
-  
-  # bind results
-  out.time.res <- rbind( out.time.res, time.res )
-}
-
-
-# ---------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-
 ### Sensitivity Analysis: Only Those within 5 Years of a Primary Cancer Diagnosis ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -370,7 +307,7 @@ for( i in 1:length( indices ) ){
 
 ## All-cause mortality ##
 
-ac.table <- bind_rows( out.res, out.res.fi ) %>%
+ac.table <- bind_rows( fin.res, fin.res.fi ) %>%
   data.frame() %>%
   
   # arrange tables first by custom order and second by sample so that ALL Survivors are situated next to estimates for FI CA survivors for a given diet index
@@ -381,7 +318,7 @@ ac.table <- bind_rows( out.res, out.res.fi ) %>%
 
 ## Cancer-specific mortality ##
 
-ca.table <- bind_rows( out.res.ca, out.res.fi.ca ) %>%
+ca.table <- bind_rows( fin.res.ca, fin.res.ca.fi ) %>%
   data.frame() %>%
   
   # arrange tables first by custom order and second by sample so that ALL Survivors are situated next to estimates for FI CA survivors for a given diet index
@@ -392,7 +329,7 @@ ca.table <- bind_rows( out.res.ca, out.res.fi.ca ) %>%
 
 ## CVD-specific mortality ##
 
-cvd.table <- bind_rows( out.res.cvd ) %>%
+cvd.table <- bind_rows( fin.res.cvd ) %>%
   data.frame() %>%
   
   # arrange tables first by custom order and second by sample so that ALL Survivors are situated next to estimates for FI cvd survivors for a given diet index
@@ -409,32 +346,55 @@ s.table <- bind_rows( data.frame( index = "All-Cause Mortality"),
            data.frame( index = "Cardiovascular Disease Mortality"),
            fin.res.s.cvd )
 
+
+## Sensitivity analysis excluding those >60 mos since dx ##
+sens.60.table <- bind_rows( data.frame( index = "All-Cause Mortality"),
+                            fin.res.sens, 
+                      data.frame( index = "Cancer-Specific Mortality"),
+                      fin.res.sens.ca, 
+                      data.frame( index = "Cardiovascular Disease Mortality"),
+                      fin.res.sens.cvd )
+
+# rename the dietary patterns in these tables
 ac.table[ac.table=="fs_enet"] <- "Food Insecurity"
 ca.table[ca.table=="fs_enet"] <- "Food Insecurity"
 cvd.table[cvd.table=="fs_enet"] <- "Food Insecurity"
+s.table[s.table=="fs_enet"] <- "Food Insecurity"
+sens.60.tablesens.60.table <- "Food Insecurity"
+
 
 ac.table[ac.table=="age_enet"] <- "Age"
 ca.table[ca.table=="age_enet"] <- "Age"
 cvd.table[cvd.table=="age_enet"] <- "Age"
+s.table[s.table=="age_enet"] <- "Age"
+sens.60.table[sens.60.table=="age_enet"] <- "Age"
 
 ac.table[ac.table=="fdas_enet"] <- "Food Assistance (SNAP)"
 ca.table[ca.table=="fdas_enet"] <- "Food Assistance (SNAP)"
 cvd.table[cvd.table=="fdas_enet"] <- "Food Assistance (SNAP)"
+s.table[s.table=="fdas_enet"] <- "Food Assistance (SNAP)"
+sens.60.table[sens.60.table=="fdas_enet"] <- "Food Assistance (SNAP)"
 
 ac.table[ac.table=="hhs_enet"] <- "Household Size"
 ca.table[ca.table=="hhs_enet"] <- "Household Size"
 cvd.table[cvd.table=="hhs_enet"] <- "Household Size"
+s.table[s.table=="hhs_enet"] <- "Household Size"
+sens.60.table[sens.60.table=="hhs_enet"] <- "Household Size"
 
 ac.table[ac.table=="pc1"] <- "Modified Western"
 ca.table[ca.table=="pc1"] <- "Modified Western"
 cvd.table[cvd.table=="pc1"] <- "Modified Western"
+s.table[s.table=="pc1"] <- "Modified Western"
+sens.60.table[sens.60.table=="pc1"] <- "Modified Western"
 
 ac.table[ac.table=="pc2"] <- "Prudent"
 ca.table[ca.table=="pc2"] <- "Prudent"
 cvd.table[cvd.table=="pc2"] <- "Prudent"
+s.table[s.table=="pc2"] <- "Prudent"
+sens.60.table[sens.60.table=="pc2"] <- "Prudent"
 
 
-## Generate one table with all causes of death ##
+## Generate one table (main analysis) with all causes of death ##
 
 all.table <- bind_rows( data.frame( index = "All-Cause Mortality"),
                         ac.table, 
@@ -442,21 +402,6 @@ all.table <- bind_rows( data.frame( index = "All-Cause Mortality"),
                       ca.table, 
                       data.frame( index = "Cardiovascular Disease Mortality"),
                       cvd.table )
-
-
-## Time since diagnosis supplementary table ##
-
-out.time.res[out.time.res=="fs_enet"] <- "Food Insecurity"
-
-out.time.res[out.time.res=="age_enet"] <- "Age"
-
-out.time.res[out.time.res=="fdas_enet"] <- "Food Assistance (SNAP)"
-
-out.time.res[out.time.res=="hhs_enet"] <- "Household Size"
-
-out.time.res[out.time.res=="pc1"] <- "Modified Western"
-
-out.time.res[out.time.res=="pc2"] <- "Prudent"
 
 
 
@@ -467,7 +412,7 @@ write.table( ac.table, "04-Tables-Figures/tables/05-table-4-ca.txt", sep = "," )
 write.table( ac.table, "04-Tables-Figures/tables/06-table-4-cvd.txt", sep = "," )
 write.table( all.table, "04-Tables-Figures/tables/07-table-4-all.txt", sep = "," )
 write.table( s.table, "04-Tables-Figures/tables/08-table-s2.txt", sep = "," )
-write.table( out.time.res, "04-Tables-Figures/tables/09-table-s3.txt", sep = "," )
+write.table( sens.60.table, "04-Tables-Figures/tables/09-table-s3.txt", sep = "," )
 
 
 
@@ -475,9 +420,9 @@ write.table( out.time.res, "04-Tables-Figures/tables/09-table-s3.txt", sep = ","
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## FI pattern survival curves
-( fi.sc <- ggadjustedcurves( fit = out.sens.res[[1]]$q.obj,
+( fi.sc <- ggadjustedcurves( fit = out.res[[1]]$q.obj,
                  variable ="fs_enet.q",
-                 data = out.sens.res[[1]]$dat,
+                 data = out.res[[1]]$dat,
                  method = "conditional",
                  title = "Food Security Pattern",
                  font.title = c(16, "bold"),
@@ -495,7 +440,7 @@ ggsave( "04-Tables-Figures/figures/02a-fi-surv-curve.png",
         width = 6.42 )
 
 # snap pattern survival curves
-( snap.sc <- ggadjustedcurves( fit =  out.sens.res[[4]]$q.obj,
+( snap.sc <- ggadjustedcurves( fit =  out.res[[4]]$q.obj,
                  variable = "fdas_enet.q",
                  data = out.res[[4]]$dat,
                  method = "conditional",
@@ -504,7 +449,7 @@ ggsave( "04-Tables-Figures/figures/02a-fi-surv-curve.png",
                  legend.title = "Quintile",
                  font.legend = c(10, "bold"),
                  legend = c(0.14,0.31),
-                 ylab = "Adjusted Survival Rate",
+                 ylab = "",
                  xlab = "Follow-up (Months)",
                  size = 0.6) +
   theme(text=element_text(family="Avenir") ) + 
@@ -518,16 +463,16 @@ ggsave( "04-Tables-Figures/figures/02b-snap-surv-curve.png",
 ## Arrange with Spline Plots (Only Food Insecurity and SNAP Patterns) ##
 
 # FI pattern
-fi.sp <- out.sens.res[[1]]$spline.plot +
+fi.sp <- out.res[[1]]$spline.plot +
   xlab( "Food Insecurity Pattern Score" ) +
   ylab( unname( TeX( "$\\lambda(t)$" ) ) ) +
   theme( legend.position = c( 0.2, 0.9))
 
 # SNAP pattern
-snap.sp <- out.sens.res[[4]]$spline.plot +
+snap.sp <- out.res[[4]]$spline.plot +
   xlab( "SNAP Pattern Score" ) +
-  ylab( unname( TeX( "$\\lambda(t)$" ) ) ) +
-  theme( legend.position = c( 0.15, 0.9))
+  ylab( unname( TeX( "" ) ) ) +
+  theme( legend.position = c( 0.15, 0.95))
   
 ggarrange( ggarrange( fi.sc, fi.sp, nrow = 2, labels = list( "A", "B" ) ),
            ggarrange( snap.sc, snap.sp, nrow = 2,labels = list( "C", "D" ) ),

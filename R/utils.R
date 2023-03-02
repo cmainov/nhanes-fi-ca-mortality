@@ -83,6 +83,7 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name 
   des <- subset( des, eval( parse( text = paste0( subs, collapse = " & " ) ) ) ) #inclusions
   
   
+  
   ## Important function arguments ##
   
   # standard deviation to scale continuous predictor
@@ -116,15 +117,9 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name 
   sum.m.l <- summary( m.l )$coefficients %>% data.frame()
   ci.m.l <- confint( m.l )
   
-  n.table <- nrow( m.l$model )
-  
-  # cubic polynomial
-  m.c <- svycoxph( formula( paste0( "Surv(", time, ",",mort.ind," ) ~ ", paste0( "I( ", x, "/", x.scale, ") + " ), 
-                                    paste0( "I( (", x, "/", x.scale, ")^2) + " ), paste0( "I( (", x, "/", x.scale, ")^3) + " ),
-                                    paste0( covars, collapse = " + ") ) ),
-                   design = des )
-  
-  sum.m.c <- summary( m.c )$coefficients %>% data.frame()
+  # length of observations used
+  n.table <- length( m.l$linear.predictors )
+
   
   # natural cubic spline 
   m.cs <- svycoxph( formula( paste0( "Surv(", time, ",",mort.ind," ) ~ ", paste0( "ns(", x,", knots = c(", kts, ") ) + " ), 
