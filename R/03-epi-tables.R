@@ -16,7 +16,8 @@ dat <- readRDS( "03-Data-Rodeo/01-analytic-data.rds") %>%
     cod = ifelse( castat == 1, "Cancer",
                   ifelse( cvdstat == 1, "Cardiovascular Disease",
                           ifelse( mortstat == 1 & castat != 1 & cvdstat != 1, "Other",
-                                  NA ) ) ) )
+                                  NA ) ) ),
+    timesince.cat.5yr = ifelse( timesincecadxmn <= 60, "<= 5 yrs", ">5 yrs"))
   
   # designs
   nhc <- svydesign( id = ~sdmvpsu, weights = ~wtdr18yr, strata = ~sdmvstra,
@@ -61,7 +62,7 @@ cafs_table1 <- function( design, df ){
   cci <- epitab.means( cont.var = "cci_score", des = design, table.var = "CCI", dig = 2 )
   site <- epitab( var = "primarycagroup", data.fr = df, des = design, table.var = "Cancer Site" )
   snap <- epitab( var = "foodasstpnowic", data.fr = df, des = design, table.var = "SNAP Assistance" )
-  time <- epitab( var = "timecafactor", data.fr = df, des = design, table.var = "Years Since Diagnosis" )
+  time <- epitab( var = "timesince.cat.5yr", data.fr = df, des = design, table.var = "Years Since Diagnosis" )
   insur <- epitab( var = "ins.status", data.fr = df, des = design, table.var = "Health Insurance Status" )
   disab <- epitab.means( cont.var = "adl.score", des = design, table.var = "NHANES ADL Score", dig = 2 )
   ac.mort <- epitab( var = "cod", data.fr = df, des = design, table.var = "Cause of Death" )
@@ -90,7 +91,7 @@ final.tab <- cbind( gen.tab, fiw.tab, fsw.tab )
 chi  <- c( "Smoking", "Alcohol", "Gender", "Income", "Size", "Education", "Race",
            "Years", "SNAP", "Insurance", "Cause of" )
 these  <- c( "smokstat", "alc_cat", "gender", "fipr", "hhsize.bin", "education_bin", "race", 
-             "timecafactor", "foodasstpnowic", "ins.status", "cod" )
+             "timesince.cat.5yr", "foodasstpnowic", "ins.status", "cod" )
 
 # chi square
 for ( i in 1:length( chi ) ){
@@ -141,7 +142,7 @@ t.1 <- setNames( final.tab[, these.cols ],
                           "p" ) )
 
 # save
-write.table( final.tab, "04-Tables-Figures/tables/01-table-1.txt", sep = ", ", row.names = FALSE )
+write.table( t.1, "04-Tables-Figures/tables/01-table-1.txt", sep = ", ", row.names = FALSE )
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
