@@ -136,9 +136,9 @@ fsw.n <- nrow( fsw$variables)
 
 t.1 <- setNames( final.tab[, these.cols ],
                        c( "Characteristic",
-                          paste0( "Combined Sample (n = ", gen.n ),
-                          paste0( "Food Insecure (n = ", fiw.n ),
-                          paste0( "Food Secure (n = ", fsw.n ),
+                          paste0( "Combined Sample (n = ", gen.n, ")" ),
+                          paste0( "Food Insecure (n = ", fiw.n, ")" ),
+                          paste0( "Food Secure (n = ", fsw.n, ")" ),
                           "p" ) )
 
 # save
