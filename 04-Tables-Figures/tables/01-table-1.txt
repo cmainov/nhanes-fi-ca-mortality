@@ -1,6 +1,6 @@
 "levelnames", "mn", "levelnames.1", "mn.1", "levelnames.2", "mn.2", "V7"
 "", "", "", "", "", "", NA
-"Age", "62 (14.9)", "Age", "50.4 (16.5)", "Age", "63.3 (14.1)", "< 0.01"
+"Age", "62.03 (14.85)", "Age", "50.4 (16.46)", "Age", "63.32 (14.09)", "< 0.01"
 "", "", "", "", "", "", NA
 "Gender", "", "Gender", "", "Gender", "", "< 0.01"
 "Male", "1139 (40.9)", "Male", "99 (25.1)", "Male", "1040 (42.6)", NA
@@ -30,34 +30,23 @@
 "1", "219 (7.5)", "1", "70 (21.4)", "1", "149 (5.9)", NA
 " ", "", " ", "", " ", "", NA
 "", "", "", "", "", "", NA
-"NHANES ADL Score", "22.3 (4.6)", "NHANES ADL Score", "26.1 (7.3)", "NHANES ADL Score", "21.9 (4.1)", "< 0.01"
+"NHANES ADL Score", "22.26 (4.56)", "NHANES ADL Score", "26.1 (7.34)", "NHANES ADL Score", "21.93 (4.07)", "< 0.01"
 "", "", "", "", "", "", NA
 "", "", "", "", "", "", NA
-"BMI", "28.9 (6.6)", "BMI", "29.8 (7.4)", "BMI", "28.8 (6.5)", "0.08"
+"BMI", "28.92 (6.61)", "BMI", "29.82 (7.43)", "BMI", "28.82 (6.51)", "0.08"
 "", "", "", "", "", "", NA
 "", "", "", "", "", "", NA
-"MET Minutes", "2249 (4387.8)", "MET Minutes", "5195.3 (8691.4)", "MET Minutes", "1923.5 (3462.9)", "< 0.01"
+"MET Minutes", "2249.04 (4387.81)", "MET Minutes", "5195.27 (8691.45)", "MET Minutes", "1923.51 (3462.9)", "< 0.01"
 "", "", "", "", "", "", NA
 "", "", "", "", "", "", NA
-"Calories", "1900.2 (679.9)", "Calories", "1751 (791.3)", "Calories", "1916.6 (664.5)", "0.02"
+"Calories", "1900.17 (679.88)", "Calories", "1751 (791.25)", "Calories", "1916.65 (664.54)", "0.02"
 "", "", "", "", "", "", NA
 "", "", "", "", "", "", NA
-"CCI", "3 (1.4)", "CCI", "3.4 (1.7)", "CCI", "2.9 (1.3)", "< 0.01"
+"CCI", "2.98 (1.35)", "CCI", "3.36 (1.71)", "CCI", "2.94 (1.3)", "< 0.01"
 "", "", "", "", "", "", NA
 "SNAP Assistance", "", "SNAP Assistance", "", "SNAP Assistance", "", "< 0.01"
 "no", "2146 (88.8)", "no", "159 (44.4)", "no", "1987 (93.7)", NA
 "yes", "347 (11.2)", "yes", "158 (55.6)", "yes", "189 (6.3)", NA
-" ", "", " ", "", " ", "", NA
-"Cancer Site", "", "Cancer Site", "", "Cancer Site", "", NA
-"Breast", "423 (16)", "Breast", "41 (8.6)", "Breast", "382 (16.9)", NA
-"Gastrointestinal", "234 (8.1)", "Gastrointestinal", "36 (14.2)", "Gastrointestinal", "198 (7.4)", NA
-"Genitourinary", "94 (3.4)", "Genitourinary", "12 (4.2)", "Genitourinary", "82 (3.3)", NA
-"Gynecological", "401 (17.6)", "Gynecological", "104 (37.1)", "Gynecological", "297 (15.5)", NA
-"MaleReproductive", "456 (13.5)", "MaleReproductive", "34 (6.3)", "MaleReproductive", "422 (14.3)", NA
-"Melanoma", "181 (8.8)", "Melanoma", "10 (2)", "Melanoma", "171 (9.6)", NA
-"Non-Melanoma Skin", "0 (0)", "Non-Melanoma Skin", "0 (0)", "Non-Melanoma Skin", "0 (0)", NA
-"Other", "453 (20.2)", "Other", "65 (22)", "Other", "388 (20)", NA
-"Skin-Unknown", "251 (12.3)", "Skin-Unknown", "15 (5.6)", "Skin-Unknown", "236 (13)", NA
 " ", "", " ", "", " ", "", NA
 "Years Since Diagnosis", "", "Years Since Diagnosis", "", "Years Since Diagnosis", "", "0.57"
 " >= 2 and < 6 years", "600 (21.7)", " >= 2 and < 6 years", "77 (19.2)", " >= 2 and < 6 years", "523 (22)", NA
@@ -74,19 +63,8 @@
 "moderate", "381 (15.9)", "moderate", "32 (16.1)", "moderate", "349 (15.9)", NA
 "non-drinking", "1844 (70.3)", "non-drinking", "262 (79.3)", "non-drinking", "1582 (69.3)", NA
 " ", "", " ", "", " ", "", NA
-"Deaths from All Causes", "", "Deaths from All Causes", "", "Deaths from All Causes", "", "< 0.01"
-"0", "1512 (73)", "0", "235 (85.2)", "0", "1277 (71.6)", NA
-"1", "981 (27)", "1", "82 (14.8)", "1", "899 (28.4)", NA
-" ", "", " ", "", " ", "", NA
-"Deaths Due to Cancer", "", "Deaths Due to Cancer", "", "Deaths Due to Cancer", "", "< 0.01"
-"0", "2150 (90.2)", "0", "287 (95.3)", "0", "1863 (89.6)", NA
-"1", "343 (9.8)", "1", "30 (4.7)", "1", "313 (10.4)", NA
-" ", "", " ", "", " ", "", NA
-"Deaths Due to CVD", "", "Deaths Due to CVD", "", "Deaths Due to CVD", "", "0.02"
-"0", "2258 (93.1)", "0", "306 (97)", "0", "1952 (92.7)", NA
-"1", "235 (6.9)", "1", "11 (3)", "1", "224 (7.3)", NA
-" ", "", " ", "", " ", "", NA
-"Deaths Due to DM", "", "Deaths Due to DM", "", "Deaths Due to DM", "", "< 0.01"
-"0", "2471 (99.6)", "0", "315 (100)", "0", "2156 (99.5)", NA
-"1", "22 (0.4)", "1", "2 (0)", "1", "20 (0.5)", NA
+"Cause of Death", "", "Cause of Death", "", "Cause of Death", "", "0.42"
+"Cancer", "343 (36.4)", "Cancer", "30 (31.9)", "Cancer", "313 (36.7)", NA
+"Cardiovascular Disease", "235 (25.6)", "Cardiovascular Disease", "11 (20.4)", "Cardiovascular Disease", "224 (25.9)", NA
+"Other", "403 (38)", "Other", "41 (47.7)", "Other", "362 (37.4)", NA
 " ", "", " ", "", " ", "", NA

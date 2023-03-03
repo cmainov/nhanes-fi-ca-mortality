@@ -8,8 +8,15 @@ source( "R/utils.R" )
 
 dat <- readRDS( "03-Data-Rodeo/01-analytic-data.rds") %>%
   dplyr::filter( is.na( wtdr18yr ) == F ) %>% # subset to those having non -missing weights 
-    dplyr::mutate( hhsize.bin = ifelse( hhsize >= 5, 1,
-                                        ifelse( hhsize < 5, 0, NA ) ) ) # dichotomize household size column before generating table
+  
+  dplyr::mutate( 
+    hhsize.bin = ifelse( hhsize >= 5, 1,
+                                        ifelse( hhsize < 5, 0, NA ) ),
+    # concatenate cause of death into a single variable for table
+    cod = ifelse( castat == 1, "Cancer",
+                  ifelse( cvdstat == 1, "Cardiovascular Disease",
+                          ifelse( mortstat == 1 & castat != 1 & cvdstat != 1, "Other",
+                                  NA ) ) ) )
   
   # designs
   nhc <- svydesign( id = ~sdmvpsu, weights = ~wtdr18yr, strata = ~sdmvstra,
@@ -23,7 +30,14 @@ dat <- readRDS( "03-Data-Rodeo/01-analytic-data.rds") %>%
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
+### Person-Years and -Months Calculations ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+  
+( pm <- sum( gen$variables$stime ) ) # person-months
 
+pm/12 # person-years 
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
   
   
 ### Table 1 ###
@@ -40,24 +54,20 @@ cafs_table1 <- function( design, df ){
   income <- epitab( var = "fipr", data.fr = df, des = design, table.var = "Income:Poverty" )
   hhsize <- epitab( var = "hhsize.bin", data.fr = df, des = design, table.var = "Household Size" )
   education <- epitab( var = "education_bin", data.fr = df, des = design, table.var = "Education Attained" )
-  bmi <- epitab.means( cont.var = "bmxbmi", des = design, table.var = "BMI" )
-  metmins <- epitab.means( cont.var = "weekmetmin", des = design, table.var = "MET Minutes" )
-  calor <- epitab.means( cont.var = "kcal", des = design, table.var = "Calories" )
-  age <- epitab.means( cont.var = "age", des = design, table.var = "Age" )
-  cci <- epitab.means( cont.var = "cci_score", des = design, table.var = "CCI" )
+  bmi <- epitab.means( cont.var = "bmxbmi", des = design, table.var = "BMI", dig = 2 )
+  metmins <- epitab.means( cont.var = "weekmetmin", des = design, table.var = "MET Minutes", dig = 2 )
+  calor <- epitab.means( cont.var = "kcal", des = design, table.var = "Calories", dig = 2 )
+  age <- epitab.means( cont.var = "age", des = design, table.var = "Age", dig = 2 )
+  cci <- epitab.means( cont.var = "cci_score", des = design, table.var = "CCI", dig = 2 )
   site <- epitab( var = "primarycagroup", data.fr = df, des = design, table.var = "Cancer Site" )
   snap <- epitab( var = "foodasstpnowic", data.fr = df, des = design, table.var = "SNAP Assistance" )
   time <- epitab( var = "timecafactor", data.fr = df, des = design, table.var = "Years Since Diagnosis" )
   insur <- epitab( var = "ins.status", data.fr = df, des = design, table.var = "Health Insurance Status" )
-  disab <- epitab.means( cont.var = "adl.score", des = design, table.var = "NHANES ADL Score" )
-  ac.mort <- epitab( var = "mortstat", data.fr = df, des = design, table.var = "Deaths from All Causes" )
-  ca.mort <- epitab( var = "castat", data.fr = df, des = design, table.var = "Deaths Due to Cancer" )
-  cv.mort <- epitab( var = "cvdstat", data.fr = df, des = design, table.var = "Deaths Due to CVD" )
-  dm.mort <- epitab( var = "dmstat", data.fr = df, des = design, table.var = "Deaths Due to DM" )
-  
+  disab <- epitab.means( cont.var = "adl.score", des = design, table.var = "NHANES ADL Score", dig = 2 )
+  ac.mort <- epitab( var = "cod", data.fr = df, des = design, table.var = "Cause of Death" )
+
   table1 <- rbind( age, sex, race, education, income, insur, hhsize, disab, bmi, metmins, 
-                   calor, cci, snap, site, time, smokstat, alcuse, ac.mort, ca.mort,
-                   cv.mort, dm.mort )
+                   calor, cci, snap, time, smokstat, alcuse, ac.mort )
   
   return( table1 )
   
@@ -78,11 +88,9 @@ final.tab <- cbind( gen.tab, fiw.tab, fsw.tab )
 
 # vector of strings containing elements that maps to a given row in the table
 chi  <- c( "Smoking", "Alcohol", "Gender", "Income", "Size", "Education", "Race",
-           "Years", "SNAP", "Insurance", "All Causes", "Due to Cancer",
-           "Due to CVD", "Due to DM")
+           "Years", "SNAP", "Insurance", "Cause of" )
 these  <- c( "smokstat", "alc_cat", "gender", "fipr", "hhsize.bin", "education_bin", "race", 
-             "timecafactor", "foodasstpnowic", "ins.status", "mortstat",
-             "castat", "cvdstat", "dmstat")
+             "timecafactor", "foodasstpnowic", "ins.status", "cod" )
 
 # chi square
 for ( i in 1:length( chi ) ){
