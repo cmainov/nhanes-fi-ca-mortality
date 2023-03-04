@@ -381,17 +381,17 @@ cvd.table[cvd.table=="hhs_enet"] <- "Household Size"
 s.table[s.table=="hhs_enet"] <- "Household Size"
 sens.60.table[sens.60.table=="hhs_enet"] <- "Household Size"
 
-ac.table[ac.table=="pc1"] <- "Modified Western"
-ca.table[ca.table=="pc1"] <- "Modified Western"
-cvd.table[cvd.table=="pc1"] <- "Modified Western"
-s.table[s.table=="pc1"] <- "Modified Western"
-sens.60.table[sens.60.table=="pc1"] <- "Modified Western"
+ac.table[ac.table=="pc1"] <- "Prudent #1"
+ca.table[ca.table=="pc1"] <- "Prudent #1"
+cvd.table[cvd.table=="pc1"] <- "Prudent #1"
+s.table[s.table=="pc1"] <- "Prudent #1"
+sens.60.table[sens.60.table=="pc1"] <- "Prudent #1"
 
-ac.table[ac.table=="pc2"] <- "Prudent"
-ca.table[ca.table=="pc2"] <- "Prudent"
-cvd.table[cvd.table=="pc2"] <- "Prudent"
-s.table[s.table=="pc2"] <- "Prudent"
-sens.60.table[sens.60.table=="pc2"] <- "Prudent"
+ac.table[ac.table=="pc2"] <- "Prudent #2"
+ca.table[ca.table=="pc2"] <- "Prudent #2"
+cvd.table[cvd.table=="pc2"] <- "Prudent #2"
+s.table[s.table=="pc2"] <- "Prudent #2"
+sens.60.table[sens.60.table=="pc2"] <- "Prudent #2"
 
 
 ## Generate one table (main analysis) with all causes of death ##
