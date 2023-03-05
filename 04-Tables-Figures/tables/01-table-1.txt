@@ -1,4 +1,4 @@
-"Characteristic", "Combined Sample (n = 2493", "Food Insecure (n = 317", "Food Secure (n = 2176", "p"
+"Characteristic", "Combined Sample (n = 2493)", "Food Insecure (n = 317)", "Food Secure (n = 2176)", "p"
 "", "", "", "", NA
 "Age", "62.03 (14.85)", "50.4 (16.46)", "63.32 (14.09)", "< 0.01"
 "", "", "", "", NA
@@ -62,8 +62,9 @@
 "moderate", "381 (15.9)", "32 (16.1)", "349 (15.9)", NA
 "non-drinking", "1844 (70.3)", "262 (79.3)", "1582 (69.3)", NA
 " ", "", "", "", NA
-"Cause of Death", "", "", "", "0.42"
-"Cancer", "343 (36.4)", "30 (31.9)", "313 (36.7)", NA
-"Cardiovascular Disease", "235 (25.6)", "11 (20.4)", "224 (25.9)", NA
-"Other", "403 (38)", "41 (47.7)", "362 (37.4)", NA
+"Cause of Death", "", "", "", "< 0.01"
+"Cancer", "343 (9.8)", "30 (4.7)", "313 (10.4)", NA
+"Cardiovascular Disease", "235 (6.9)", "11 (3)", "224 (7.3)", NA
+"Censored", "1512 (73)", "235 (85.2)", "1277 (71.6)", NA
+"Other", "403 (10.3)", "41 (7)", "362 (10.6)", NA
 " ", "", "", "", NA

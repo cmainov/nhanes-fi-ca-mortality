@@ -16,7 +16,8 @@ dat <- readRDS( "03-Data-Rodeo/01-analytic-data.rds") %>%
     cod = ifelse( castat == 1, "Cancer",
                   ifelse( cvdstat == 1, "Cardiovascular Disease",
                           ifelse( mortstat == 1 & castat != 1 & cvdstat != 1, "Other",
-                                  NA ) ) ),
+                                  ifelse( mortstat == 0, "Censored",
+                                  NA ) ) ) ),
     timesince.cat.5yr = ifelse( timesincecadxmn <= 60, "<= 5 yrs", ">5 yrs"))
   
   # designs
