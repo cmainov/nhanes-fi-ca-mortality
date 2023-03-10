@@ -122,7 +122,7 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name 
 
   
   # natural cubic spline 
-  m.cs <- svycoxph( formula( paste0( "Surv(", time, ",",mort.ind," ) ~ ", paste0( "ns(", x,", knots = c(", kts, ") ) + " ), 
+  m.cs <- svycoxph( formula( paste0( "Surv(", time, ",",mort.ind," ) ~ ", paste0( "ns(", x,", df = 3 ) +" ), 
                                      paste0( covars, collapse = " + ") ) ),
                     design = des )
   
@@ -195,7 +195,7 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name 
     res.mat[, ncol( res.mat ) ] <- paste0( res.mat[,ncol( res.mat ) ], "**" )
   }
   
-  # add cubic specification p-value
+  # add lrt p-value
   
   res.mat <- cbind( res.mat, round( p.nl, 2 ) )
   
@@ -255,73 +255,17 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name 
   ## Spline plot ##
   
   
-  d.2 <- des$variables
+  spline.plot <- hr_splines(  df =  d.2 %>% select(  -permth_exm ), 
+               x =  x, 
+               time =  "stime", 
+               mort.ind =  "mortstat", 
+               knots =  4, 
+               covariates =  covars, 
+               wts =  "wtdr18yr", 
+               referent =  "median", 
+               ylab =  "Hazard Ratio", 
+               xlab =  "FDAS", legend.pos =  c(  0.3 , 0.8 ) )
   
-  kts <- as.numeric( levels( as.factor( d.2[[ paste0( x, ".trend" )]] ) ) )
-  
-  
-  
-  V <- data.frame( vcov( m.cs ) ) %>% # store variance-covariance matrix for computing 95% CI (only coefficients associated with X)
-    mutate(rown = rownames(.) ) %>%
-    filter( str_detect( rown, "ns\\(" ) ) %>%
-    select( contains( "knots" ) ) %>% as.matrix()
-  
-  min.sc <- min( d.2[[x]], na.rm = T )
-  max.sc <- max( d.2[[x]], na.rm = T )
-  
-  # generate spline functions on new sequence to plot
-  r <- seq( min.sc, max.sc, 0.01)
-  
-  # generate the basis matrix
-  X <- as.matrix( ns( r, knots = kts ) ) 
-  
-  # extract coefficients vector
-  b <- data.frame( summary( m.cs )["coefficients"] ) %>%
-    mutate(rown = rownames(.) ) %>%
-    filter( str_detect( rown, "ns\\(" ) ) %>%
-    select( coefficients.coef ) %>% as.matrix()
-  
-  dim( X ) # dimensions of design matrix X
-  
-  # X %*% beta
-  mu <- X %*% b 
-  
-  # referent will be mean of the independent variable
-  these <- GenKern::nearest( d.2[[x]], mean( d.2[[x]], na.rm = T ) )
-  
-  ref.rate <- if ( length( these ) > 1 ) sample( mu[these], 1 ) else mu[these]
-  
-  yhat.x <- exp( mu / ref.rate )
-  
-  # 95% CI
-  # compute error
-  e <- sqrt( rowSums ( X * (X %*% V) ) )
-  n <- nrow( d.2 ) # no. of obs
-  d.f <- length( coefficients( m.cs ) ) - 1 # degrees of freedom
-  lo <- mu + e * qt( 0.025, n - d.f ) # 95% CI lower bound
-  up <- mu  - e * qt( 0.025, n - d.f ) # 95% CI upper bound
-  
-  
-  ## bind results into final data frame for plotting ##
-  
-  c.sp.d <- setNames( cbind( r, 
-                             mu, lo, up ) %>%
-                        data.frame(), c( "x.r", "y", "lo", "up" ) ) %>%
-    pivot_longer( cols = c( "y", "lo", "up" ), 
-                  names_to = "model",
-                  values_to = "y" )
-  
-  c.sp.d$ci<-ifelse( c.sp.d$model == "y", 'Estimate',
-                     ifelse( c.sp.d$model %in% c( "lo", "up") , "95% CI", NA ) )
-  
-  # plot
-  spline.plot <- ggplot(data = c.sp.d, mapping = aes( x = x.r, y = y, group = model ) ) +
-    geom_line( aes( x = x.r, y = y, lty = ci) ) + # plot 95% CI
-    scale_linetype_manual( values = c(2,1)) +
-    theme_classic() +
-    theme( text = element_text( family = "Avenir" ),
-           legend.position = c( 0.2, 0.2 ),
-           legend.title = element_blank() ) 
   
   return( list( frame = res.frame, q.obj = m.q,
                 dat = des$variables,

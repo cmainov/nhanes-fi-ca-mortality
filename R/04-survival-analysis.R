@@ -32,7 +32,7 @@ covars.surv <- c( "race", "gender", "age", "bmxbmi", "hhsize", "fipr",
 out.res <- list()
 fin.res <- data.frame()
 
-for( i in 1:length( indices ) ){
+for( i in seq_along( indices ) ){
   
   out.res[[i]] <- res( df = d, x = indices[i],   # data and x variable for model
      subs = "inc == 1",    # subset of data to use
@@ -43,14 +43,14 @@ for( i in 1:length( indices ) ){
      mort.ind = "mortstat",
      sample.name = "All Cancer Survivors" )    # mortality indicator column
   
-  fin.res <- rbind( fin.res, out.res[[i]]$frame)
+  fin.res <- rbind( fin.res, out.res[[i]]$frame )
 }
 
 
 # cancer mortality
 out.res.ca <- list()
 fin.res.ca <- data.frame()
-for( i in 1:length( indices ) ){
+for( i in seq_along( indices ) ){
   
   out.res.ca[[i]] <- res( df = d, x = indices[i], 
                        subs = "inc == 1", 
@@ -68,7 +68,7 @@ for( i in 1:length( indices ) ){
 # cvd mortality
 out.res.cvd <- list()
 fin.res.cvd <- data.frame()
-for( i in 1:length( indices ) ){
+for( i in seq_along( indices ) ){
   
   out.res.cvd[[i]] <- res( df = d, x = indices[i], 
                           subs = "inc == 1", 
@@ -103,7 +103,7 @@ covars.surv.fi <- c( "race", "gender", "age", "bmxbmi", "hhsize", "fipr",
 # all-cause mortality
 out.res.fi <- list()
 fin.res.fi <- data.frame()
-for( i in 1:length( indices ) ){
+for( i in seq_along( indices ) ){
   
   out.res.fi[[i]] <- res( df = d, x = indices[i],   # data and x variable for model
                        subs = c("inc == 1", "binfoodsechh == 'Low'"),    # subset of data to use
@@ -124,7 +124,7 @@ for( i in 1:length( indices ) ){
 out.res.fi.ca <- list()
 fin.res.ca.fi <- data.frame()
 
-for( i in 1:length( indices ) ){
+for( i in seq_along( indices ) ){
   
   out.res.fi.ca[[i]] <- res( df = d, x = indices[i], 
                           subs = c("inc == 1", "binfoodsechh == 'Low'"), 
@@ -143,7 +143,7 @@ for( i in 1:length( indices ) ){
 ## NOTE: Too few deaths for this subanalysis, the model does not converge
 out.res.fi.cvd <- list()
 fin.res.cvd.fi <- data.frame()
-for( i in 1:length( indices ) ){
+for( i in seq_along( indices ) ){
   
   out.res.fi.cvd[[i]] <- res( df = d, x = indices[i], 
                            subs = c("inc == 1", "binfoodsechh == 'Low'"), 
@@ -175,7 +175,7 @@ covars.surv.s <- c( covars.surv, "adl.score" )
 # all-cause mortality
 out.res.s <- list()
 fin.res.s <- data.frame()
-for( i in 1:length( indices ) ){
+for( i in seq_along( indices ) ){
   
   out.res.s[[i]] <- res( df = d, x = indices[i],   # data and x variable for model
                        subs = "inc == 1",    # subset of data to use
@@ -194,7 +194,7 @@ for( i in 1:length( indices ) ){
 # cancer mortality
 out.res.s.ca <- list()
 fin.res.s.ca <- data.frame()
-for( i in 1:length( indices ) ){
+for( i in seq_along( indices ) ){
   
   out.res.s.ca[[i]] <- res( df = d, x = indices[i], 
                           subs = "inc == 1", 
@@ -212,7 +212,7 @@ for( i in 1:length( indices ) ){
 # cvd mortality
 out.res.s.cvd <- list()
 fin.res.s.cvd <- data.frame()
-for( i in 1:length( indices ) ){
+for( i in seq_along( indices ) ){
   
   out.res.s.cvd[[i]] <- res( df = d, x = indices[i], 
                            subs = "inc == 1", 
@@ -242,7 +242,7 @@ for( i in 1:length( indices ) ){
 # all-cause mortality
 out.sens.res <- list()
 fin.res.sens <- data.frame()
-for( i in 1:length( indices ) ){
+for( i in seq_along( indices ) ){
   
   out.sens.res[[i]] <- res( df = d, x = indices[i],   # data and x variable for model
                        subs = c( "inc == 1", "timesincecadxmn <= 60" ),    # subset of data to use
@@ -261,7 +261,7 @@ for( i in 1:length( indices ) ){
 # cancer mortality
 out.sens.res.ca <- list()
 fin.res.sens.ca <- data.frame()
-for( i in 1:length( indices ) ){
+for( i in seq_along( indices ) ){
   
   out.sens.res.ca[[i]] <- res( df = d, x = indices[i], 
                           subs = c( "inc == 1", "timesincecadxmn <= 60" ), 
@@ -280,7 +280,7 @@ for( i in 1:length( indices ) ){
 # cvd mortality
 out.sens.res.cvd <- list()
 fin.res.sens.cvd <- list()
-for( i in 1:length( indices ) ){
+for( i in seq_along( indices ) ){
   
   out.sens.res.cvd[[i]] <- res( df = d, x = indices[i], 
                            subs = c( "inc == 1", "timesincecadxmn <= 60" ), 
@@ -464,15 +464,12 @@ ggsave( "04-Tables-Figures/figures/02b-snap-surv-curve.png",
 
 # FI pattern
 fi.sp <- out.res[[1]]$spline.plot +
-  xlab( "Food Insecurity Pattern Score" ) +
-  ylab( unname( TeX( "$\\lambda(t)$" ) ) ) +
-  theme( legend.position = c( 0.2, 0.9))
+  xlab( unname( TeX( "Food Insecurity Pattern Score$^a$" ) ) ) 
 
 # SNAP pattern
 snap.sp <- out.res[[4]]$spline.plot +
-  xlab( "SNAP Pattern Score" ) +
-  ylab( unname( TeX( "" ) ) ) +
-  theme( legend.position = c( 0.15, 0.95))
+  xlab( unname( TeX( "SNAP Pattern Score$^a$" ) ) ) +
+  theme( legend.position = "none" )
   
 ggarrange( ggarrange( fi.sc, fi.sp, nrow = 2, labels = list( "A", "B" ) ),
            ggarrange( snap.sc, snap.sp, nrow = 2,labels = list( "C", "D" ) ),
