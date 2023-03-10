@@ -469,7 +469,8 @@ fi.sp <- out.res[[1]]$spline.plot +
 # SNAP pattern
 snap.sp <- out.res[[4]]$spline.plot +
   xlab( unname( TeX( "SNAP Pattern Score$^a$" ) ) ) +
-  theme( legend.position = "none" )
+  theme( legend.position = "none" ) +
+  ylab( "" )
   
 ggarrange( ggarrange( fi.sc, fi.sp, nrow = 2, labels = list( "A", "B" ) ),
            ggarrange( snap.sc, snap.sp, nrow = 2,labels = list( "C", "D" ) ),
