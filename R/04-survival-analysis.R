@@ -453,7 +453,8 @@ ggsave( "04-Tables-Figures/figures/02a-fi-surv-curve.png",
                  xlab = "Follow-up (Months)",
                  size = 0.6) +
   theme(text=element_text(family="Avenir") ) + 
-  scale_color_ordinal() )
+  scale_color_ordinal() + 
+    theme( legend.position = "none" ) )
 
 ggsave( "04-Tables-Figures/figures/02b-snap-surv-curve.png", 
         height = 7.21, 
@@ -470,7 +471,8 @@ fi.sp <- out.res[[1]]$spline.plot +
 snap.sp <- out.res[[4]]$spline.plot +
   xlab( unname( TeX( "SNAP Pattern Score$^a$" ) ) ) +
   theme( legend.position = "none" ) +
-  ylab( "" )
+  ylab( "" ) +
+  coord_cartesian( ylim = c( 0.7, max = 2.8 ) ) 
   
 ggarrange( ggarrange( fi.sc, fi.sp, nrow = 2, labels = list( "A", "B" ) ),
            ggarrange( snap.sc, snap.sp, nrow = 2,labels = list( "C", "D" ) ),

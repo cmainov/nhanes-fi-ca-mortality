@@ -56,6 +56,88 @@ trend_func<-function(rank.var,cont.var,df,trend.var,x){
 }
 
 
+####################################################################################################
+################################### Spline Plotting Function #######################################
+####################################################################################################
+
+
+
+
+hr_splines <- function( df, x, time, mort.ind, knots, 
+                        covariates, wts = NULL, referent = "median", xlab, ylab, 
+                        legend.pos, ymax = 1.5 ){
+  require( rms )
+  require( tidyverse )
+  require( GenKern )
+  # df = a data.frame or tibble
+  # x = a character string with the name of the x variable
+  # time = survival time variable as a string
+  # mort.ind = censor/event variable name as a string
+  # knots = an integer--the number of interior knots
+  # covariates = a vector of character strings with the covariate column names
+  # wts = name of weight variable
+  # referent = either "median", "mean", "min", or "max". establishes what the referent hazard is
+  # xlab = x-label for plot that is returned
+  # ylab = y-label for plot that is returned
+  # legend.pos = position of legend on plot (ggplot style coordinates)
+  # ymax = a number/parameter to control the max y-value on the y-scale
+  
+  
+  # ensure variable is numeric
+  df$x <- as.numeric( eval( parse( text = paste0( "df$", x ) ) ) )
+  df2 <- df %>% filter( !is.na( x ) ) # need to remove all NA"s to get `nearest` to function properly
+  
+  # `rms` summary of distributions (these data characteristics are stored before fitting model)
+  dd <- rms::datadist( df )
+  
+  # set the referent value
+  dd$limits$x[2] <- unique( df2[GenKern::nearest( df2$x, eval( parse( text = paste0( referent, "( ", "df2$x, na.rm = T )" ) ) ) ), "x"] )
+  options( datadist = "dd" )
+  
+  
+  ## Model fitting ##
+  
+  # formula
+  f1 <- paste0( "Surv( ", time, ", ", mort.ind, " ) ~ rcs( x, ", knots, 
+                " ) + ", paste0( covariates, collapse = " + " ), "+cluster( sdmvpsu )" )
+  
+  # normalize the weights
+  if ( !is.null( wts ) ) df <- df %>% mutate( n.wts = get( wts ) / mean( get( wts ), na.rm = T ) )
+  
+  # fit the model
+  if ( !is.null( wts ) )  modelspline <- cph( formula( f1 ), data = df, weights = n.wts )
+  if ( is.null( wts ) )  modelspline <- cph( formula( f1 ), data = df )
+  
+  # predict from model
+  pdata1 <- rms::Predict( modelspline, 
+                          x, 
+                          ref.zero = TRUE, 
+                          fun = exp )
+  
+  # store predictions in a new data.frame and prepare that frame for plotting
+  newdf <- data.frame( pdata1 )
+  newdf$relative <- 1
+  newdf$all <-"Referent ( HR = 1 )"
+  newdf$ci <-"95% Confidence Bounds"
+  
+  # generate the plot
+  sp.plot <- ggplot2::ggplot( data = newdf, mapping = aes( x = x, y = yhat ) )+
+    geom_line( size = 0.8 )+
+    geom_ribbon( aes( ymin = lower, ymax = upper, col = ci, fill = ci ), alpha = 0.2 )+
+    theme_classic( )+
+    geom_line( aes( y = relative, x = x, linetype = all ) )+
+    scale_linetype_manual( values = c( "dashed" ) )+
+    theme( legend.position = legend.pos, 
+           text = element_text( family ="Avenir" ), 
+           legend.title = element_blank( ), 
+           legend.spacing.y = unit( 0.01, "cm" ), 
+           legend.text = element_text( size = 8 ) )+
+    coord_cartesian( ylim = c( 0, max = ( max( newdf$yhat )*ymax ) ) ) +
+    labs( x = xlab, y = ylab )
+  
+  return( sp.plot )
+}
+
 
 
 ####################################################################################################
@@ -89,7 +171,7 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name 
   # standard deviation to scale continuous predictor
   x.scale <- sd( df[ these, x ] )
   
-  # knots at the quantiles
+  # knots at the medians of quantiles
   kts <- paste0( levels( as.factor( d.1[[ paste0( x, ".trend" )]] ) ), collapse = ", " )
   
   # levels of cat variable
@@ -255,7 +337,7 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name 
   ## Spline plot ##
   
   
-  spline.plot <- hr_splines(  df =  d.2 %>% select(  -permth_exm ), 
+  spline.plot <- hr_splines(  df =  d.1 %>% select(  -permth_exm ), 
                x =  x, 
                time =  "stime", 
                mort.ind =  "mortstat", 
@@ -264,7 +346,7 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name 
                wts =  "wtdr18yr", 
                referent =  "median", 
                ylab =  "Hazard Ratio", 
-               xlab =  "FDAS", legend.pos =  c(  0.3 , 0.8 ) )
+               xlab =  NULL, legend.pos =  c(  0.3 , 0.8 ) )
   
   
   return( list( frame = res.frame, q.obj = m.q,
