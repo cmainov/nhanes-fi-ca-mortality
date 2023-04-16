@@ -416,3 +416,47 @@ epitab.means <- function(cont.var, des, table.var, dig){
   
   return(ms2)
 }
+
+
+
+
+####################################################################################################
+################################## Survey-Weighted Cohen's D ######################################
+####################################################################################################
+
+svycd <- function( x, design.1, design.2, ... ){
+  
+  # x: a character with the variable name ( must be length of 1)
+  # design.1: the design object for the first group
+  # the design object for the second group 
+  # note that the computation will be done as the subtraction of the group in `design.1`. Therefore, make sure to include the group you want first as the `design.1` object.
+  
+  if ( length( x ) > 1 ) stop( "Length of x must be no greater than 1.")
+  
+  design.list <- list( design.1, design.2 )
+  
+  #initialize lists to store values
+  mns <- vector()
+  sds <- vector()
+  
+  # formula for function calls below inside loop
+  f <- formula( paste0( "~", x ) )
+  
+  # loop
+  for( i in seq_along( design.list ) ){
+    
+    mns[[i]] <- svymean( x = f, design = design.list[[i]], na.rm = T )
+    sds[[i]] <- svysd( formula = f, design = design.list[[i]], na.rm = T )
+    
+  }
+  
+  # cohen's d
+  cohen.d <- setNames( ( mns[1] - mns[2] ) / sqrt( ( sds[1] + sds[2] ) / 2 ),
+                       "cohens.d" )
+  
+  # return
+  return( cohen.d )
+}
+
+# example
+# svycd( x = "fs_enet", design.1 = fiw, design.2 = fsw)

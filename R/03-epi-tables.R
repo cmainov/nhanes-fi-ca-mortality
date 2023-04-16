@@ -292,14 +292,23 @@ these.cols <- which( not.these != 1 | is.na( not.these) )
 
 diets.t <- diets.t[, these.cols ] # subset and keep only non redundant columns
 
+# cohen's d column
+for ( i in seq_along( diet.patt.names ) ){
+  
+  cd.col <- round( svycd( x = diet.patt.names[i], design.1 = fiw, design.2 = fsw ), 2 )
+  
+  diets.t[ which( str_detect( diets.t[ , 1 ], diet.patt.names.table[i] ) ), 5 ] <- cd.col
+}
+
 
 # t test to compare across food security status
 for ( i in seq_along( diet.patt.names ) ){
   
-  diets.t[ which( str_detect( diets.t[ , 1 ], diet.patt.names.table[i] ) ), 5 ] <- ifelse( svyttest( as.formula( paste0( diet.patt.names[i], "~binfoodsechh" ) ), design = gen )$p.value < 0.01, "< 0.01",
+  diets.t[ which( str_detect( diets.t[ , 1 ], diet.patt.names.table[i] ) ), 6 ] <- ifelse( svyttest( as.formula( paste0( diet.patt.names[i], "~binfoodsechh" ) ), design = gen )$p.value < 0.01, "< 0.01",
                                                                             round( svyttest( as.formula( paste0( diet.patt.names[i], "~binfoodsechh" ) ), design = gen )$p.value, digits = 2 ) )
   
 }
+
 
 # save table
 write.table( diets.t, "04-Tables-Figures/tables/03-table-3-diet-fi.txt", sep =",", row.names = FALSE )
