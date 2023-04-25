@@ -122,7 +122,7 @@ hr_splines <- function( df, x, time, mort.ind, knots,
   
   # generate the plot
   sp.plot <- ggplot2::ggplot( data = newdf, mapping = aes( x = x, y = yhat ) )+
-    geom_line( size = 0.8 )+
+    geom_line( linewidth = 0.8 ) +
     geom_ribbon( aes( ymin = lower, ymax = upper, col = ci, fill = ci ), alpha = 0.2 )+
     theme_classic( )+
     geom_line( aes( y = relative, x = x, linetype = all ) )+
@@ -339,8 +339,8 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name 
   
   spline.plot <- hr_splines(  df =  d.1 %>% select(  -permth_exm ), 
                x =  x, 
-               time =  "stime", 
-               mort.ind =  "mortstat", 
+               time =  time, 
+               mort.ind =  mort.ind, 
                knots =  4, 
                covariates =  covars, 
                wts =  "wtdr18yr", 

@@ -311,6 +311,7 @@ for ( i in seq_along( diet.patt.names ) ){
 
 
 # save table
-write.table( diets.t, "04-Tables-Figures/tables/03-table-3-diet-fi.txt", sep =",", row.names = FALSE )
+write.table( diets.t, "04-Tables-Figures/tables/03-table-3-diet-fi.txt", 
+             sep ="," )
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
