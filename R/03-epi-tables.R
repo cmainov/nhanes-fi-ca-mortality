@@ -1,8 +1,11 @@
 library( survey )
 library( tidyverse )
 library( jtools ) # for svycor function
-library( ggradar ) # for radar chart plotting
+# library( ggradar ) # for radar chart plotting
 
+source( "R/old/ggradar-newoption.R" ) # modified ggradar code so that we don't actually need to load in the library above
+
+# helper functions
 source( "R/utils.R" )
 
 
@@ -371,7 +374,9 @@ rp.all.gg <- rp.all.gg %>%
 colors.line <- c( rgb(0.529,0.808,0.98,0.9), rgb(0,0,0.502,0.9), rgb(0.55,0.10,0.10,0.9) , "goldenrod2" )
 
 # plot
-(g.1 <- ggradar( rp.all.gg, values.radar = c("-1.0", "0.0", "1.0"),
+( g.1 <- ggradar( rp.all.gg, values.radar = c("-1.0", "0.0", "1.0"),
+                 font.grid.label = "Avenir Next LT Pro Bold", # new option added
+                 grid.label.size =  8,
                  font.radar = "Avenir",
                  axis.labels = fg.only,
                  legend.position = c(0.91,0.85),
@@ -381,7 +386,7 @@ colors.line <- c( rgb(0.529,0.808,0.98,0.9), rgb(0,0,0.502,0.9), rgb(0.55,0.10,0
                  group.colours = colors.line ) +
     theme( legend.title = element_text( face = "bold"),
            legend.text = element_text( size = 19 ),
-           legend.background = element_rect(fill='transparent')))
+           legend.background = element_rect(fill='transparent') ) )
 
 # change axis label text to grey
 g.1$layers[[5]]$aes_params <- c( g.1$layers[[5]]$aes_params, colour = "grey40" )
