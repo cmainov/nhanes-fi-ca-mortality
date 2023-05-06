@@ -1,6 +1,7 @@
 library( survey )
 library( tidyverse )
 library( jtools ) # for svycor function
+library( ggradar ) # for radar chart plotting
 
 source( "R/utils.R" )
 
@@ -315,3 +316,80 @@ write.table( diets.t, "04-Tables-Figures/tables/03-table-3-diet-fi.txt",
              sep ="," )
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+### Radar Chart for Select Dietary Patterns ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+## NOTE: code below requires that some of the above code is run prior to running this one.
+# specifically, the code chunk in the Correlation Matrix section needs to be run
+
+# axis labels
+fg.only <- c( "Processed\n Meat", "Meat", "Poultry", "Fish,\n Hi n-3", "Fish,\n Lo n-3", 
+              "Eggs", "Solid\n Fats", "Oils", "Milk", "Yogurt", "Cheese", 
+              "Alcohol", "Fruit\n Other", "Citrus,\nMelons,\nBerries",  
+              "Green\n Leafy\n Veg.", "Dark Ylw.\n Veg.", "Tomatoes", "Other\n Veg.", "Potatoes", 
+              "Other\n Starchy\n Veg.", "Legumes", "Soy", "Refined\n Grain", 
+              "Whole\n Grain", "Nuts", "Added\n Sugars" )
+
+fg.only.lo <- c( "processedmts", "meat", "poultry", "fish_hi", "fish_lo", 
+                 "eggs", "solidfats", "oils", "milk", "yogurt", "cheese", 
+                 "alcohol", "fruitother", "f_citmelber", 
+                 "greenleafy", "darkylveg", "tomatoes", "otherveg", "potatoes", 
+                 "otherstarchyveg", "legumes", "soy", "refinedgrain", 
+                 "wholegrain", "nuts", "addedsugars" )
+
+rp.matrix <- corr.matrix[ fg.only.lo, ]
+
+
+## radar plot for food insecurity pattern ##
+
+# prepare frame for plotting (items/variables in columns, dietary patterns in rows)
+rp.all.gg <- setNames( data.frame( bind_rows(
+                                           setNames( matrix( rp.matrix[, 1 ], nrow = 1 ), fg.only ),
+                                           setNames( matrix( rp.matrix[, 3 ], nrow = 1 ), fg.only ),
+                                           setNames( matrix( rp.matrix[, 5 ], nrow = 1 ), fg.only ),
+                                           setNames( matrix( rp.matrix[, 6 ], nrow = 1 ), fg.only ), ) ),
+                    fg.only ) %>%
+  
+  mutate( across( where( is.numeric ), ~ (.x + 1 ) / 2 ) ) %>% # map -1-1 scale to 0-1 scale
+  data.frame()
+
+# set column names and row names
+colnames( rp.all.gg ) <- c (fg.only.lo )
+rownames( rp.all.gg ) <- c( "Food Insecurity", "Food Assistance\n (SNAP)", "Prudent #1", "Prudent #2" )
+
+# need to add the group names as the first column of the dataset you feed to `ggradar` since it looks for those in column #1
+# and begins looking at numeric values in column #2 and onward
+rp.all.gg <- rp.all.gg %>%
+  mutate( group = rownames( . ) ) %>%
+  relocate( group, .before = processedmts )
+
+# line colors
+colors.line <- c( rgb(0.529,0.808,0.98,0.9), rgb(0,0,0.502,0.9), rgb(0.55,0.10,0.10,0.9) , "goldenrod2" )
+
+# plot
+(g.1 <- ggradar( rp.all.gg, values.radar = c("-1.0", "0.0", "1.0"),
+                 font.radar = "Avenir",
+                 axis.labels = fg.only,
+                 legend.position = c(0.91,0.85),
+                 legend.title = "Dietary Pattern",
+                 axis.label.size = 7.4,
+                 x.centre.range = 1.31 ,
+                 group.colours = colors.line ) +
+    theme( legend.title = element_text( face = "bold"),
+           legend.text = element_text( size = 19 ),
+           legend.background = element_rect(fill='transparent')))
+
+# change axis label text to grey
+g.1$layers[[5]]$aes_params <- c( g.1$layers[[5]]$aes_params, colour = "grey40" )
+
+# save
+g.1
+ggsave( "04-Tables-Figures/figures/04-ggradar-all.png",
+       width = 14.8, height = 11.9 )
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
