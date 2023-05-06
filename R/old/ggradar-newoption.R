@@ -122,7 +122,7 @@ ggradar <- function(plot.data,
                     base.size = 15,
                     font.radar = "sans",
                     font.grid.label = font.radar, # new option
-                    legend.labels,
+                    legend.labels, # new option
                     values.radar = c("0%", "50%", "100%"),
                     axis.labels = colnames(plot.data)[-1],
                     grid.min = 0, # 10,
