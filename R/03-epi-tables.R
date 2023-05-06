@@ -312,14 +312,20 @@ colors.line <- c( rgb(0.529,0.808,0.98,0.9), rgb(0,0,0.502,0.9), rgb(0.55,0.10,0
                   grid.label.size =  8,
                   font.radar = "Avenir",
                   axis.labels = fg.only,
-                  legend.position = c(0.91,0.85),
+                  legend.position = c(0.93,0.85),
                   legend.title = "Dietary Pattern",
                   axis.label.size = 7.4,
                   x.centre.range = 1.31 ,
+                  legend.labels = c( unname( TeX( "Food Insecurity$^\\dagger$" ) ), 
+                                     unname( TeX( "Food Assistance\n (SNAP)$^\\dagger$" ) ), 
+                                     unname( TeX("Prudent #1$^\\ddagger$" ) ),
+                                     unname( TeX("Prudent #2$^\\ddagger$" ) ) ),
                   group.colours = colors.line ) +
     theme( legend.title = element_text( face = "bold"),
-           legend.text = element_text( size = 19 ),
-           legend.background = element_rect(fill='transparent') ) )
+           legend.text = element_text( size = 19, margin = margin(t = 10, b = 10) ),
+           legend.background = element_rect(fill='transparent'),
+           legend.text.align = 0,
+           plot.margin=unit(c(1,1,1,1), 'cm')) )
 
 # change axis label text to grey
 g.1$layers[[5]]$aes_params <- c( g.1$layers[[5]]$aes_params, colour = "grey40" )

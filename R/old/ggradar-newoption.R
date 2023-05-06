@@ -121,7 +121,8 @@ funcCircleCoords <- function(center = c(0, 0), r = 1, npoints = 100) {
 ggradar <- function(plot.data,
                     base.size = 15,
                     font.radar = "sans",
-                    font.grid.label = font.radar,
+                    font.grid.label = font.radar, # new option
+                    legend.labels,
                     values.radar = c("0%", "50%", "100%"),
                     axis.labels = colnames(plot.data)[-1],
                     grid.min = 0, # 10,
@@ -369,7 +370,7 @@ ggradar <- function(plot.data,
   )) +
     theme(legend.text = element_text(size = legend.text.size), legend.position = legend.position) +
     theme(legend.key.height = unit(2, "line")) +
-    scale_colour_manual(values = colour_values) +
+    scale_colour_manual(values = colour_values, labels = legend.labels ) +
     theme(text = element_text(family = font.radar)) +
     theme(legend.title = element_blank())
   
