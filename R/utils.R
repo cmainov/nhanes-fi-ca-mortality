@@ -65,7 +65,7 @@ trend_func<-function(rank.var,cont.var,df,trend.var,x){
 
 hr_splines <- function( df, x, time, mort.ind, knots, 
                         covariates, wts = NULL, referent = "median", xlab, ylab, 
-                        legend.pos, ymax = 1.5 ){
+                        legend.pos, ymax = 1.5, scale.y ){
   require( rms )
   require( tidyverse )
   require( GenKern )
@@ -132,7 +132,7 @@ hr_splines <- function( df, x, time, mort.ind, knots,
            legend.title = element_blank( ), 
            legend.spacing.y = unit( 0.01, "cm" ), 
            legend.text = element_text( size = 8 ) )+
-    coord_cartesian( ylim = c( 0, max = ( max( newdf$yhat )*ymax ) ) ) +
+    coord_cartesian( ylim = c( 0, max = ( max( newdf$yhat )*scale.y ) ) ) +
     labs( x = xlab, y = ylab )
   
   return( sp.plot )
@@ -145,7 +145,7 @@ hr_splines <- function( df, x, time, mort.ind, knots,
 ####################################################################################################
 
 
-res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name ){
+res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name, scale.y ){
   
   require( tidyverse )
   require( glue )
@@ -204,7 +204,8 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name 
 
   
   # natural cubic spline 
-  m.cs <- svycoxph( formula( paste0( "Surv(", time, ",",mort.ind," ) ~ ", paste0( "ns(", x,", df = 3 ) +" ), 
+  # degrees of freedom are the no. of interior knots + 2 (also the no. of basis functions required)--(see "Elements of Statistical Learning" by Hastie, Tibshirani and Friedman and https://stats.stackexchange.com/questions/490306/natural-splines-degrees-of-freedom and https://stats.stackexchange.com/questions/7316/setting-knots-in-natural-cubic-splines-in-r) (also note that when we specify df = 5 we assume four interior knots and 2 boundary knots--this syntax does not include the basis function for the intercept in the count)
+  m.cs <- svycoxph( formula( paste0( "Surv(", time, ",",mort.ind," ) ~ ", paste0( "ns(", x,", df =", cuts," ) +" ), 
                                      paste0( covars, collapse = " + ") ) ),
                     design = des )
   
@@ -341,11 +342,12 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name 
                x =  x, 
                time =  time, 
                mort.ind =  mort.ind, 
-               knots =  4, 
+               knots = ( cuts - 1 ), 
                covariates =  covars, 
                wts =  "wtdr18yr", 
                referent =  "median", 
                ylab =  "Hazard Ratio", 
+               scale.y = scale.y,
                xlab =  NULL, legend.pos =  c(  0.3 , 0.8 ) )
   
   

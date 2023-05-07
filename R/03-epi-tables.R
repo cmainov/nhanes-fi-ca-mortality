@@ -263,7 +263,7 @@ write.table( corr.matrix.b, "04-Tables-Figures/tables/02-table-2-corr.txt", sep 
 # specifically, the code chunk in the Correlation Matrix section needs to be run
 
 # axis labels
-fg.only <- c( "Processed\n Meat", "Meat", "Poultry", "Fish,\n Hi n-3", "Fish,\n Lo n-3", 
+fg.only <- c( "Processed\n Meat", "Meat", "Poultry", "Fish,\n High n-3", "Fish,\n Low n-3", 
               "Eggs", "Solid\n Fats", "Oils", "Milk", "Yogurt", "Cheese", 
               "Alcohol", "Fruit\n Other", "Citrus,\nMelons,\nBerries",  
               "Green\n Leafy\n Veg.", "Dark Ylw.\n Veg.", "Tomatoes", "Other\n Veg.", "Potatoes", 
