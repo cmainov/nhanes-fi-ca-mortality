@@ -42,6 +42,7 @@ for( i in seq_along( indices ) ){
      time = "stime",       # survival time column
      mort.ind = "mortstat",
      scale.y = 1.3, # for shifting y axis max value
+     int.knots = 2,
      sample.name = "All Cancer Survivors" )    # mortality indicator column
   
   fin.res <- rbind( fin.res, out.res[[i]]$frame )
@@ -61,6 +62,7 @@ for( i in seq_along( indices ) ){
                        time = "stime", 
                        mort.ind = "castat",
                        scale.y = 1.3, # for shifting y axis max value
+                       int.knots = 2,
                        sample.name = "All Cancer Survivors" ) 
   
   fin.res.ca <- rbind( fin.res.ca, out.res.ca[[i]]$frame)
@@ -80,6 +82,7 @@ for( i in seq_along( indices ) ){
                           time = "stime", 
                           mort.ind = "cvdstat",
                           scale.y = 1.3, # for shifting y axis max value
+                          int.knots = 2,
                           sample.name = "All Cancer Survivors" ) 
   
   fin.res.cvd <- rbind( fin.res.cvd, out.res.cvd[[i]]$frame )
@@ -116,6 +119,7 @@ for( i in seq_along( indices ) ){
                        time = "stime",       # survival time column
                        mort.ind = "mortstat",
                        scale.y = 1.3, # for shifting y axis max value
+                       int.knots = 2,
                        sample.name = "Food Insecure Cancer Survivors" )    # mortality indicator column
   
   fin.res.fi <- rbind( fin.res.fi, out.res.fi[[i]]$frame )
@@ -138,6 +142,7 @@ for( i in seq_along( indices ) ){
                           time = "stime", 
                           mort.ind = "castat",
                           scale.y = 1.3, # for shifting y axis max value
+                          int.knots = 2,
                           sample.name = "Food Insecure Cancer Survivors" ) 
   
   fin.res.ca.fi <- rbind( fin.res.ca.fi, out.res.fi.ca[[i]]$frame)
@@ -158,6 +163,7 @@ for( i in seq_along( indices ) ){
                            time = "stime", 
                            mort.ind = "cvdstat",
                            scale.y = 1.3, # for shifting y axis max value
+                           int.knots = 2,
                            sample.name = "Food Insecure Cancer Survivors" ) 
   
   fin.res.cvd.fi <- rbind( fin.res.cvd.fi, out.res.fi.cvd[[i]]$frame)
@@ -191,6 +197,7 @@ for( i in seq_along( indices ) ){
                        time = "stime",       # survival time column
                        mort.ind = "mortstat",
                        scale.y = 1.3, # for shifting y axis max value
+                       int.knots = 2,
                        sample.name = "All Cancer Survivors" )    # mortality indicator column
   
   fin.res.s <- rbind( fin.res.s, out.res.s[[i]]$frame)
@@ -211,6 +218,7 @@ for( i in seq_along( indices ) ){
                           time = "stime", 
                           mort.ind = "castat",
                           scale.y = 1.3, # for shifting y axis max value
+                          int.knots = 2,
                           sample.name = "All Cancer Survivors" ) 
   
   fin.res.s.ca <- rbind( fin.res.s.ca, out.res.s.ca[[i]]$frame)
@@ -230,6 +238,7 @@ for( i in seq_along( indices ) ){
                            time = "stime", 
                            mort.ind = "cvdstat",
                            scale.y = 1.3, # for shifting y axis max value
+                           int.knots = 2,
                            sample.name = "All Cancer Survivors" ) 
   
   fin.res.s.cvd <- rbind( fin.res.s.cvd, out.res.s.cvd[[i]]$frame )
@@ -261,6 +270,7 @@ for( i in seq_along( indices ) ){
                        time = "stime",       # survival time column
                        mort.ind = "mortstat",
                        scale.y = 1.3, # for shifting y axis max value
+                       int.knots = 2,
                        sample.name = "All Cancer Survivors" )    # mortality indicator column
   
   fin.res.sens <- rbind( fin.res.sens, out.sens.res[[i]]$frame )
@@ -281,6 +291,7 @@ for( i in seq_along( indices ) ){
                           time = "stime", 
                           mort.ind = "castat",
                           scale.y = 1.3, # for shifting y axis max value
+                          int.knots = 2,
                           sample.name = "All Cancer Survivors" ) 
   
   fin.res.sens.ca <- rbind( fin.res.sens.ca, out.sens.res.ca[[i]]$frame )
@@ -301,6 +312,7 @@ for( i in seq_along( indices ) ){
                            time = "stime", 
                            mort.ind = "cvdstat",
                            scale.y = 1.3, # for shifting y axis max value
+                           int.knots = 2,
                            sample.name = "All Cancer Survivors" ) 
   
   fin.res.sens.cvd <- rbind( fin.res.sens.cvd, out.sens.res.cvd[[i]]$frame )

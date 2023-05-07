@@ -145,7 +145,8 @@ hr_splines <- function( df, x, time, mort.ind, knots,
 ####################################################################################################
 
 
-res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name, scale.y ){
+res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name, scale.y,
+                 int.knots ){
   
   require( tidyverse )
   require( glue )
@@ -204,8 +205,8 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name,
 
   
   # natural cubic spline 
-  # degrees of freedom are the no. of interior knots + 2 (also the no. of basis functions required)--(see "Elements of Statistical Learning" by Hastie, Tibshirani and Friedman and https://stats.stackexchange.com/questions/490306/natural-splines-degrees-of-freedom and https://stats.stackexchange.com/questions/7316/setting-knots-in-natural-cubic-splines-in-r) (also note that when we specify df = 5 we assume four interior knots and 2 boundary knots--this syntax does not include the basis function for the intercept in the count)
-  m.cs <- svycoxph( formula( paste0( "Surv(", time, ",",mort.ind," ) ~ ", paste0( "ns(", x,", df =", cuts," ) +" ), 
+  # degrees of freedom are the no. of interior knots + 2 (also the no. of basis functions required)--(see "Elements of Statistical Learning" by Hastie, Tibshirani and Friedman and https://stats.stackexchange.com/questions/490306/natural-splines-degrees-of-freedom and https://stats.stackexchange.com/questions/7316/setting-knots-in-natural-cubic-splines-in-r) (also note that when we specify df = 4 we assume three interior knots and 2 boundary knots--this syntax does not include the basis function for the intercept in the count)
+  m.cs <- svycoxph( formula( paste0( "Surv(", time, ",",mort.ind," ) ~ ", paste0( "ns(", x,", df =", ( int.knots + 1 )," ) +" ), 
                                      paste0( covars, collapse = " + ") ) ),
                     design = des )
   
@@ -342,7 +343,7 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name,
                x =  x, 
                time =  time, 
                mort.ind =  mort.ind, 
-               knots = ( cuts - 1 ), 
+               knots = ( int.knots + 2 ), # see: https://stackoverflow.com/questions/54957104/restricted-cubic-spline-output-in-r-rms-package-after-cph and https://stats.stackexchange.com/questions/558759/difference-between-splines-from-different-packages-mgcv-rms-etc for how `rcs` counts df (in this usage, `knots` option includes all knots--boundary plus interior knots which include the intercept-- so we have two interior knots + 2 boundary knots which gives us knots = 4)
                covariates =  covars, 
                wts =  "wtdr18yr", 
                referent =  "median", 
