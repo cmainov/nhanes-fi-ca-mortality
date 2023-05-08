@@ -295,7 +295,7 @@ rp.all.gg <- setNames( data.frame( bind_rows(
 
 # set column names and row names
 colnames( rp.all.gg ) <- c (fg.only.lo )
-rownames( rp.all.gg ) <- c( "Food Insecurity", "Food Assistance\n (SNAP)", "Prudent #1", "Prudent #2" )
+rownames( rp.all.gg ) <- c( "Food Insecurity (FI)", "Food Assistance\n (SNAP)", "Prudent #1", "Prudent #2" )
 
 # need to add the group names as the first column of the dataset you feed to `ggradar` since it looks for those in column #1
 # and begins looking at numeric values in column #2 and onward
@@ -316,7 +316,7 @@ colors.line <- c( rgb(0.529,0.808,0.98,0.9), rgb(0,0,0.502,0.9), rgb(0.55,0.10,0
                   legend.title = "Dietary Pattern",
                   axis.label.size = 7.4,
                   x.centre.range = 1.31 ,
-                  legend.labels = c( unname( TeX( "Food Insecurity$^\\dagger$" ) ), 
+                  legend.labels = c( unname( TeX( "Food Insecurity (FI)$^\\dagger$" ) ), 
                                      unname( TeX( "Food Assistance\n (SNAP)$^\\dagger$" ) ), 
                                      unname( TeX("Prudent #1$^\\ddagger$" ) ),
                                      unname( TeX("Prudent #2$^\\ddagger$" ) ) ),
