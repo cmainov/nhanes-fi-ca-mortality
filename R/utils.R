@@ -63,13 +63,13 @@ trend_func<-function(rank.var,cont.var,df,trend.var,x){
 
 
 
-hr_splines <- function( df, x, time, mort.ind, knots, 
+hr_splines <- function( dat, x, time, mort.ind, knots, 
                         covariates, wts = NULL, referent = "median", xlab, ylab, 
                         legend.pos, ymax = 1.5, scale.y ){
   require( rms )
   require( tidyverse )
   require( GenKern )
-  # df = a data.frame or tibble
+  # dat = a data.frame or tibble
   # x = a character string with the name of the x variable
   # time = survival time variable as a string
   # mort.ind = censor/event variable name as a string
@@ -84,11 +84,11 @@ hr_splines <- function( df, x, time, mort.ind, knots,
   
   
   # ensure variable is numeric
-  df$x <- as.numeric( eval( parse( text = paste0( "df$", x ) ) ) )
-  df2 <- df %>% filter( !is.na( x ) ) # need to remove all NA"s to get `nearest` to function properly
+  dat$x <- as.numeric( eval( parse( text = paste0( "dat$", x ) ) ) )
+  df2 <- dat %>% filter( !is.na( x ) ) # need to remove all NA"s to get `nearest` to function properly
   
   # `rms` summary of distributions (these data characteristics are stored before fitting model)
-  dd <- rms::datadist( df )
+  dd <<- rms::datadist( dat ) # use the superassignment operator to put dd into global environment, otherwise function breaks
   
   # set the referent value
   dd$limits$x[2] <- unique( df2[GenKern::nearest( df2$x, eval( parse( text = paste0( referent, "( ", "df2$x, na.rm = T )" ) ) ) ), "x"] )
@@ -102,11 +102,11 @@ hr_splines <- function( df, x, time, mort.ind, knots,
                 " ) + ", paste0( covariates, collapse = " + " ), "+cluster( sdmvpsu )" )
   
   # normalize the weights
-  if ( !is.null( wts ) ) df <- df %>% mutate( n.wts = get( wts ) / mean( get( wts ), na.rm = T ) )
+  if ( !is.null( wts ) ) df2 <- df2 %>% mutate( n.wts = get( wts ) / mean( get( wts ), na.rm = T ) )
   
   # fit the model
-  if ( !is.null( wts ) )  modelspline <- cph( formula( f1 ), data = df, weights = n.wts )
-  if ( is.null( wts ) )  modelspline <- cph( formula( f1 ), data = df )
+  if ( !is.null( wts ) )  modelspline <- cph( formula( f1 ), data = df2, weights = n.wts )
+  if ( is.null( wts ) )  modelspline <- cph( formula( f1 ), data = df2 )
   
   # predict from model
   pdata1 <- rms::Predict( modelspline, 
@@ -212,8 +212,8 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name,
   
   
   # Non-linearity Likelihood-Ratio test
-  p.nl <- pchisq( abs( m.l$ll[2] -  m.cs$ll[2]),
-                  df = m.l$degf.resid-m.cs$degf.resid, lower.tail = FALSE )
+  p.nl <- pchisq( abs( m.l$ll[2] -  m.cs$ll[2] ),
+                  df = m.l$degf.resid - m.cs$degf.resid, lower.tail = FALSE )
   
   ## Generate Table ##
   
@@ -339,7 +339,7 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name,
   ## Spline plot ##
   
   
-  spline.plot <- hr_splines(  df =  d.1 %>% select(  -permth_exm ), 
+  spline.plot <- hr_splines(  dat =  d.1 %>% select(  -permth_exm ), 
                x =  x, 
                time =  time, 
                mort.ind =  mort.ind, 
