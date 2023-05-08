@@ -65,7 +65,7 @@ trend_func<-function(rank.var,cont.var,df,trend.var,x){
 
 hr_splines <- function( dat, x, time, mort.ind, knots, 
                         covariates, wts = NULL, referent = "median", xlab, ylab, 
-                        legend.pos, ymax = 1.5, scale.y ){
+                        legend.pos, y.max = 1.5 ){
   require( rms )
   require( tidyverse )
   require( GenKern )
@@ -132,7 +132,7 @@ hr_splines <- function( dat, x, time, mort.ind, knots,
            legend.title = element_blank( ), 
            legend.spacing.y = unit( 0.01, "cm" ), 
            legend.text = element_text( size = 8 ) )+
-    coord_cartesian( ylim = c( 0, max = ( max( newdf$yhat )*scale.y ) ) ) +
+    coord_cartesian( ylim = c( 0, max = ( max( newdf$yhat )*y.max ) ) ) +
     labs( x = xlab, y = ylab )
   
   return( sp.plot )
@@ -348,7 +348,7 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name,
                wts =  "wtdr18yr", 
                referent =  "median", 
                ylab =  "Hazard Ratio", 
-               scale.y = scale.y,
+               y.max = scale.y,
                xlab =  NULL, legend.pos =  c(  0.3 , 0.8 ) )
   
   

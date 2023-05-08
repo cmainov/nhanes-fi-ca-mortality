@@ -7,7 +7,7 @@ library( ggsci )
 library( latex2exp )
 
 source( "R/utils.R" ) # read in helper functions
-source( "R/surv-miner-bug-fix.R" ) # bug fix for generating survival curves with `survminer`
+source( "R/old/surv-miner-bug-fix.R" ) # bug fix for generating survival curves with `survminer`
 
 d <- readRDS( "03-Data-Rodeo/01-analytic-data.rds")
 
