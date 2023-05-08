@@ -267,7 +267,7 @@ fg.only <- c( "Processed\n Meat", "Meat", "Poultry", "Fish,\n High n-3", "Fish,\
               "Eggs", "Solid\n Fats", "Oils", "Milk", "Yogurt", "Cheese", 
               "Alcohol", "Fruit\n Other", "Citrus,\nMelons,\nBerries",  
               "Green\n Leafy\n Veg.", "Dark Ylw.\n Veg.", "Tomatoes", "Other\n Veg.", "Potatoes", 
-              "Other\n Starchy\n Veg.", "Legumes", "Soy", "Refined\n Grain", 
+              "Other\n Starchy\n Veg.", "Legumes ", "Soy", "Refined\n Grain", 
               "Whole\n Grain", "Nuts", "Added\n Sugars" )
 
 fg.only.lo <- c( "processedmts", "meat", "poultry", "fish_hi", "fish_lo", 
@@ -312,7 +312,7 @@ colors.line <- c( rgb(0.529,0.808,0.98,0.9), rgb(0,0,0.502,0.9), rgb(0.55,0.10,0
                   grid.label.size =  8,
                   font.radar = "Avenir",
                   axis.labels = fg.only,
-                  legend.position = c(0.93,0.85),
+                  legend.position = c(0.95,0.85),
                   legend.title = "Dietary Pattern",
                   axis.label.size = 7.4,
                   x.centre.range = 1.31 ,
@@ -322,16 +322,19 @@ colors.line <- c( rgb(0.529,0.808,0.98,0.9), rgb(0,0,0.502,0.9), rgb(0.55,0.10,0
                                      unname( TeX("Prudent #2$^\\ddagger$" ) ) ),
                   group.colours = colors.line ) +
     theme( legend.title = element_text( face = "bold"),
-           legend.text = element_text( size = 19, margin = margin(t = 10, b = 10) ),
+           legend.text = element_text( size = 19, margin = margin(t = 10, b = 10, l = 0.1) ), # margins for legend text
            legend.background = element_rect(fill='transparent'),
            legend.text.align = 0,
-           plot.margin=unit(c(1,1,1,1), 'cm')) )
+           legend.box.margin = unit(c(1,1,1,1.8), 'cm'), # margins for legend box
+           plot.margin=unit(c(0.1,1.7,3.9,1), 'cm') ) )  # margins for plot
+  
 
 # change axis label text to grey
 g.1$layers[[5]]$aes_params <- c( g.1$layers[[5]]$aes_params, colour = "grey40" )
 
 # save
 g.1
+
 ggsave( "04-Tables-Figures/figures/04-ggradar-all.png",
         width = 14.8, height = 11.9 )
 
