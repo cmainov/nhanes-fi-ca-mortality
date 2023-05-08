@@ -349,7 +349,7 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name,
                referent =  "median", 
                ylab =  "Hazard Ratio", 
                y.max = scale.y,
-               xlab =  NULL, legend.pos =  c(  0.3 , 0.8 ) )
+               xlab =  NULL, legend.pos =  c(  0.4 , 0.8 ) )
   
   
   return( list( frame = res.frame, q.obj = m.q,

@@ -41,7 +41,7 @@ for( i in seq_along( indices ) ){
      covars = covars.surv, # covariates
      time = "stime",       # survival time column
      mort.ind = "mortstat",
-     scale.y = 1.3, # for shifting y axis max value
+     scale.y = 1.5, # for shifting y axis max value
      int.knots = 2,
      sample.name = "All Cancer Survivors" )    # mortality indicator column
   
@@ -61,7 +61,7 @@ for( i in seq_along( indices ) ){
                        covars = covars.surv, 
                        time = "stime", 
                        mort.ind = "castat",
-                       scale.y = 1.3, # for shifting y axis max value
+                       scale.y = 1.5, # for shifting y axis max value
                        int.knots = 2,
                        sample.name = "All Cancer Survivors" ) 
   
@@ -81,7 +81,7 @@ for( i in seq_along( indices ) ){
                           covars = covars.surv, 
                           time = "stime", 
                           mort.ind = "cvdstat",
-                          scale.y = 1.3, # for shifting y axis max value
+                          scale.y = 1.5, # for shifting y axis max value
                           int.knots = 2,
                           sample.name = "All Cancer Survivors" ) 
   
@@ -456,7 +456,11 @@ write.table( sens.60.table, "04-Tables-Figures/tables/09-table-s3.txt", sep = ",
                  ylab = "Adjusted Survival Rate",
                  xlab = "Follow-up (Months)",
                  size = 0.6) +
-  theme(text=element_text(family="Avenir") ) + 
+  theme( text = element_text( family = "Avenir" ),
+         axis.title.y = element_text( size = 13, margin = unit(c(0,6,6,0), 'pt') ) ,
+         axis.text.y = element_text( size = 10, color = "grey30" ),
+         axis.title.x = element_text( size = 13 ) ,
+         axis.text.x = element_text( size = 10, color = "grey30" ) )+ 
   scale_color_ordinal() )
 
 ggsave( "04-Tables-Figures/figures/02a-fi-surv-curve.png", 
@@ -478,7 +482,12 @@ ggsave( "04-Tables-Figures/figures/02a-fi-surv-curve.png",
                  size = 0.6) +
   theme(text=element_text(family="Avenir") ) + 
   scale_color_ordinal() + 
-    theme( legend.position = "none" ) )
+    theme( legend.position = "none",
+           text = element_text( family = "Avenir" ),
+           axis.title.y = element_text( size = 13 ) ,
+           axis.text.y = element_text( size = 10, color = "grey30" ),
+           axis.title.x = element_text( size = 13 ) ,
+           axis.text.x = element_text( size = 10, color = "grey30" ) ) )
 
 ggsave( "04-Tables-Figures/figures/02b-snap-surv-curve.png", 
         height = 7.21, 
@@ -489,12 +498,24 @@ ggsave( "04-Tables-Figures/figures/02b-snap-surv-curve.png",
 
 # FI pattern
 fi.sp <- out.res[[1]]$spline.plot +
-  xlab( unname( TeX( "Food Insecurity Pattern Score$^a$" ) ) ) 
+  xlab( unname( TeX( "Food Insecurity Pattern Score$^a$" ) ) ) +
+  theme( 
+         text = element_text( family = "Avenir" ),
+         axis.title.y = element_text( size = 13 ) ,
+         axis.text.y = element_text( size = 10, color = "grey30" ),
+         axis.title.x = element_text( size = 13 ) ,
+         axis.text.x = element_text( size = 10, color = "grey30" ),
+         legend.text = element_text( size = 10 ) ) 
 
 # SNAP pattern
 snap.sp <- out.res[[4]]$spline.plot +
   xlab( unname( TeX( "SNAP Pattern Score$^a$" ) ) ) +
-  theme( legend.position = "none" ) +
+  theme( legend.position = "none",
+         text = element_text( family = "Avenir" ),
+         axis.title.y = element_text( size = 13 ) ,
+         axis.text.y = element_text( size = 10, color = "grey30" ),
+         axis.title.x = element_text( size = 13 ) ,
+         axis.text.x = element_text( size = 10, color = "grey30" ) ) +
   ylab( "" ) +
   coord_cartesian( ylim = c( 0.7, max = 2.8 ) ) 
   
