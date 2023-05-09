@@ -448,7 +448,7 @@ write.table( sens.60.table, "04-Tables-Figures/tables/09-table-s3.txt", sep = ",
                  variable ="fs_enet.q",
                  data = out.res[[1]]$dat,
                  method = "conditional",
-                 title = "Food Insecurity Pattern",
+                 title = "Food Insecurity (FI) Pattern",
                  font.title = c(16, "bold"),
                  legend.title = "Quintile",
                  font.legend = c(10, "bold"),
@@ -498,7 +498,7 @@ ggsave( "04-Tables-Figures/figures/02b-snap-surv-curve.png",
 
 # FI pattern
 fi.sp <- out.res[[1]]$spline.plot +
-  xlab( unname( TeX( "Food Insecurity Pattern Score$^a$" ) ) ) +
+  xlab( unname( TeX( "FI Pattern Score$^a$" ) ) ) +
   theme( 
          text = element_text( family = "Avenir" ),
          axis.title.y = element_text( size = 13 ) ,
@@ -528,7 +528,6 @@ ggarrange( ggarrange( fi.sc, fi.sp, nrow = 2, labels = list( "A", "B" ) ),
 ggsave( "04-Tables-Figures/figures/03-surv-spline-comb.png",
         height = 7.4, 
         width = 8.96 )
-
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
