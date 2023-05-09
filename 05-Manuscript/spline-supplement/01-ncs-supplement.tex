@@ -1,0 +1,72 @@
+\documentclass{article}
+\usepackage[svgnames]{xcolor}
+\usepackage{listings}
+
+
+\lstset{language=R,
+    basicstyle=\small\ttfamily,
+    stringstyle=\color{DarkGreen},
+    otherkeywords={0,1,2,3,4,5,6,7,8,9},
+    morekeywords={TRUE,FALSE},
+    deletekeywords={data,frame,length,as,character},
+    keywordstyle=\color{blue},
+    commentstyle=\color{DarkGreen},
+}
+
+
+%% Citations/bibtex
+\usepackage[style=nature,%
+            autocite=footnote,%
+             backend=bibtex,%
+             firstinits=true,%. %% abbreviates first name to just letters and not full first name
+             ]{biblatex}
+\addbibresource{01-ncs-supplement.bib}
+
+% redefine command for foot cite-makes it smaller
+\newrobustcmd*{\footlessfullcite}{\AtNextCite{\renewbibmacro{title}{}\renewbibmacro{in:}{}\renewbibmacro{urldate}{}}\footfullcite} %remove in:', title and urldate
+
+\AtEveryCitekey{\clearfield{pages}}  %get rid of pages from footnote citation
+\AtEveryCitekey{\clearfield{issn}} %get rid of issn from footnote citation
+\AtEveryCitekey{\clearfield{volume}} %get rid of volume from footnote citation
+\AtEveryCitekey{\clearfield{number}} %get rid of number from footnote citation
+\AtEveryCitekey{\clearfield{eprint}} %get rid of eprint from footnote citation
+\AtEveryCitekey{\clearfield{url}} %get rid of url from footnote citation
+\AtEveryCitekey{\clearfield{month}} %get of month from footnote citation
+\AtEveryCitekey{\clearlist{language}} %get rid of language from footnote citation (note \clearlist and note clearfield
+\AtEveryCitekey{\clearlist{abstract}}  %get rid of abtract from footnote citation
+
+
+%% math sybmols
+\usepackage{amsmath}
+
+
+\title{Specifying a Natural Cubic Spline}
+\author{Christian A. Maino Vieytes}
+\date{May 9, 2023}
+
+\begin{document}
+\maketitle
+\pagenumbering{gobble}
+\pagenumbering{arabic}
+Using splines in regression contexts has become a popular method for flexibly modeling exposure-outcome relationships in epidemiological studies \supercite{maclure_tests_1992, witte_nested_1997}
+
+
+
+\newpage
+%% R code chunk %%
+\begin{lstlisting}
+#Calculate CE for each counterparty
+Value.A <- data.frame() #MTM value of each contract within cp A
+# ...
+for(i in 1:length(foo)){
+  if(isTrue(as.character(portfolio_data[i,1])=="A")==TRUE){
+    # ...
+  }
+}
+\end{lstlisting}
+%% end R code chunk %%
+
+
+% print bibliography
+\printbibliography[type=article,title={References}]
+\end{document}
