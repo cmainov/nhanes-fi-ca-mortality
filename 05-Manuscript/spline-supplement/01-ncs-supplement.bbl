@@ -102,5 +102,180 @@
     \field{urlmonth}{11}
     \field{urlyear}{2022}
   \endentry
+
+  \entry{steenland_practical_2004}{article}{}
+    \name{author}{2}{}{%
+      {{hash=SK}{%
+         family={Steenland},
+         familyi={S\bibinitperiod},
+         given={Kyle},
+         giveni={K\bibinitperiod},
+      }}%
+      {{hash=DJA}{%
+         family={Deddens},
+         familyi={D\bibinitperiod},
+         given={James\bibnamedelima A.},
+         giveni={J\bibinitperiod\bibinitdelim A\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{SKDJA1}
+    \strng{fullhash}{SKDJA1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{abstract}{%
+    Dose-response modeling in occupational epidemiology is usually motivated by
+  questions of causal inference (eg, is there a monotonic increase of risk with
+  increasing exposure?) or risk assessment (eg, how much excess risk exists at
+  any given level of exposure?). We focus on several approaches to
+  dose-response in occupational cohort studies. Categorical analyses are useful
+  for detecting the shape of dose-response. However, they depend on the number
+  and location of cutpoints and result in step functions rather than smooth
+  curves. Restricted cubic splines and penalized splines are useful parametric
+  techniques that provide smooth curves. Although splines can complement
+  categorical analyses, they do not provide interpretable parameters. The
+  shapes of these curves will depend on the degree of "smoothing" chosen by the
+  analyst. We recommend combining categorical analyses and some type of
+  smoother, with the goal of developing a reasonably simple parametric model. A
+  simple parametric model should serve as the goal of dose-response analyses
+  because (1) most "true" exposure response curves in nature may be reasonably
+  simple, (2) a simple parametric model is easily communicated and used by
+  others, and (3) a simple parametric model is the best tool for risk assessors
+  and regulators seeking to estimate individual excess risks per unit of
+  exposure. We discuss these issues and others, including whether the best
+  model is always the one that fits the best, reasons to prefer a linear model
+  for risk in the low-exposure region when conducting risk assessment, and
+  common methods of calculating excess lifetime risk at a given exposure from
+  epidemiologic results (eg, from rate ratios). Points are illustrated using
+  data from a study of dioxin and cancer.%
+    }
+    \field{issn}{1044-3983}
+    \field{note}{Publisher: Lippincott Williams \& Wilkins}
+    \field{number}{1}
+    \field{pages}{63\bibrangedash 70}
+    \field{title}{A {Practical} {Guide} to {Dose}-{Response} {Analyses} and
+  {Risk} {Assessment} in {Occupational} {Epidemiology}}
+    \verb{url}
+    \verb https://www.jstor.org/stable/20485841
+    \endverb
+    \field{volume}{15}
+    \verb{file}
+    \verb JSTOR Full Text PDF:/Users/Chris/Zotero/storage/HQ65DA4K/Steenland an
+    \verb d Deddens - 2004 - A Practical Guide to Dose-Response Analyses and Ri
+    \verb .pdf:application/pdf
+    \endverb
+    \field{journaltitle}{Epidemiology}
+    \field{year}{2004}
+    \field{urlday}{10}
+    \field{urlmonth}{05}
+    \field{urlyear}{2023}
+  \endentry
+
+  \entry{hastie_elements_2009}{book}{}
+    \name{author}{3}{}{%
+      {{hash=HT}{%
+         family={Hastie},
+         familyi={H\bibinitperiod},
+         given={Trevor},
+         giveni={T\bibinitperiod},
+      }}%
+      {{hash=TR}{%
+         family={Tibshirani},
+         familyi={T\bibinitperiod},
+         given={Robert},
+         giveni={R\bibinitperiod},
+      }}%
+      {{hash=FJ}{%
+         family={Friedman},
+         familyi={F\bibinitperiod},
+         given={Jerome},
+         giveni={J\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Springer New York}%
+    }
+    \strng{namehash}{HT+1}
+    \strng{fullhash}{HTTRFJ1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \verb{doi}
+    \verb 10.1007/978-0-387-84858-7
+    \endverb
+    \field{isbn}{978-0-387-84857-0 978-0-387-84858-7}
+    \field{series}{Springer {Series} in {Statistics}}
+    \field{title}{The {Elements} of {Statistical} {Learning}}
+    \verb{url}
+    \verb http://link.springer.com/10.1007/978-0-387-84858-7
+    \endverb
+    \field{version}{2}
+    \list{location}{1}{%
+      {New York, NY}%
+    }
+    \verb{file}
+    \verb Full Text:/Users/Chris/Zotero/storage/JI2T4SV2/Hastie et al. - 2009 -
+    \verb  The Elements of Statistical Learning.pdf:application/pdf
+    \endverb
+    \field{year}{2009}
+    \field{urlday}{29}
+    \field{urlmonth}{11}
+    \field{urlyear}{2022}
+  \endentry
+
+  \entry{james_introduction_2013}{book}{}
+    \name{author}{4}{}{%
+      {{hash=JG}{%
+         family={James},
+         familyi={J\bibinitperiod},
+         given={Gareth},
+         giveni={G\bibinitperiod},
+      }}%
+      {{hash=WD}{%
+         family={Witten},
+         familyi={W\bibinitperiod},
+         given={Daniela},
+         giveni={D\bibinitperiod},
+      }}%
+      {{hash=HT}{%
+         family={Hastie},
+         familyi={H\bibinitperiod},
+         given={Trevor},
+         giveni={T\bibinitperiod},
+      }}%
+      {{hash=TR}{%
+         family={Tibshirani},
+         familyi={T\bibinitperiod},
+         given={Robert},
+         giveni={R\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Springer New York}%
+    }
+    \strng{namehash}{JG+1}
+    \strng{fullhash}{JGWDHTTR1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \verb{doi}
+    \verb 10.1007/978-1-4614-7138-7
+    \endverb
+    \field{isbn}{978-1-4614-7137-0 978-1-4614-7138-7}
+    \field{series}{Springer {Texts} in {Statistics}}
+    \field{title}{An {Introduction} to {Statistical} {Learning}}
+    \verb{url}
+    \verb http://link.springer.com/10.1007/978-1-4614-7138-7
+    \endverb
+    \field{volume}{103}
+    \list{location}{1}{%
+      {New York, NY}%
+    }
+    \verb{file}
+    \verb Submitted Version:/Users/Chris/Zotero/storage/JZG9W5BD/James et al. -
+    \verb  2013 - An Introduction to Statistical Learning.pdf:application/pdf
+    \endverb
+    \field{year}{2013}
+    \field{urlday}{30}
+    \field{urlmonth}{11}
+    \field{urlyear}{2022}
+  \endentry
 \enddatalist
 \endinput

@@ -42,9 +42,34 @@
 \maketitle
 \pagenumbering{gobble}
 \pagenumbering{arabic}
-Using splines in regression contexts has become a popular method for flexibly modeling exposure-outcome relationships in epidemiological studies \supercite{greenland_dose-response_1995, witte_nested_1997}
+
+\subsection*{\textbf{Background}}
+	Using splines in regression models is a popular method for flexibly modeling exposure-outcome relationships in epidemiological studies. \supercite{greenland_dose-response_1995, witte_nested_1997} Splines in a regression context can be conceptualized as a series of local polynomials fit over the domain of the regression function. It provides a nice alternative to a categorical analysis of dose response, which has its limitations. One of those key limitations is the assumption that the response is uniform over all observations within a category for which a parameter estimate is made, resulting in the appearance of a step-wise function for the relationship between exposure and response. \supercite{steenland_practical_2004} In contrast, fitting a model with spline terms is a parametric technique that generates a smooth curve, allowing the user to visualize the dose-response relationship. The parameter estimates are rarely of interest, owing to their lack of interpretability. \supercite{steenland_practical_2004} However, given that a model specifying the exposure as a continuous variable is nested in a model with an expansion of spline terms for that variable, the departure from a linear relationship can be formally tested with a Likelihood Ratio Test.\supercite{witte_nested_1997}
 
 
+\subsection*{\textbf{Splines}}
+Fitting spline models involves applying a set of transformations to the exposure variable, $X$. In the regression model, we replace the original variable with the set of transformations (which we term \textit{basis functions}) and estimate parameters for each of those transformations:
+
+$$Y=\sum_{m=1}^{M}{\beta_mh_m(X)+\gamma V}$$
+
+which is a linear basis expansion in $X$, where $h_m$ is the $m^{th}$ basis function (of which there are $M$), and $\gamma V$ is a term for an additional covariate we may want to adjust for (no basis expansion on this term).\supercite{hastie_elements_2009} We generalize this approach to the multivariable setting where we desire basis expansions in several variables:
+
+$$Y=\sum_{j=1}^{J}\sum_{m=1}^{M_j}{\beta_{jm}{h_{jm}}(X_j)+\gamma V}$$
+
+where $j$ is the index of variables. The set of fixed basis functions is of interest as are the \textit{knots} and \textit{knot locations}, which are the locations along the domain where separate local piecewise polynomials are fit. In order to achieve smoothness in the spline curve across these disjoint regions, a continuity constraint is applied. Using a truncated power basis, we achieve the continuity constraint:
+
+\begin{equation}
+(x-\xi_\ell)^{g}_{+}=\begin{cases}
+(x-\xi_\ell)^{g}, & \text{if  } x > \xi_\ell \\
+0, & otherwise  \notag \\
+\end{cases}
+\end{equation}
+
+where $\xi_{\ell}$ is the $\ell^{th}$ knot and $g$ is the order of the polynomial we choose to fit. We arrive at the number of basis functions by beginning with basis functions for the degree of the polynomial we desire and then include one truncated power basis function for for each knot we specify (an additional basis function where we apply a constant--i.e., 1--can also be included for the intercept).\supercite{james_introduction_2013} For a cubic spline with two interior knot, we use the following basis functions:
+
+$$h_1=1,h_2=x, h_3=x^2, h_4=x^3,h_5=(x-\xi_1)^{3}_{+},h_6=(x-\xi_2)^{3}_{+}$$
+
+It is shown that for a degree $g$ polynomial, the basis functions will results in a curve that is continuous (i.e., smooth) up to the ($g-1$) derivative. \supercite{james_introduction_2013} For the cubic spline basis representation above, we have that the function and the first and second derivatives will be continuous at the knot boundaries.
 
 \newpage
 %% R code chunk %%
@@ -62,5 +87,5 @@ for(i in 1:length(foo)){
 
 
 % print bibliography
-\printbibliography[type=article,title={References}]
+\printbibliography[title={References}]
 \end{document}
