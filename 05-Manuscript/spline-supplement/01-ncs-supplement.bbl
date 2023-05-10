@@ -17,47 +17,49 @@
 \endgroup
 
 \datalist[entry]{none/global//global/global}
-  \entry{maclure_tests_1992}{article}{}
-    \name{author}{2}{}{%
-      {{hash=MM}{%
-         family={Maclure},
-         familyi={M\bibinitperiod},
-         given={Malcolm},
-         giveni={M\bibinitperiod},
-      }}%
+  \entry{greenland_dose-response_1995}{article}{}
+    \name{author}{1}{}{%
       {{hash=GS}{%
          family={Greenland},
          familyi={G\bibinitperiod},
-         given={Sander},
+         given={S.},
          giveni={S\bibinitperiod},
       }}%
     }
     \list{language}{1}{%
-      {en}%
+      {eng}%
     }
-    \strng{namehash}{MMGS1}
-    \strng{fullhash}{MMGS1}
+    \keyw{Humans, Risk Assessment, Logistic Models, Incidence, Confidence
+  Intervals, Epidemiologic Methods, HIV Infections, Models, Statistical,
+  Biometry, Los Angeles}
+    \strng{namehash}{GS1}
+    \strng{fullhash}{GS1}
     \field{labelnamesource}{author}
     \field{labeltitlesource}{shorttitle}
+    \field{abstract}{%
+    Standard categorical analysis is based on an unrealistic model for
+  dose-response and trends and does not make efficient use of within-category
+  information. This paper describes two classes of simple alternatives that can
+  be implemented with any regression software: fractional polynomial regression
+  and spline regression. These methods are illustrated in a problem of
+  estimating historical trends in human immunodeficiency virus incidence.
+  Fractional polynomial and spline regression are especially valuable when
+  important nonlinearities are anticipated and software for more general
+  nonparametric regression approaches is not available.%
+    }
     \verb{doi}
-    \verb 10.1093/oxfordjournals.aje.a116206
+    \verb 10.1097/00001648-199507000-00005
     \endverb
-    \field{issn}{1476-6256, 0002-9262}
-    \field{number}{1}
-    \field{pages}{96\bibrangedash 104}
-    \field{shorttitle}{Tests for {Trend} and {Dose} {Response}}
-    \field{title}{Tests for {Trend} and {Dose} {Response}: {Misinterpretations}
-  and {Alternatives}}
-    \verb{url}
-    \verb https://academic.oup.com/aje/article/97031/Tests
-    \endverb
-    \field{volume}{135}
-    \field{journaltitle}{American Journal of Epidemiology}
-    \field{month}{01}
-    \field{year}{1992}
-    \field{urlday}{26}
-    \field{urlmonth}{11}
-    \field{urlyear}{2022}
+    \field{issn}{1044-3983}
+    \field{number}{4}
+    \field{pages}{356\bibrangedash 365}
+    \field{shorttitle}{Dose-response and trend analysis in epidemiology}
+    \field{title}{Dose-response and trend analysis in epidemiology:
+  alternatives to categorical analysis}
+    \field{volume}{6}
+    \field{journaltitle}{Epidemiology (Cambridge, Mass.)}
+    \field{month}{07}
+    \field{year}{1995}
   \endentry
 
   \entry{witte_nested_1997}{article}{}
