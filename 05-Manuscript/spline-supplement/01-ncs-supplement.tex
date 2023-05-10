@@ -18,27 +18,16 @@
 \usepackage[style=nature,%
             autocite=footnote,%
              backend=bibtex,%
+             doi=true,% include doi in citation
              firstinits=true,%. %% abbreviates first name to just letters and not full first name
              ]{biblatex}
 \addbibresource{01-ncs-supplement.bib}
 
-% redefine command for foot cite-makes it smaller
-\newrobustcmd*{\footlessfullcite}{\AtNextCite{\renewbibmacro{title}{}\renewbibmacro{in:}{}\renewbibmacro{urldate}{}}\footfullcite} %remove in:', title and urldate
-
-\AtEveryCitekey{\clearfield{pages}}  %get rid of pages from footnote citation
-\AtEveryCitekey{\clearfield{issn}} %get rid of issn from footnote citation
-\AtEveryCitekey{\clearfield{volume}} %get rid of volume from footnote citation
-\AtEveryCitekey{\clearfield{number}} %get rid of number from footnote citation
-\AtEveryCitekey{\clearfield{eprint}} %get rid of eprint from footnote citation
-\AtEveryCitekey{\clearfield{url}} %get rid of url from footnote citation
-\AtEveryCitekey{\clearfield{month}} %get of month from footnote citation
-\AtEveryCitekey{\clearlist{language}} %get rid of language from footnote citation (note \clearlist and note clearfield
-\AtEveryCitekey{\clearlist{abstract}}  %get rid of abtract from footnote citation
-
+% customize the bibliography citations by removing some fields
 \AtEveryBibitem{%
   \clearfield{issn}%
   \clearfield{url}%
-  \clearlist{urldate}
+  \clearfield{urlyear}% remove url access year from citation
   \clearfield{pagetotal}%
 }
 %% math sybmols
