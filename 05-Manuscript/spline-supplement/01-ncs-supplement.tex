@@ -49,7 +49,7 @@
 
 % first subsection
 \subsection*{\textbf{Background}} % insert indentation below
-\hspace{\parindent} Using splines in regression models is a popular method for flexibly modeling exposure-outcome relationships in epidemiological studies. \supercite{greenland_dose-response_1995, witte_nested_1997} Splines in a regression context can be conceptualized as a series of local polynomials fit over the domain of the regression function. It provides a nice alternative to a categorical analysis of dose response, which has several limitations. One of those key limitations is the assumption that the response is uniform over all observations within a category for which a parameter estimate is made, resulting in the appearance of a step-wise function for the relationship between exposure and response. \supercite{steenland_practical_2004} In contrast, fitting a model with spline terms is a parametric technique that generates a smooth curve, allowing the user to visualize the dose-response relationship. The parameter estimates are rarely of interest, owing to their lack of interpretability. \supercite{steenland_practical_2004} However, given that a model specifying the exposure as a continuous variable is nested in a model with an expansion of spline terms for that variable, the departure from a linear relationship can be formally tested with a Likelihood Ratio Test.\supercite{witte_nested_1997}
+\hspace{\parindent} Using splines in regression models is a popular method for flexibly modeling exposure-outcome relationships in epidemiological studies. \supercite{greenland_dose-response_1995, witte_nested_1997} Splines in a regression context can be conceptualized as a series of local polynomials fit over the domain of the regression function. It provides a nice alternative to a categorical dose-response analysis, which has several limitations. One of those key limitations is the assumption that the response is uniform over all observations within a category for which a parameter estimate is made, resulting in the appearance of a step-wise function for the relationship between exposure and response. \supercite{steenland_practical_2004} In contrast, fitting a model with spline terms is a parametric technique that generates a smooth curve, allowing the user to visualize the dose-response relationship. The parameter estimates are rarely of interest owing to their lack of interpretability. \supercite{steenland_practical_2004} However, given that a model specifying the exposure as a continuous variable is nested in a model with an expansion of spline terms for that variable, the departure from a linear relationship can be formally tested with a Likelihood Ratio Test.\supercite{witte_nested_1997}
 
 \vspace{0.5cm} % space between paragraphs
 \subsection*{\textbf{Basis Representation for Cubic Splines}} % add indentation below
@@ -61,7 +61,7 @@ $$Y=\sum_{m=1}^{M}{\beta_mh_m(X)+\gamma V}$$
 
 $$Y=\sum_{j=1}^{J}\sum_{m=1}^{M_j}{\beta_{jm}{h_{jm}}(X_j)+\gamma V}$$
 
-\noindent where $j$ is the index of variables. The set of fixed basis functions is of interest as are the \textit{knots} and \textit{knot locations}, which are the locations along the domain where separate local piecewise polynomials are fit. Uniform or non-uniform spacing can be used to specify the knots, although a set of quantiles of the exposure are conventionally used as the knot locations. \supercite{james_introduction_2013} In order to achieve smoothness in the spline curve across these disjoint regions, a continuity constraint is applied. Using a truncated power basis, we achieve the continuity constraint:
+\noindent where $j$ is the index of variables. The set of fixed basis functions is of interest, as are the \textit{knots} and \textit{knot locations}, which are the locations along the domain where separate local piecewise polynomials are fit. Uniform or non-uniform spacing can be used to specify the knots, although a set of quantiles of the exposure are conventionally used as the knot locations. \supercite{james_introduction_2013} To achieve smoothness in the spline curve across these disjoint regions, a continuity constraint is applied. Using a truncated power basis, we achieve the continuity constraint:
 
 \begin{equation}
 (x-\xi_\ell)^{g}_{+}=\begin{cases}
@@ -70,21 +70,21 @@ $$Y=\sum_{j=1}^{J}\sum_{m=1}^{M_j}{\beta_{jm}{h_{jm}}(X_j)+\gamma V}$$
 \end{cases}
 \end{equation}
 
-\noindent where $\xi_{\ell}$ is the $\ell^{th}$ knot and $g$ is the order of the polynomial we choose to fit. We arrive at the number of basis functions by beginning with basis functions for the degree of the polynomial we desire and then include one truncated power basis function for for each knot we specify (an additional basis function where we apply a constant--i.e., 1--can also be included for the intercept).\supercite{james_introduction_2013} For a cubic spline (where $g=3$) with two interior knots, we use the following basis functions:
+\noindent where $\xi_{\ell}$ is the $\ell^{th}$ knot and $g$ is the order of the polynomial we choose to fit. We arrive at the number of basis functions by beginning with basis functions for the degree of the polynomial we desire and then include one truncated power basis function for each knot we specify (an additional basis function where we apply a constant--i.e., 1--can also be included for the intercept).\supercite{james_introduction_2013} For a cubic spline (where $g=3$) with two interior knots, we use the following basis functions:
 
 $$h_1(x)=1,h_2(x)=x, h_3(x)=x^2, h_4(x)=x^3,h_5(x)=(x-\xi_1)^{3}_{+},h_6(x)=(x-\xi_2)^{3}_{+}$$
 
-\noindent It is shown that for a degree $g$ polynomial, the basis functions will results in a curve that is continuous (i.e., smooth) up to the ($g-1$) derivative. \supercite{james_introduction_2013} For the cubic spline basis representation above, we have that $Y$ will be continuous up to its second derivative at each of the knot boundaries. For a cubic spline, we determine the degrees of freedom by counting the number of parameters we must estimate within each interval and the number of constraints. That is, we require 4 parameters within each interval and 3 constraints (continuity in $Y$, $Y'$, and $Y''$) at each knot. If we specify two interior knots ($K=2$) we have:
+\noindent It is shown that for a degree $g$ polynomial, the basis functions will results in a continuous curve (i.e., smooth) up to the ($g-1$) derivative. \supercite{james_introduction_2013} For the cubic spline basis representation above, we have that $Y$ will be continuous up to its second derivative at each knot boundary. For a cubic spline, we determine the degrees of freedom by counting the number of parameters we must estimate within each interval and the number of constraints. That is, we require 4 parameters within each interval and 3 constraints (continuity in $Y$, $Y'$, and $Y''$) at each knot. If we specify two interior knots ($K=2$) we have:
 
 $$4(K+1)-3K=4(2+1)-(3)(2)=6\text{ }{df}$$
 \\
-\noindent and $K+1=2+1=3$ intervals. We can fit the model using standard statistical software and estimation is carried out in the routine manner (e.g., least squares for linear regression or maximum likelihood estimation for generalized linear models).
+\noindent and $K+1=2+1=3$ intervals. We can fit the model using standard statistical software, and estimation is carried out in a routine manner (e.g., least squares for linear regression or maximum likelihood estimation for generalized linear models).
 
 \vspace{0.5cm} % space between paragraphs
 \subsection*{\textbf{Natural Cubic Splines}}
-\hspace{\parindent} A cited limitation of cubic splines is the high variance in the spline estimates at the extremes of the data (i.e., in the highest and lowest intervals). \supercite{hastie_elements_2009} Natural cubic splines take cubic splines and apply two additional constraints: that the function is linear beyond the boundary knots (i.e., the exterior knots--if we have two interior knots, then we have two additional exterior or boundary knots). $Y''$ and $Y'''$ will be zero at these knot boundaries and we will have $K$ basis functions for a natural cubic spline with $K$ knots ($K$ here assumes we count the two exterior or boundary knots in addition to the interior knots--for a spline with two interior knots we have $K=4$). 
+\hspace{\parindent} A cited limitation of cubic splines is the high variance in the spline estimates at the extremes of the data (i.e., in the highest and lowest intervals). \supercite{hastie_elements_2009} Natural cubic splines take cubic splines and apply two additional constraints: that the function is linear beyond the boundary knots (i.e., the exterior knots--if we have two interior knots, then we have two additional exterior or boundary knots). $Y''$ and $Y'''$ will be zero at these knot boundaries, and we will have $K$ basis functions for a natural cubic spline with $K$ knots ($K$ here assumes we count the two exterior or boundary knots in addition to the interior knots--for a spline with two interior knots we have $K=4$). 
 
-\hspace{\parindent} In our analysis we specify the diet quality indices using a basis expansion for a natural cubic spline with two interior knots ($K=4$). These basis functions are provided below.
+\hspace{\parindent} In our analysis, we specify the diet quality indices using a basis expansion for a natural cubic spline with two interior knots ($K=4$). These basis functions are provided below.
 \newline
 \newline
 \textit{In a general form}\supercite{hastie_elements_2009} :
@@ -104,11 +104,11 @@ $$h_1(x)=1,h_2(x)=x, h_{3}(x)=d_1(x)-d_{3}(x),h_{4}(x)=d_2(x)-d_{3}(x),$$
 \subsection*{\textbf{Implementation in R}} % insert indentation below
 %% R code chunk %%
 \urlstyle{rm}
-\hspace{\parindent} Natural cubic splines are implemented in R using the {\ttfamily{ns()}} function from the {\ttfamily{splines}} package. The R code we specified for this analysis is found at: \textcolor{blue}{\url{https://github.com/cmainov/nhanes-fi-ca-mortality/blob/main/R/utils.R}}. We demonstrate the use of {\ttfamily{ns()}} with a simple reproducible example. First, we generate some some data by sampling from two Gaussian distributions and then use the {\ttfamily{ns()}} function to generate a matrix with the basis functions in its columns. We want to use \textit{two} interior knots ($K=4$) so we will specify the {\ttfamily{df = 3}} argument.  {\ttfamily{ns()}} counts the interior knots in the following way:
+\hspace{\parindent} Natural cubic splines are implemented in R using the {\ttfamily{ns()}} function from the {\ttfamily{splines}} package. The R code we specified for this analysis is found at: \textcolor{blue}{\url{https://github.com/cmainov/nhanes-fi-ca-mortality/blob/main/R/utils.R}}. We demonstrate the use of {\ttfamily{ns()}} with a simple, reproducible example. First, we generate some data by sampling from two Gaussian distributions and then use the {\ttfamily{ns()}} function to generate a matrix with the basis functions in its columns. We want to use \textit{two} interior knots ($K=4$), so we will specify the {\ttfamily{df = 3}} argument.  {\ttfamily{ns()}} counts the interior knots in the following way:
 
 $$K_{interior}=df-intercept-1$$
 
-\noindent where $intercept \in \{0,1\}$ and is controlled by the {\ttfamily{intercept =}} argument in the {\ttfamily{ns()}} function. Note: the default value is {\ttfamily{intercept = FALSE}}, which results in $intercept=0$. The {\ttfamily{lm()}} function will compute the intercept for us and, thus, there is no need to redundantly specify it within {\ttfamily{ns()}} 
+\noindent where $intercept \in \{0,1\}$ and is controlled by the {\ttfamily{intercept =}} argument in the {\ttfamily{ns()}} function. Note: the default value is {\ttfamily{intercept = FALSE}}, which results in $intercept=0$. The {\ttfamily{lm()}} function will compute the intercept for us, and, thus, there is no need to redundantly specify it within {\ttfamily{ns()}} 
  
  \vspace{0.7cm}
  
@@ -178,7 +178,7 @@ head( k2.v2, 5 ) # print first 5 rows of the basis matrix
 \end{lstlisting}
 %% end R code chunk %%
 
-\noindent \textbf{A final note}: the {\ttfamily{ns()}} actually implements a slightly modified version of the basis functions for the natural cubic spline (which is why we do not get the exact values in the basis matrix that we would have otherwise predicted). Indeed, {\ttfamily{ns()}} implements a linear transformation of the basis to generate a B-spline basis matrix for the natural cubic spline we seek to fit (done for computational reasons).
+\noindent \textbf{A final note}: the {\ttfamily{ns()}} implements a slightly modified version of the basis functions for the natural cubic spline (which is why we do not get the exact values in the basis matrix that we would have otherwise predicted). Indeed, {\ttfamily{ns()}} implements a linear transformation of the basis to generate a B-spline basis matrix for the natural cubic spline we seek to fit (done for computational reasons).
 
 % print bibliography
 \printbibliography[title={References}]
