@@ -200,7 +200,7 @@ fdgrp.diet.names <- c( "processedmts", "meat", "poultry", "fish_hi", "fish_lo",
                        "greenleafy", "darkylveg", "otherveg", "potatoes", 
                        "otherstarchyveg", "legumes", "soy", "refinedgrain", 
                        "wholegrain", "nuts", "addedsugars", "fs_enet", "age_enet", 
-                       "fdas_enet", "hhs_enet", "pc1", "pc2" )
+                       "fdas_enet", "hhs_enet", "pc1", "pc2", "hei.2015" )
 
 diet.patt.names <- c( "fs_enet", "age_enet", 
                       "fdas_enet", "hhs_enet", "pc1", "pc2" )
