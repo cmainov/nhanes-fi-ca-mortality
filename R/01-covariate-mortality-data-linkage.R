@@ -8,8 +8,9 @@ library( survey )
 library( tidyverse )
 library( RNHANES )
 library( haven )
+# library( hei ) we modify the `hei` code to support the solumn names
 # read in helper functions
-source( "R/utils.R")
+source( "R/utils.R" )
 
 
 ## Read in data from previous analysis ##
@@ -452,11 +453,90 @@ d.4 <- adl.out %>%
   select( seqn, adl.score ) %>%
   left_join( d.3, . )
 
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+### HEI-2015 Scores ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+d.5 <- d.4 %>% # rename columns for use in `hei` function
+  rename( TKCAL = kcal,
+          TSFAT = sfat,
+          TMFAT = mfat,
+          TPFAT = pfat,
+          TSODI = sodium,
+          TALCO = alco,
+          T_PF_SEAFD_LOW = fish_lo,
+          T_F_CITMLB = f_citmelber,
+          T_PF_EGGS = eggs,
+          T_F_CITMLB = f_citmelber,
+          T_F_OTHER = fruitother,
+          T_PF_MPS_TOTAL = mpstotal,
+          T_PF_SOY = soy,
+          T_PF_SEAFD_HI = fish_hi,
+          T_PF_NUTSDS = nuts,
+          T_SOLID_FATS = solidfats,
+          T_ADD_SUGARS = addedsugars,
+          T_V_TOTAL = vegtotal,
+          T_V_LEGUMES = legumes,
+          T_F_TOTAL = fruittotal,
+          T_D_TOTAL = dtotal,
+          T_V_DRKGR = greenleafy,
+          T_G_WHOLE = wholegrain,
+          T_G_REFINED = refinedgrain )
+
+# fped data object
+fped.hei <- d.5 %>%
+  select( SEQN = seqn,
+          RIDAGEYR = age,
+          T_PF_SEAFD_LOW ,
+          T_F_CITMLB,
+          T_PF_EGGS,
+          T_F_CITMLB,
+          T_F_OTHER,
+          T_PF_MPS_TOTAL,
+          T_PF_SOY,
+          T_PF_SEAFD_HI,
+          T_PF_NUTSDS,
+          T_SOLID_FATS,
+          T_ADD_SUGARS,
+          T_V_TOTAL,
+          T_V_LEGUMES,
+          T_F_TOTAL,
+          T_D_TOTAL,
+          T_V_DRKGR,
+          T_G_WHOLE,
+          T_G_REFINED )
+
+fped.hei$DRSTZ <- 1
+
+# diet data object
+diet.hei <- d.5 %>%
+  select( SEQN = seqn,
+          TKCAL,
+          TSFAT,
+          TMFAT,
+          TPFAT,
+          TSODI,
+          TALCO )
+
+# demo data object
+dem.hei <- d.5 %>%
+  select( SEQN = seqn,
+          SDDSRVYR = cycle )
+
+# use `hei` to compute hei-2015 score and merge
+d.6 <- hei( fped = fped.hei, diet = diet.hei, demograph = dem.hei ) %>%
+  select( seqn = SEQN,
+          hei.2015 = HEI ) %>%
+  left_join( d.5, . )
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 ### Save ###  
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
-saveRDS( d.4, "02-Data-Wrangled/01-covariate-mortality-linkage.rds")
+saveRDS( d.6, "02-Data-Wrangled/01-covariate-mortality-linkage.rds")
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 

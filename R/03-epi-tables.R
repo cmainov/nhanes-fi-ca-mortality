@@ -2,6 +2,7 @@ library( survey )
 library( tidyverse )
 library( jtools ) # for svycor function
 # library( ggradar ) # for radar chart plotting
+library( latex2exp ) # for latex in plots
 
 source( "R/old/ggradar-newoption.R" ) # modified ggradar code so that we don't actually need to load in the library above
 
