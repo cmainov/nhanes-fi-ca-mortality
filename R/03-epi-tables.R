@@ -203,7 +203,7 @@ fdgrp.diet.names <- c( "processedmts", "meat", "poultry", "fish_hi", "fish_lo",
                        "fdas_enet", "hhs_enet", "pc1", "pc2", "hei.2015" )
 
 diet.patt.names <- c( "fs_enet", "age_enet", 
-                      "fdas_enet", "hhs_enet", "pc1", "pc2" )
+                      "fdas_enet", "hhs_enet", "pc1", "pc2", "hei.2015" )
 
 ## Loop to generate correlation matrix using svycor function ##
 
@@ -349,12 +349,12 @@ ggsave( "04-Tables-Figures/figures/04-ggradar-all.png",
 
 # diet pattern variable names
 diet.patt.names <- c( "fs_enet", "age_enet", 
-                      "fdas_enet", "hhs_enet", "pc1", "pc2" )
+                      "fdas_enet", "hhs_enet", "pc1", "pc2", "hei.2015" )
 
 # how we want them presented in the table
 diet.patt.names.table <- c( "Food Security Pattern", "Age Pattern", 
                       "SNAP Pattern", "Household Size Pattern", "Modified Western Pattern",
-                      "Prudent Pattern" )
+                      "Prudent Pattern", "HEI-2015" )
 
 diets.t <- data.frame() # initialize frame
 for ( i in seq_along( diet.patt.names ) ){
