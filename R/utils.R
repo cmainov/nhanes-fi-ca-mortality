@@ -85,7 +85,7 @@ hr_splines <- function( dat, x, time, mort.ind, knots,
   
   # ensure variable is numeric
   dat$x <- as.numeric( eval( parse( text = paste0( "dat$", x ) ) ) )
-  df2 <- dat %>% filter( !is.na( x ) ) # need to remove all NA"s to get `nearest` to function properly
+  df2 <- dat %>% filter( !is.na( x ) & inc == 1 ) # need to remove all NA"s to get `nearest` to function properly
   
   # `rms` summary of distributions (these data characteristics are stored before fitting model)
   dd <<- rms::datadist( dat ) # use the superassignment operator to put dd into global environment, otherwise function breaks
@@ -99,7 +99,7 @@ hr_splines <- function( dat, x, time, mort.ind, knots,
   
   # formula
   f1 <- paste0( "Surv( ", time, ", ", mort.ind, " ) ~ rcs( x, ", knots, 
-                " ) + ", paste0( covariates, collapse = " + " ), "+cluster( sdmvpsu )" )
+                " ) + ", paste0( covariates, collapse = " + " ), "+ cluster( sdmvpsu )" )
   
   # normalize the weights
   if ( !is.null( wts ) ) df2 <- df2 %>% mutate( n.wts = get( wts ) / mean( get( wts ), na.rm = T ) )

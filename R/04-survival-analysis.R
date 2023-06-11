@@ -13,7 +13,7 @@ d <- readRDS( "03-Data-Rodeo/01-analytic-data.rds")
 
 
 # x variables
-indices <- c( "fs_enet", "age_enet", "hhs_enet", "fdas_enet", "pc1", "pc2" )
+indices <- c( "fs_enet", "age_enet", "hhs_enet", "fdas_enet", "pc1", "pc2", "hei.2015" )
 
 
 
@@ -435,8 +435,8 @@ write.table( ac.table, "04-Tables-Figures/tables/04-table-4-ac.txt", sep = "," )
 write.table( ac.table, "04-Tables-Figures/tables/05-table-4-ca.txt", sep = "," )
 write.table( ac.table, "04-Tables-Figures/tables/06-table-4-cvd.txt", sep = "," )
 write.table( all.table, "04-Tables-Figures/tables/07-table-4-all.txt", sep = "," )
-write.table( s.table, "04-Tables-Figures/tables/08-table-s2.txt", sep = "," )
-write.table( sens.60.table, "04-Tables-Figures/tables/09-table-s3.txt", sep = "," )
+write.table( s.table, "04-Tables-Figures/tables/08-table-s3.txt", sep = "," )
+write.table( sens.60.table, "04-Tables-Figures/tables/09-table-s4.txt", sep = "," )
 
 
 
