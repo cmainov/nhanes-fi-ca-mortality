@@ -5,6 +5,7 @@
 
 \usepackage{hyperref}
 
+
 \lstset{language=R,
     basicstyle=\small\ttfamily,
     stringstyle=\color{DarkGreen},
@@ -35,24 +36,53 @@
 %% math sybmols
 \usepackage{amsmath}
 
+%% for embedding R code
+\usepackage{listings}
+
 % set the indentation length
 \setlength\parindent{24pt}
 
-\title{Specifying a Natural Cubic Spline}
+\title{Supplementary File: Methods}
 \author{Christian A. Maino Vieytes}
 \date{}
+
 
 \begin{document}
 \maketitle
 \pagenumbering{gobble}
 \pagenumbering{arabic}
 
-% first subsection
-\subsection*{\textbf{Background}} % insert indentation below
+\tableofcontents
+
+
+\section{Dietary Patterns Extraction with Penalized Logit}
+\subsection{Rationale}
+\hspace{\parindent} We implemented penalized logistic regression with an elastic net penalty to extract dietary patterns from observed dietary intake data from 24-hour recalls as explained in the main text. The theory and rationale for the elastic net is proposed by Zou and Hastie. \supercite{zou2005regularization} The idea involves having a regularization technique that accomplishes both \textit{shrinkage} and \textit{variable selection} simultaneously. The goal was to extract dietary patterns associated with a given binary characteristic. We chose the elastic net given the high correlation amongst dietary variables in epidemiologic studies and the unique ability of elastic net to handle correlated variables. Unlike ridge regression, elastic net allows us to achieve parsimony without the sparse representation of the LASSO model.\supercite{zou2005regularization}
+
+\subsection{Implementation}
+ \hspace{\parindent}The elastic net algorithm begins by the specification of a logistic regression model with the elastic net penalty, which is often conceptualized as a mixture of the LASSO penalty ($\ell_1$) and ridge regression penalty ($\ell_2$)  terms. Equation 1 demonstrates the formulation of the objective function. The penalty term is introduced for logistic regression case is introduced into the likelihood function used to fit the model:
+
+\begin{equation}
+	-2[\ell(\beta)]=-2\sum_{i=1}^nlog({Pr(Y_i|X_i,\beta)+\lambda[(1-\alpha)]||\beta||_2^2+\alpha||\beta||_1]]}) \tag{1}
+\end{equation}
+
+The $-2\text{log-likelihood}$ includes the $-2\text{log-likelihood}$ function for a logistic regression model plus an additional penalty term, $\lambda[(1-\alpha)]||\beta||_2^2+\alpha||\beta||_1]]$, which involves a combination of the ($\ell_1$) and ($\ell_2$) penalities and two tuning parameters, $\lambda$ and $\alpha$, which are unknown and conventionally optimized via $K$-fold cross-validation. Optimizing this objective function relies on numerical methods. \supercite{jin2009elastic} We used $10$-fold cross-validation and minimized the deviance to find the optimal combination of $\lambda$ and $\alpha$. A grid of $\alpha$ values from 0 to 1 in 0.1 increments was used. 
+
+\subsection{Dependent and Explanatory Variables}
+ \hspace{\parindent} As indicated in the main text, we selected four outcome variables associated with food insecurity or directly measuring food insecurity. These included household food insecurity status (Constructed using variable \texttt{FSDHH} in the NHANES dataset), Age $\ge$ 60 (constructed from the \texttt{RIDAGEYR} variable in NHANES), household receipt of SNAP benefits in the previous 12 months (constructed from the \texttt{FSQ17} and \texttt{FSD170N} variables in NHANES), and household size $\ge$5 (constructed from \texttt{DMDHHSIZ} in NHANES).
+ 
+  \hspace{\parindent} The explanatory variables were intake equivalents for 26 food group variables from the USDA Food Patterns Equivalents Database (FPED) and the MyPyramid Equivalents Database (MPED) data. The exact variables are provided in the main text in Table 2. All food group variables were centered, standardized (by their standard deviation), and energy adjusted prior to fitting the elastic net models.
+ 
+\subsection{Implementation in R}
+ \hspace{\parindent} The \texttt{glmnet} and \texttt{caret} packages in \texttt{R} can be used to fit models with elastic net, LASSO, and ridge penalization. R code to extract the dietary patterns in available in the following GitHub repository: \textcolor{blue}{\url{https://github.com/cmainov/NHANES-Diet-Penalized-Regression/blob/main/R/04-Dietary-patterns-extraction.R}}.
+
+\section{Cubic Splines}
+% first subsection on splines
+\subsection{Background} % insert indentation below
 \hspace{\parindent} Using splines in regression models is a popular method for flexibly modeling exposure-outcome relationships in epidemiological studies. \supercite{greenland_dose-response_1995, witte_nested_1997} Splines in a regression context can be conceptualized as a series of local polynomials fit over the domain of the regression function. It provides a nice alternative to a categorical dose-response analysis, which has several limitations. One of those key limitations is the assumption that the response is uniform over all observations within a category for which a parameter estimate is made, resulting in the appearance of a step-wise function for the relationship between exposure and response. \supercite{steenland_practical_2004} In contrast, fitting a model with spline terms is a parametric technique that generates a smooth curve, allowing the user to visualize the dose-response relationship. The parameter estimates are rarely of interest owing to their lack of interpretability. \supercite{steenland_practical_2004} However, given that a model specifying the exposure as a continuous variable is nested in a model with an expansion of spline terms for that variable, the departure from a linear relationship can be formally tested with a Likelihood Ratio Test.\supercite{witte_nested_1997}
 
 \vspace{0.5cm} % space between paragraphs
-\subsection*{\textbf{Basis Representation for Cubic Splines}} % add indentation below
+\subsection{Basis Representation for Cubic Splines} % add indentation below
 \hspace{\parindent} Fitting spline models involves applying a set of transformations to the exposure variable, $X$. In the regression model, we replace the original variable with the set of transformations (which we term \textit{basis functions}) and estimate parameters for each of those transformations:
 
 $$Y=\sum_{m=1}^{M}{\beta_mh_m(X)+\gamma V}$$
@@ -81,7 +111,7 @@ $$4(K+1)-3K=4(2+1)-(3)(2)=6\text{ }{df}$$
 \noindent and $K+1=2+1=3$ intervals. We can fit the model using standard statistical software, and estimation is carried out in a routine manner (e.g., least squares for linear regression or maximum likelihood estimation for generalized linear models).
 
 \vspace{0.5cm} % space between paragraphs
-\subsection*{\textbf{Natural Cubic Splines}}
+\subsection{Natural Cubic Splines}
 \hspace{\parindent} A cited limitation of cubic splines is the high variance in the spline estimates at the extremes of the data (i.e., in the highest and lowest intervals). \supercite{hastie_elements_2009} Natural cubic splines take cubic splines and apply two additional constraints: that the function is linear beyond the boundary knots (i.e., the exterior knots--if we have two interior knots, then we have two additional exterior or boundary knots). $Y''$ and $Y'''$ will be zero at these knot boundaries, and we will have $K$ basis functions for a natural cubic spline with $K$ knots ($K$ here assumes we count the two exterior or boundary knots in addition to the interior knots--for a spline with two interior knots we have $K=4$). 
 
 \hspace{\parindent} In our analysis, we specify the diet quality indices using a basis expansion for a natural cubic spline with two interior knots ($K=4$). These basis functions are provided below.
@@ -101,7 +131,7 @@ $$h_1(x)=1,h_2(x)=x, h_{3}(x)=d_1(x)-d_{3}(x),h_{4}(x)=d_2(x)-d_{3}(x),$$
 
 
 
-\subsection*{\textbf{Implementation in R}} % insert indentation below
+\subsection{Implementation in R} % insert indentation below
 %% R code chunk %%
 \urlstyle{rm}
 \hspace{\parindent} Natural cubic splines are implemented in R using the {\ttfamily{ns()}} function from the {\ttfamily{splines}} package. The R code we specified for this analysis is found at: \textcolor{blue}{\url{https://github.com/cmainov/nhanes-fi-ca-mortality/blob/main/R/utils.R}}. We demonstrate the use of {\ttfamily{ns()}} with a simple, reproducible example. First, we generate some data by sampling from two Gaussian distributions and then use the {\ttfamily{ns()}} function to generate a matrix with the basis functions in its columns. We want to use \textit{two} interior knots ($K=4$), so we will specify the {\ttfamily{df = 3}} argument.  {\ttfamily{ns()}} counts the interior knots in the following way:

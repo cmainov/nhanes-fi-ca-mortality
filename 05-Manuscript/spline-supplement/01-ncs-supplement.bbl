@@ -1,5 +1,5 @@
 % $ biblatex auxiliary file $
-% $ biblatex bbl format version 3.1 $
+% $ biblatex bbl format version 3.2 $
 % Do not modify the above lines!
 %
 % This is an auxiliary file used by the 'biblatex' package.
@@ -17,6 +17,74 @@
 \endgroup
 
 \datalist[entry]{none/global//global/global}
+  \entry{zou2005regularization}{article}{}
+    \name{author}{2}{}{%
+      {{hash=ZH}{%
+         family={Zou},
+         familyi={Z\bibinitperiod},
+         given={Hui},
+         giveni={H\bibinitperiod},
+      }}%
+      {{hash=HT}{%
+         family={Hastie},
+         familyi={H\bibinitperiod},
+         given={Trevor},
+         giveni={T\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Oxford University Press}%
+    }
+    \strng{namehash}{ZHHT1}
+    \strng{fullhash}{ZHHT1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{number}{2}
+    \field{pages}{301\bibrangedash 320}
+    \field{title}{Regularization and variable selection via the elastic net}
+    \field{volume}{67}
+    \field{journaltitle}{Journal of the Royal Statistical Society Series B:
+  Statistical Methodology}
+    \field{year}{2005}
+  \endentry
+
+  \entry{jin2009elastic}{article}{}
+    \name{author}{3}{}{%
+      {{hash=JB}{%
+         family={Jin},
+         familyi={J\bibinitperiod},
+         given={Bangti},
+         giveni={B\bibinitperiod},
+      }}%
+      {{hash=LDA}{%
+         family={Lorenz},
+         familyi={L\bibinitperiod},
+         given={Dirk\bibnamedelima A},
+         giveni={D\bibinitperiod\bibinitdelim A\bibinitperiod},
+      }}%
+      {{hash=SS}{%
+         family={Schiffler},
+         familyi={S\bibinitperiod},
+         given={Stefan},
+         giveni={S\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {IOP Publishing}%
+    }
+    \strng{namehash}{JB+1}
+    \strng{fullhash}{JBLDASS1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{number}{11}
+    \field{pages}{115022}
+    \field{title}{Elastic-net regularization: error estimates and active set
+  methods}
+    \field{volume}{25}
+    \field{journaltitle}{Inverse Problems}
+    \field{year}{2009}
+  \endentry
+
   \entry{greenland_dose-response_1995}{article}{}
     \name{author}{1}{}{%
       {{hash=GS}{%
