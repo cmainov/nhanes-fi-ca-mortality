@@ -288,7 +288,7 @@ ac.table <- bind_rows( fin.res %>% filter( model == "Full Model" ),
   data.frame() %>%
   
   # arrange tables first by custom order and second by sample so that ALL Survivors are situated next to estimates for FI CA survivors for a given diet index
-  arrange( factor(index, levels = c("fs_enet", "pc1", "pc2" ) ),
+  arrange( factor(index, levels = c("fs_enet", "pc1", "pc2", "hei.2015" ) ),
                   sample )
 
 
@@ -299,8 +299,7 @@ ca.table <- bind_rows( fin.res.ca %>% filter( model == "Full Model" ),
   data.frame() %>%
   
   # arrange tables first by custom order and second by sample so that ALL Survivors are situated next to estimates for FI CA survivors for a given diet index
-  arrange( factor(index, levels = c("fs_enet", "age_enet", "hhs_enet", 
-                                    "fdas_enet", "pc1", "pc2" ) ),
+  arrange( factor(index, levels = c("fs_enet", "pc1", "pc2", "hei.2015" ) ),
            sample )
 
 
@@ -355,8 +354,7 @@ ac.table.nb <- bind_rows( fin.res %>% filter( model %in% c( "Null Model", "Basic
   data.frame() %>%
   
   # arrange tables first by custom order and second by sample so that ALL Survivors are situated next to estimates for FI CA survivors for a given diet index
-  arrange( factor(index, levels = c("fs_enet", "age_enet", "hhs_enet", 
-                                    "fdas_enet", "pc1", "pc2" ) ),
+  arrange( factor(index, levels = c("fs_enet", "pc1", "pc2", "hei.2015" ) ),
            sample )
 
 
@@ -367,8 +365,7 @@ ca.table.nb <- bind_rows( fin.res.ca %>% filter( model %in% c( "Null Model", "Ba
   data.frame() %>%
   
   # arrange tables first by custom order and second by sample so that ALL Survivors are situated next to estimates for FI CA survivors for a given diet index
-  arrange( factor(index, levels = c("fs_enet", "age_enet", "hhs_enet", 
-                                    "fdas_enet", "pc1", "pc2" ) ),
+  arrange( factor(index, levels = c("fs_enet", "pc1", "pc2", "hei.2015" ) ),
            sample )
 
 # change names inside table
@@ -431,11 +428,11 @@ ggsave( "04-Tables-Figures/figures/02a-fi-surv-curve.png",
         width = 6.42 )
 
 # snap pattern survival curves
-( snap.sc <- ggadjustedcurves( fit =  out.res[[4]]$q.obj,
-                 variable = "fdas_enet.q",
-                 data = out.res[[4]]$dat,
+( prud1.sc <- ggadjustedcurves( fit =  out.res[[2]]$q.obj,
+                 variable = "pc1.q",
+                 data = out.res[[2]]$dat,
                  method = "conditional",
-                 title = "Food Assistance (SNAP) Pattern",
+                 title = "Prudent Pattern #1",
                  font.title = c(16, "bold"),
                  legend.title = "Quintile",
                  font.legend = c(10, "bold"),
@@ -452,7 +449,7 @@ ggsave( "04-Tables-Figures/figures/02a-fi-surv-curve.png",
            axis.title.x = element_text( size = 13 ) ,
            axis.text.x = element_text( size = 10, color = "grey30" ) ) )
 
-ggsave( "04-Tables-Figures/figures/02b-snap-surv-curve.png", 
+ggsave( "04-Tables-Figures/figures/02b-prud1-surv-curve.png", 
         height = 7.21, 
         width = 6.42 )
 
@@ -470,9 +467,9 @@ fi.sp <- out.res[[1]]$spline.plot +
          axis.text.x = element_text( size = 10, color = "grey30" ),
          legend.text = element_text( size = 10 ) ) 
 
-# SNAP pattern
-snap.sp <- out.res[[4]]$spline.plot +
-  xlab( unname( TeX( "SNAP Pattern Score$^a$" ) ) ) +
+# prudent #1 pattern
+prud1.sp <- out.res[[2]]$spline.plot +
+  xlab( unname( TeX( "Prudent #1 Pattern Score$^a$" ) ) ) +
   theme( legend.position = "none",
          text = element_text( family = "Avenir" ),
          axis.title.y = element_text( size = 13 ) ,
@@ -481,9 +478,9 @@ snap.sp <- out.res[[4]]$spline.plot +
          axis.text.x = element_text( size = 10, color = "grey30" ) ) +
   ylab( "" ) +
   coord_cartesian( ylim = c( 0.7, max = 2.8 ) ) 
-  
+
 ggarrange( ggarrange( fi.sc, fi.sp, nrow = 2, labels = list( "A", "B" ) ),
-           ggarrange( snap.sc, snap.sp, nrow = 2,labels = list( "C", "D" ) ),
+           ggarrange( prud1.sc, prud1.sp, nrow = 2,labels = list( "C", "D" ) ),
            nrow = 1, ncol = 2 )
 
 ## arrange into large ggarrange object

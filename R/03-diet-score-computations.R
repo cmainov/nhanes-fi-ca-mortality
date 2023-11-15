@@ -189,7 +189,7 @@ svy.design.2 <- svydesign( id = ~sdmvpsu, weights = ~wtdr18yr, strata = ~sdmvstr
 
 adj.des <- subset( svy.design.2, inc == 1 ) # survey design object
 
-d.3 <- svy_energy_residual( nutr = c( "pc1", "pc2" ), # columns to be energy adjusted
+d.3 <- svy_energy_residual( nutr = c( "pc1", "pc2", "hei.2015" ), # columns to be energy adjusted
                             design = adj.des, # design object
                             calories = "kcal", # calories column
                             overwrite = "yes" ) %>% # keep original column names

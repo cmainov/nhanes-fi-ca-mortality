@@ -320,7 +320,7 @@ colors.line <- c( rgb(0.529,0.808,0.98,0.9), rgb(0,0,0.502,0.9), rgb(0.55,0.10,0
                   legend.labels = c( unname( TeX( "Food Insecurity (FI)$^\\dagger$" ) ),
                                      unname( TeX("Prudent #1$^\\ddagger$" ) ),
                                      unname( TeX("Prudent #2$^\\ddagger$" ) ),
-                                     unname( TeX( "HEI-2015" ) ) ),
+                                     unname( TeX( "HEI-2015$^a$" ) ) ),
                   group.colours = colors.line ) +
     theme( legend.title = element_text( face = "bold"),
            legend.text = element_text( size = 19, margin = margin(t = 10, b = 10, l = 0.1) ), # margins for legend text
@@ -358,9 +358,9 @@ diets.t <- data.frame() # initialize frame
 for ( i in seq_along( diet.patt.names ) ){
   
   # we use the three survey design objects already specified above( `fiw` `gen`, `fsw`)
-  fi.patt <- epitab.means( cont.var = diet.patt.names[i], des = fiw, table.var = diet.patt.names.table[i], dig = 2 )
-  fs.patt <- epitab.means( cont.var = diet.patt.names[i], des = fsw, table.var = diet.patt.names.table[i], dig = 2 )
-  gen.patt <- epitab.means( cont.var = diet.patt.names[i], des = gen, table.var = diet.patt.names.table[i], dig = 2 )
+  fi.patt <- epitab.means( cont.var = diet.patt.names[i], des = subset( mod1, binfoodsechh == "Low" ), table.var = diet.patt.names.table[i], dig = 2 )
+  fs.patt <- epitab.means( cont.var = diet.patt.names[i], des = subset( mod1, binfoodsechh == "High" ), table.var = diet.patt.names.table[i], dig = 2 )
+  gen.patt <- epitab.means( cont.var = diet.patt.names[i], des = mod1, table.var = diet.patt.names.table[i], dig = 2 )
   
   all.three.c <- cbind( gen.patt, fi.patt, fs.patt )
 
@@ -385,7 +385,8 @@ diets.t <- diets.t[, these.cols ] # subset and keep only non redundant columns
 # cohen's d column
 for ( i in seq_along( diet.patt.names ) ){
   
-  cd.col <- round( svycd( x = diet.patt.names[i], design.1 = fiw, design.2 = fsw ), 2 )
+  cd.col <- round( svycd( x = diet.patt.names[i], design.1 = subset( mod1, binfoodsechh == "Low" ), 
+                          design.2 = subset( mod1, binfoodsechh == "High" ) ), 2 )
   
   diets.t[ which( str_detect( diets.t[ , 1 ], diet.patt.names.table[i] ) ), 5 ] <- cd.col
 }
@@ -394,8 +395,8 @@ for ( i in seq_along( diet.patt.names ) ){
 # t test to compare across food security status
 for ( i in seq_along( diet.patt.names ) ){
   
-  diets.t[ which( str_detect( diets.t[ , 1 ], diet.patt.names.table[i] ) ), 6 ] <- ifelse( svyttest( as.formula( paste0( diet.patt.names[i], "~binfoodsechh" ) ), design = gen )$p.value < 0.01, "< 0.01",
-                                                                            round( svyttest( as.formula( paste0( diet.patt.names[i], "~binfoodsechh" ) ), design = gen )$p.value, digits = 2 ) )
+  diets.t[ which( str_detect( diets.t[ , 1 ], diet.patt.names.table[i] ) ), 6 ] <- ifelse( svyttest( as.formula( paste0( diet.patt.names[i], "~binfoodsechh" ) ), design = mod1 )$p.value < 0.01, "< 0.01",
+                                                                            round( svyttest( as.formula( paste0( diet.patt.names[i], "~binfoodsechh" ) ), design = mod1 )$p.value, digits = 2 ) )
   
 }
 
