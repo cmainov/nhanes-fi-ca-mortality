@@ -107,7 +107,7 @@ hr_splines <- function( dat, x, time, mort.ind, knots,
   
   # formula
   f1 <- paste0( "Surv( ", time, ", ", mort.ind, " ) ~ rcs( x, ", knots, 
-                " ) + ", paste0( covariates, collapse = " + " ), "+ cluster( sdmvpsu )" )
+                " )", {if( !is.null( covariates ) ) "+"}, paste0( covariates, collapse = " + " ), "+ cluster( sdmvpsu )" )
   
   # normalize the weights
   if ( !is.null( wts ) ) df2 <- df2 %>% mutate( n.wts = get( wts ) / mean( get( wts ), na.rm = T ) )
@@ -155,7 +155,7 @@ hr_splines <- function( dat, x, time, mort.ind, knots,
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name, scale.y,
-                 int.knots ){
+                 int.knots, model.name ){
   
   require( tidyverse )
   require( glue )
@@ -190,20 +190,20 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name,
   ## Fit Models ##
   
   # quantile specification
-  m.q <- svycoxph( formula( paste0( "Surv(", time, ",",mort.ind," ) ~ ", paste0( x, ".q" ), " + ", paste0( covars, collapse = " + ") ) ),
+  m.q <- svycoxph( formula( paste0( "Surv(", time, ",",mort.ind," ) ~ ", paste0( x, ".q" ), {if( !is.null( covars ) ) "+"}, paste0( covars, collapse = " + ") ) ),
                    design = des )
   
   sum.m.q <- summary( m.q )$coefficients %>% data.frame()
   ci.m.q <- confint( m.q )
   
   # trend test
-  m.t <- svycoxph( formula( paste0( "Surv(", time, ",",mort.ind," ) ~ ", paste0( x, ".trend" ), " + ", paste0( covars, collapse = " + ") ) ),
+  m.t <- svycoxph( formula( paste0( "Surv(", time, ",",mort.ind," ) ~ ", paste0( x, ".trend" ), {if( !is.null( covars ) ) "+"}, paste0( covars, collapse = " + ") ) ),
                    design = des )
   
   sum.m.t <- summary( m.t )$coefficients %>% data.frame()
   
   # linear specification
-  m.l <- svycoxph( formula( paste0( "Surv(", time, ",",mort.ind," ) ~ ", paste0( "I( ", x, "/", x.scale, ") + " ), paste0( covars, collapse = " + ") ) ),
+  m.l <- svycoxph( formula( paste0( "Surv(", time, ",",mort.ind," ) ~ ", paste0( "I( ", x, "/", x.scale, ")", {if( !is.null( covars ) ) "+"} ), paste0( covars, collapse = " + ") ) ),
                    design = des )
   
   sum.m.l <- summary( m.l )$coefficients %>% data.frame()
@@ -215,7 +215,7 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name,
   
   # natural cubic spline 
   # degrees of freedom are the no. of interior knots + 2 (also the no. of basis functions required)--(see "Elements of Statistical Learning" by Hastie, Tibshirani and Friedman and https://stats.stackexchange.com/questions/490306/natural-splines-degrees-of-freedom and https://stats.stackexchange.com/questions/7316/setting-knots-in-natural-cubic-splines-in-r) (also note that when we specify df = 4 we assume three interior knots and 2 boundary knots--this syntax does not include the basis function for the intercept in the count)
-  m.cs <- svycoxph( formula( paste0( "Surv(", time, ",",mort.ind," ) ~ ", paste0( "ns(", x,", df =", ( int.knots + 1 )," ) +" ), 
+  m.cs <- svycoxph( formula( paste0( "Surv(", time, ",",mort.ind," ) ~ ", paste0( "ns(", x,", df =", ( int.knots + 1 )," )", {if( !is.null( covars ) ) "+"} ), 
                                      paste0( covars, collapse = " + ") ) ),
                     design = des )
   
@@ -223,6 +223,7 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name,
   # Non-linearity Likelihood-Ratio test
   p.nl <- pchisq( abs( m.l$ll[2] -  m.cs$ll[2] ),
                   df = m.l$degf.resid - m.cs$degf.resid, lower.tail = FALSE )
+
   
   ## Generate Table ##
   
@@ -311,10 +312,13 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name,
   res.frame <- res.frame %>%
     relocate( n, .before = Q1 )
   
-  # add subsample name to table
+  # add subsample and model names to table
   res.frame$sample <- sample.name
+  res.frame$model <- model.name
   res.frame <- res.frame %>%
-    relocate( sample, .before = n )
+    relocate( sample, .before = n ) %>%
+    relocate( model, .after = sample )
+    
   
   ## Significant digits ##
   
@@ -333,7 +337,7 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name,
     res.frame[,i] <- str_replace( res.frame[,i], "(\\,\\s\\d)\\)", "\\1.00\\)") # match comma, space, digit, close parenthesis. Retain everything except parenthesis and add ".00)" to end
     res.frame[,i] <- str_replace( res.frame[,i], "(\\(\\d\\.\\d)\\-", "\\10\\-") # open parenthesis, digit, period, digit, hypen. Retain everything except hyphen and add "0)" to end
     res.frame[,i] <- str_replace( res.frame[,i], "(\\-\\d)\\)", "\\1.00\\)") # match hyphen, digit, close parenthesis. Retain everything except parenthesis and add ".00)" to end
-    res.frame[,i] <- str_replace( res.frame[,i], "(\\(\\d)\\-", "\\1.00\\)") # match hyphen, digit, close parenthesis. Retain everything except parenthesis and add ".00)" to end
+    res.frame[,i] <- str_replace( res.frame[,i], "(\\(\\d)\\-", "\\1.00\\-") # match hyphen, digit, close parenthesis. Retain everything except parenthesis and add ".00)" to end
   }
   
   # column indices for columns containing p values 
@@ -348,7 +352,8 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name,
   ## Spline plot ##
   
   
-  spline.plot <- hr_splines(  dat =  d.1 %>% select(  -permth_exm ), 
+  spline.plot <- hr_splines(  dat =  des$variables
+                              %>% select(  -permth_exm ), 
                x =  x, 
                time =  time, 
                mort.ind =  mort.ind, 

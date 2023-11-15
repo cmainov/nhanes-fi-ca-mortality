@@ -232,7 +232,11 @@ d.2 <- left_join( dat, d[ , c( "seqn", "fs_enet", "age_enet",
 ### (4.0) Energy Adjust Principal Component Scores using Residual Method (Willett) ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-adj.des <- subset( svy.design, inc == 1 ) # survey design object
+
+svy.design.2 <- svydesign( id = ~sdmvpsu, weights = ~wtdr18yr, strata = ~sdmvstra, 
+                         nest = TRUE, survey.lonely.psu = "adjust", data = d.2 )
+
+adj.des <- subset( svy.design.2, inc == 1 ) # survey design object
 
 d.3 <- svy_energy_residual( nutr = c( "pc1", "pc2" ), # columns to be energy adjusted
                             design = adj.des, # design object
@@ -245,7 +249,7 @@ d.3 <- svy_energy_residual( nutr = c( "pc1", "pc2" ), # columns to be energy adj
 
 ### (5.0) Save Analytic Data ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
-saveRDS( xdata4, "03-Data-Rodeo/01-analytic-data.rds" )
+saveRDS( d.3, "03-Data-Rodeo/01-analytic-data.rds" )
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 

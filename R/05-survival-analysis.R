@@ -25,6 +25,11 @@ covars.surv <- c( "race", "gender", "age", "bmxbmi", "hhsize", "fipr",
                   "cci_score", "alc_cat", "ins.status", "binfoodsechh",
                   "foodasstpnowic" ) 
 
+covars.base <- c( "race", "gender", "age" )
+
+covars.null <- c()
+
+covars.list <- list( covars.null, covars.base, covars.surv )
 
 # all-cause mortality
 out.res <- list()
@@ -32,18 +37,28 @@ fin.res <- data.frame()
 
 for( i in seq_along( indices ) ){
   
-  out.res[[i]] <- res( df = d, x = indices[i],   # data and x variable for model
-     subs = "test.set == 1",    # subset of data to use
-     cuts = 5,             # quantiles to use for categorization
-     id.col = "seqn",      # subject id column
-     covars = covars.surv, # covariates
-     time = "stime",       # survival time column
-     mort.ind = "mortstat",
-     scale.y = 1.5, # for shifting y axis max value
-     int.knots = 2,
-     sample.name = "All Cancer Survivors" )    # mortality indicator column
+  int.list <- list() # hold intermediary results (i.e., looping over covariate set)
+  for( j in 1:length( covars.list ) ){
+    
+     int.list[[j]] <- res( df = d, x = indices[i],   # data and x variable for model
+       subs = "test.set == 1",    # subset of data to use
+       cuts = 5,             # quantiles to use for categorization
+       id.col = "seqn",      # subject id column
+       covars = unlist( covars.list[j] ), # covariates
+       time = "stime",       # survival time column
+       mort.ind = "mortstat",
+       scale.y = 1.5, # for shifting y axis max value
+       int.knots = 2, # interior knots for spline models
+       sample.name = "All Cancer Survivors",
+       model.name = c( "Null Model", "Basic Model", "Full Model" )[j] )    # mortality indicator column
   
-  fin.res <- rbind( fin.res, out.res[[i]]$frame )
+     fin.res <- rbind( fin.res, int.list[[j]]$frame )
+     
+     }
+  
+  model.index <- which( fin.res$model == "Full Model" )[1]
+  out.res[[i]] <- int.list[[model.index]] # save full model results (to obtain spline model and create tables for null/basic and full models separately)
+    
 }
 
 
@@ -52,18 +67,27 @@ out.res.ca <- list()
 fin.res.ca <- data.frame()
 for( i in seq_along( indices ) ){
   
-  out.res.ca[[i]] <- res( df = d, x = indices[i], 
-                       subs = "test.set == 1", 
-                       cuts = 5, 
-                       id.col = "seqn", 
-                       covars = covars.surv, 
-                       time = "stime", 
-                       mort.ind = "castat",
-                       scale.y = 1.5, # for shifting y axis max value
-                       int.knots = 2,
-                       sample.name = "All Cancer Survivors" ) 
+  int.list.ca <- list() # hold intermediary results (i.e., looping over covariate set)
+  for( j in 1:length( covars.list ) ){
+    
+    int.list.ca[[j]] <- res( df = d, x = indices[i], 
+                         subs = "test.set == 1", 
+                         cuts = 5, 
+                         id.col = "seqn", 
+                         covars = unlist( covars.list[j] ), 
+                         time = "stime", 
+                         mort.ind = "castat",
+                         scale.y = 1.5, # for shifting y axis max value
+                         int.knots = 2,
+                         sample.name = "All Cancer Survivors",
+                         model.name = c( "Null Model", "Basic Model", "Full Model" )[j]) 
+    
+    fin.res.ca <- rbind( fin.res.ca, int.list.ca[[j]]$frame)
+  }
   
-  fin.res.ca <- rbind( fin.res.ca, out.res.ca[[i]]$frame)
+  model.index <- which( fin.res.ca$model == "Full Model" )[1]
+  out.res.ca[[i]] <- int.list[[model.index]] # save full model results (to obtain spline model and create tables for null/basic and full models separately)
+  
 }
 
 
@@ -80,23 +104,34 @@ covars.surv.fi <- c( "race", "gender", "age", "bmxbmi", "hhsize", "fipr",
                      "cci_score", "ins.status",
                      "foodasstpnowic"  ) 
 
+covars.list.fi <- list( covars.null, covars.base, covars.surv.fi )
+
 # all-cause mortality
 out.res.fi <- list()
 fin.res.fi <- data.frame()
+
 for( i in seq_along( indices ) ){
   
-  out.res.fi[[i]] <- res( df = d, x = indices[i],   # data and x variable for model
+  int.list.fi <- list() # hold intermediary results (i.e., looping over covariate set)
+  for( j in 1:length( covars.list ) ){
+    
+    int.list.fi[[j]] <- res( df = d, x = indices[i],   # data and x variable for model
                        subs = c("test.set == 1", "binfoodsechh == 'Low'"),    # subset of data to use
                        cuts = 5,             # quantiles to use for categorization
                        id.col = "seqn",      # subject id column
-                       covars = covars.surv.fi, # covariates
+                       covars = unlist( covars.list.fi[j] ), # covariates
                        time = "stime",       # survival time column
                        mort.ind = "mortstat",
                        scale.y = 1.3, # for shifting y axis max value
                        int.knots = 2,
-                       sample.name = "Food Insecure Cancer Survivors" )    # mortality indicator column
+                       sample.name = "Food Insecure Cancer Survivors",
+                       model.name = c( "Null Model", "Basic Model", "Full Model" )[j]) 
+
+    fin.res.fi <- rbind( fin.res.fi, int.list.fi[[j]]$frame)
+  }
   
-  fin.res.fi <- rbind( fin.res.fi, out.res.fi[[i]]$frame )
+  model.index <- which( fin.res.fi$model == "Full Model" )[1]
+  out.res.fi[[i]] <- int.list[[model.index]] # save full model results (to obtain spline model and create tables for null/basic and full models separately)
   
 }
 
@@ -104,22 +139,31 @@ for( i in seq_along( indices ) ){
 
 # cancer mortality
 out.res.fi.ca <- list()
-fin.res.ca.fi <- data.frame()
+fin.res.fi.ca <- data.frame()
 
 for( i in seq_along( indices ) ){
   
-  out.res.fi.ca[[i]] <- res( df = d, x = indices[i], 
-                          subs = c("test.set == 1", "binfoodsechh == 'Low'"), 
-                          cuts = 5, 
-                          id.col = "seqn", 
-                          covars = covars.surv.fi, 
-                          time = "stime", 
-                          mort.ind = "castat",
-                          scale.y = 1.3, # for shifting y axis max value
-                          int.knots = 2,
-                          sample.name = "Food Insecure Cancer Survivors" ) 
+  int.list.fi.ca <- list() # hold intermediary results (i.e., looping over covariate set)
+  for( j in 1:length( covars.list ) ){
+    
+    int.list.fi.ca[[j]] <- res( df = d, x = indices[i],   # data and x variable for model
+                             subs = c("test.set == 1", "binfoodsechh == 'Low'"),    # subset of data to use
+                             cuts = 5,             # quantiles to use for categorization
+                             id.col = "seqn",      # subject id column
+                             covars = unlist( covars.list.fi[j] ), # covariates
+                             time = "stime",       # survival time column
+                             mort.ind = "castat",
+                             scale.y = 1.3, # for shifting y axis max value
+                             int.knots = 2,
+                             sample.name = "Food Insecure Cancer Survivors",
+                             model.name = c( "Null Model", "Basic Model", "Full Model" )[j]) 
+    
+    fin.res.fi.ca <- rbind( fin.res.fi.ca, int.list.fi.ca[[j]]$frame)
+  }
   
-  fin.res.ca.fi <- rbind( fin.res.ca.fi, out.res.fi.ca[[i]]$frame)
+  model.index <- which( fin.res.fi.ca$model == "Full Model" )[1]
+  out.res.fi.ca[[i]] <- int.list[[model.index]] # save full model results (to obtain spline model and create tables for null/basic and full models separately)
+  
 }
 
 
@@ -147,7 +191,8 @@ for( i in seq_along( indices ) ){
                        mort.ind = "mortstat",
                        scale.y = 1.3, # for shifting y axis max value
                        int.knots = 2,
-                       sample.name = "All Cancer Survivors" )    # mortality indicator column
+                       sample.name = "All Cancer Survivors",
+                       model.name = "Full Model" )    # mortality indicator column
   
   fin.res.s <- rbind( fin.res.s, out.res.s[[i]]$frame)
   
@@ -168,7 +213,8 @@ for( i in seq_along( indices ) ){
                           mort.ind = "castat",
                           scale.y = 1.3, # for shifting y axis max value
                           int.knots = 2,
-                          sample.name = "All Cancer Survivors" ) 
+                          sample.name = "All Cancer Survivors",
+                          model.name = "Full Model") 
   
   fin.res.s.ca <- rbind( fin.res.s.ca, out.res.s.ca[[i]]$frame)
 }
@@ -197,7 +243,8 @@ for( i in seq_along( indices ) ){
                        mort.ind = "mortstat",
                        scale.y = 1.3, # for shifting y axis max value
                        int.knots = 2,
-                       sample.name = "All Cancer Survivors" )    # mortality indicator column
+                       sample.name = "All Cancer Survivors",
+                       model.name = "Full Model" )    # mortality indicator column
   
   fin.res.sens <- rbind( fin.res.sens, out.sens.res[[i]]$frame )
 }
@@ -218,7 +265,8 @@ for( i in seq_along( indices ) ){
                           mort.ind = "castat",
                           scale.y = 1.3, # for shifting y axis max value
                           int.knots = 2,
-                          sample.name = "All Cancer Survivors" ) 
+                          sample.name = "All Cancer Survivors",
+                          model.name = "Full Model" ) 
   
   fin.res.sens.ca <- rbind( fin.res.sens.ca, out.sens.res.ca[[i]]$frame )
   
@@ -234,7 +282,9 @@ for( i in seq_along( indices ) ){
 
 ## All-cause mortality ##
 
-ac.table <- bind_rows( fin.res, fin.res.fi ) %>%
+# full model results only
+ac.table <- bind_rows( fin.res %>% filter( model == "Full Model" ), 
+                       fin.res.fi %>% filter( model == "Full Model" ) ) %>%
   data.frame() %>%
   
   # arrange tables first by custom order and second by sample so that ALL Survivors are situated next to estimates for FI CA survivors for a given diet index
@@ -245,7 +295,8 @@ ac.table <- bind_rows( fin.res, fin.res.fi ) %>%
 
 ## Cancer-specific mortality ##
 
-ca.table <- bind_rows( fin.res.ca, fin.res.ca.fi ) %>%
+ca.table <- bind_rows( fin.res.ca %>% filter( model == "Full Model" ), 
+                       fin.res.fi.ca %>% filter( model == "Full Model" ) ) %>%
   data.frame() %>%
   
   # arrange tables first by custom order and second by sample so that ALL Survivors are situated next to estimates for FI CA survivors for a given diet index
@@ -268,37 +319,36 @@ sens.60.table <- bind_rows( data.frame( index = "All-Cause Mortality"),
                       data.frame( index = "Cancer-Specific Mortality"),
                       fin.res.sens.ca )
 
-# rename the dietary patterns in these tables
-ac.table[ac.table=="fs_enet"] <- "Food Insecurity"
-ca.table[ca.table=="fs_enet"] <- "Food Insecurity"
-s.table[s.table=="fs_enet"] <- "Food Insecurity"
-sens.60.tablesens.60.table <- "Food Insecurity"
 
+ac.table[ac.table == "fs_enet"] <- "Food Insecurity"
+ca.table[ca.table == "fs_enet"] <- "Food Insecurity"
+s.table[s.table == "fs_enet"] <- "Food Insecurity"
+sens.60.table[sens.60.table == "fs_enet"] <- "Food Insecurity"
 
-ac.table[ac.table=="age_enet"] <- "Age"
-ca.table[ca.table=="age_enet"] <- "Age"
-s.table[s.table=="age_enet"] <- "Age"
-sens.60.table[sens.60.table=="age_enet"] <- "Age"
+ac.table[ac.table == "age_enet"] <- "Age"
+ca.table[ca.table == "age_enet"] <- "Age"
+s.table[s.table == "age_enet"] <- "Age"
+sens.60.table[sens.60.table == "age_enet"] <- "Age"
 
-ac.table[ac.table=="fdas_enet"] <- "Food Assistance (SNAP)"
-ca.table[ca.table=="fdas_enet"] <- "Food Assistance (SNAP)"
-s.table[s.table=="fdas_enet"] <- "Food Assistance (SNAP)"
-sens.60.table[sens.60.table=="fdas_enet"] <- "Food Assistance (SNAP)"
+ac.table[ac.table == "fdas_enet"] <- "Food Assistance (SNAP)"
+ca.table[ca.table == "fdas_enet"] <- "Food Assistance (SNAP)"
+s.table[s.table == "fdas_enet"] <- "Food Assistance (SNAP)"
+sens.60.table[sens.60.table == "fdas_enet"] <- "Food Assistance (SNAP)"
 
-ac.table[ac.table=="hhs_enet"] <- "Household Size"
-ca.table[ca.table=="hhs_enet"] <- "Household Size"
-s.table[s.table=="hhs_enet"] <- "Household Size"
-sens.60.table[sens.60.table=="hhs_enet"] <- "Household Size"
+ac.table[ac.table == "hhs_enet"] <- "Household Size"
+ca.table[ca.table == "hhs_enet"] <- "Household Size"
+s.table[s.table == "hhs_enet"] <- "Household Size"
+sens.60.table[sens.60.table == "hhs_enet"] <- "Household Size"
 
-ac.table[ac.table=="pc1"] <- "Prudent #1"
-ca.table[ca.table=="pc1"] <- "Prudent #1"
-s.table[s.table=="pc1"] <- "Prudent #1"
-sens.60.table[sens.60.table=="pc1"] <- "Prudent #1"
+ac.table[ac.table == "pc1"] <- "Prudent #1"
+ca.table[ca.table == "pc1"] <- "Prudent #1"
+s.table[s.table == "pc1"] <- "Prudent #1"
+sens.60.table[sens.60.table == "pc1"] <- "Prudent #1"
 
-ac.table[ac.table=="pc2"] <- "Prudent #2"
-ca.table[ca.table=="pc2"] <- "Prudent #2"
-s.table[s.table=="pc2"] <- "Prudent #2"
-sens.60.table[sens.60.table=="pc2"] <- "Prudent #2"
+ac.table[ac.table == "pc2"] <- "Prudent #2"
+ca.table[ca.table == "pc2"] <- "Prudent #2"
+s.table[s.table == "pc2"] <- "Prudent #2"
+sens.60.table[sens.60.table == "pc2"] <- "Prudent #2"
 
 
 ## Generate one table (main analysis) with all causes of death ##
@@ -308,7 +358,55 @@ all.table <- bind_rows( data.frame( index = "All-Cause Mortality"),
                       data.frame( index = "Cancer-Specific Mortality"),
                       ca.table )
 
+## Generate one table with all causes of death for basic and null models only ##
 
+# null and basic model results only
+ac.table.nb <- bind_rows( fin.res %>% filter( model %in% c( "Null Model", "Basic Model" ) ), 
+                       fin.res.fi %>% filter( model %in% c( "Null Model", "Basic Model" ) ) ) %>%
+  data.frame() %>%
+  
+  # arrange tables first by custom order and second by sample so that ALL Survivors are situated next to estimates for FI CA survivors for a given diet index
+  arrange( factor(index, levels = c("fs_enet", "age_enet", "hhs_enet", 
+                                    "fdas_enet", "pc1", "pc2" ) ),
+           sample )
+
+
+# cancer-specific mortality 
+
+ca.table.nb <- bind_rows( fin.res.ca %>% filter( model %in% c( "Null Model", "Basic Model" ) ), 
+                       fin.res.fi.ca %>% filter( model %in% c( "Null Model", "Basic Model" ) ) ) %>%
+  data.frame() %>%
+  
+  # arrange tables first by custom order and second by sample so that ALL Survivors are situated next to estimates for FI CA survivors for a given diet index
+  arrange( factor(index, levels = c("fs_enet", "age_enet", "hhs_enet", 
+                                    "fdas_enet", "pc1", "pc2" ) ),
+           sample )
+
+# change names inside table
+ac.table.nb[ac.table.nb == "fs_enet"] <- "Food Insecurity"
+ca.table.nb[ca.table.nb == "fs_enet"] <- "Food Insecurity"
+
+ac.table.nb[ac.table.nb == "age_enet"] <- "Age"
+ca.table.nb[ca.table.nb == "age_enet"] <- "Age"
+
+ac.table.nb[ac.table.nb == "fdas_enet"] <- "Food Assistance (SNAP)"
+ca.table.nb[ca.table.nb == "fdas_enet"] <- "Food Assistance (SNAP)"
+
+ac.table.nb[ac.table.nb == "hhs_enet"] <- "Household Size"
+ca.table.nb[ca.table.nb == "hhs_enet"] <- "Household Size"
+
+ac.table.nb[ac.table.nb == "pc1"] <- "Prudent #1"
+ca.table.nb[ca.table.nb == "pc1"] <- "Prudent #1"
+
+
+ac.table.nb[ac.table.nb == "pc2"] <- "Prudent #2"
+ca.table.nb[ca.table.nb == "pc2"] <- "Prudent #2"
+
+# row bind results for this supplementary table
+all.table.nb <- bind_rows( data.frame( index = "All-Cause Mortality"),
+                        ac.table.nb, 
+                        data.frame( index = "Cancer-Specific Mortality"),
+                        ca.table.nb )
 
 ## Save tables ##
 
@@ -317,6 +415,7 @@ write.table( ac.table, "04-Tables-Figures/tables/05-table-4-ca.txt", sep = "," )
 write.table( all.table, "04-Tables-Figures/tables/07-table-4-all.txt", sep = "," )
 write.table( s.table, "04-Tables-Figures/tables/08-table-s3.txt", sep = "," )
 write.table( sens.60.table, "04-Tables-Figures/tables/09-table-s4.txt", sep = "," )
+write.table( all.table.nb, "04-Tables-Figures/tables/09-table-s5.txt", sep = "," )
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
