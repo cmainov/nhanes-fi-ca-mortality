@@ -52,7 +52,8 @@ for( i in 1:length( yrs ) ) {
 
 dir.files <- paste0( "01-Data-Raw/", dir( "01-Data-Raw" ) )
 
-datout<-data.frame() #initialize dataframe
+datout <- data.frame() #initialize dataframe
+
 for( i in 1:length( dir.files ) ){
   
   # read in the fixed-width format ASCII file
@@ -287,7 +288,7 @@ d.na %>%
              duplicated = n.total - unique )
 
 # 36 remain duplicated. let's look at those columns again
-d.na.1.dups <- d.na.1[ duplicated( d.na.1$seqn ), "seqn"]
+d.na.1.dups <- d.na.1[ duplicated( d.na.1$seqn ), "seqn" ]
 
 d.na.1 %>%
   filter( seqn %in% d.na.1.dups ) %>% arrange( seqn ) %>%
@@ -316,7 +317,7 @@ d.na.1 %>%
 
 d.1.dups <- d.1[ duplicated( d.1$seqn ), "seqn"]
 
-(d.1.1 <- d.1 %>%
+( d.1.1 <- d.1 %>%
     filter( seqn %in% d.1.dups ) %>%
     group_by( seqn )%>%
     filter( mortstat == max( mortstat, na.rm = T ) ) %>%
@@ -529,7 +530,11 @@ dem.hei <- d.5 %>%
 d.6 <- hei( fped = fped.hei, diet = diet.hei, demograph = dem.hei ) %>%
   select( seqn = SEQN,
           hei.2015 = HEI ) %>%
-  left_join( d.4, . )
+  left_join( d.4, . ) %>%
+  
+  # remove elastic net dietary patterns since they will be recomputed in this analysis
+  select( -c( fs_enet, fdas_enet, age_enet, hhs_enet,
+              pc1, pc2 ) )
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 

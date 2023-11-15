@@ -13,7 +13,7 @@ d <- readRDS( "03-Data-Rodeo/01-analytic-data.rds")
 
 
 # x variables
-indices <- c( "fs_enet", "age_enet", "hhs_enet", "fdas_enet", "pc1", "pc2", "hei.2015" )
+indices <- c( "fs_enet", "pc1", "pc2", "hei.2015" )
 
 
 ### Analyses on the Cancer Survivor Population ###
@@ -25,9 +25,9 @@ covars.surv <- c( "race", "gender", "age", "bmxbmi", "hhsize", "fipr",
                   "cci_score", "alc_cat", "ins.status", "binfoodsechh",
                   "foodasstpnowic" ) 
 
-covars.base <- c( "race", "gender", "age" )
+covars.base <- c( "race", "gender", "age" ) # basic model covariates
 
-covars.null <- c()
+covars.null <- c() # null model covariates
 
 covars.list <- list( covars.null, covars.base, covars.surv )
 
@@ -288,8 +288,7 @@ ac.table <- bind_rows( fin.res %>% filter( model == "Full Model" ),
   data.frame() %>%
   
   # arrange tables first by custom order and second by sample so that ALL Survivors are situated next to estimates for FI CA survivors for a given diet index
-  arrange( factor(index, levels = c("fs_enet", "age_enet", "hhs_enet", 
-                                    "fdas_enet", "pc1", "pc2" ) ),
+  arrange( factor(index, levels = c("fs_enet", "pc1", "pc2" ) ),
                   sample )
 
 
@@ -325,21 +324,6 @@ ca.table[ca.table == "fs_enet"] <- "Food Insecurity"
 s.table[s.table == "fs_enet"] <- "Food Insecurity"
 sens.60.table[sens.60.table == "fs_enet"] <- "Food Insecurity"
 
-ac.table[ac.table == "age_enet"] <- "Age"
-ca.table[ca.table == "age_enet"] <- "Age"
-s.table[s.table == "age_enet"] <- "Age"
-sens.60.table[sens.60.table == "age_enet"] <- "Age"
-
-ac.table[ac.table == "fdas_enet"] <- "Food Assistance (SNAP)"
-ca.table[ca.table == "fdas_enet"] <- "Food Assistance (SNAP)"
-s.table[s.table == "fdas_enet"] <- "Food Assistance (SNAP)"
-sens.60.table[sens.60.table == "fdas_enet"] <- "Food Assistance (SNAP)"
-
-ac.table[ac.table == "hhs_enet"] <- "Household Size"
-ca.table[ca.table == "hhs_enet"] <- "Household Size"
-s.table[s.table == "hhs_enet"] <- "Household Size"
-sens.60.table[sens.60.table == "hhs_enet"] <- "Household Size"
-
 ac.table[ac.table == "pc1"] <- "Prudent #1"
 ca.table[ca.table == "pc1"] <- "Prudent #1"
 s.table[s.table == "pc1"] <- "Prudent #1"
@@ -349,6 +333,11 @@ ac.table[ac.table == "pc2"] <- "Prudent #2"
 ca.table[ca.table == "pc2"] <- "Prudent #2"
 s.table[s.table == "pc2"] <- "Prudent #2"
 sens.60.table[sens.60.table == "pc2"] <- "Prudent #2"
+
+ac.table[ac.table == "hei.2015"] <- "HEI-2015"
+ca.table[ca.table == "hei.2015"] <- "HEI-2015"
+s.table[s.table == "hei.2015"] <- "HEI-2015"
+sens.60.table[sens.60.table == "hei.2015"] <- "HEI-2015"
 
 
 ## Generate one table (main analysis) with all causes of death ##
@@ -386,21 +375,14 @@ ca.table.nb <- bind_rows( fin.res.ca %>% filter( model %in% c( "Null Model", "Ba
 ac.table.nb[ac.table.nb == "fs_enet"] <- "Food Insecurity"
 ca.table.nb[ca.table.nb == "fs_enet"] <- "Food Insecurity"
 
-ac.table.nb[ac.table.nb == "age_enet"] <- "Age"
-ca.table.nb[ca.table.nb == "age_enet"] <- "Age"
-
-ac.table.nb[ac.table.nb == "fdas_enet"] <- "Food Assistance (SNAP)"
-ca.table.nb[ca.table.nb == "fdas_enet"] <- "Food Assistance (SNAP)"
-
-ac.table.nb[ac.table.nb == "hhs_enet"] <- "Household Size"
-ca.table.nb[ca.table.nb == "hhs_enet"] <- "Household Size"
-
 ac.table.nb[ac.table.nb == "pc1"] <- "Prudent #1"
 ca.table.nb[ca.table.nb == "pc1"] <- "Prudent #1"
 
-
 ac.table.nb[ac.table.nb == "pc2"] <- "Prudent #2"
 ca.table.nb[ca.table.nb == "pc2"] <- "Prudent #2"
+
+ac.table.nb[ac.table.nb == "hei.2015"] <- "HEI-2015"
+ca.table.nb[ca.table.nb == "hei.2015"] <- "HEI-2015"
 
 # row bind results for this supplementary table
 all.table.nb <- bind_rows( data.frame( index = "All-Cause Mortality"),

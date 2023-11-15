@@ -159,7 +159,7 @@ write.table( t.1, "04-Tables-Figures/tables/01-table-1.txt", sep = ", ", row.nam
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # subset individuals meeting criteria
-cordata <- dat[ which( dat$inc == 1 ), ]
+cordata <- dat[ which( dat$inc == 1 & dat$test.set == 1 ), ]
 
 # food group column indices
 fdgrp.columns <- which( colnames( cordata ) %in% c( "processedmts", "meat", "poultry", 
@@ -190,7 +190,7 @@ mod1 <- cordat2 %>%
   filter( is.na( wtdr18yr ) == F) %>%
   svydesign( id = ~sdmvpsu, weights = ~wtdr18yr, strata = ~sdmvstra, 
              nest = TRUE, survey.lonely.psu = "adjust", data = . ) %>%
-  subset( ., inc == 1 )# inclusions
+  subset( ., inc == 1 & test.set == 1 ) # inclusions AND performed only on testing set
 
 
 
@@ -199,11 +199,10 @@ fdgrp.diet.names <- c( "processedmts", "meat", "poultry", "fish_hi", "fish_lo",
                        "alcohol", "fruitother", "f_citmelber", "tomatoes", 
                        "greenleafy", "darkylveg", "otherveg", "potatoes", 
                        "otherstarchyveg", "legumes", "soy", "refinedgrain", 
-                       "wholegrain", "nuts", "addedsugars", "fs_enet", "age_enet", 
-                       "fdas_enet", "hhs_enet", "pc1", "pc2", "hei.2015" )
+                       "wholegrain", "nuts", "addedsugars", "fs_enet", 
+                       "pc1", "pc2", "hei.2015" )
 
-diet.patt.names <- c( "fs_enet", "age_enet", 
-                      "fdas_enet", "hhs_enet", "pc1", "pc2", "hei.2015" )
+diet.patt.names <- c( "fs_enet", "pc1", "pc2", "hei.2015" )
 
 ## Loop to generate correlation matrix using svycor function ##
 
@@ -286,17 +285,18 @@ rp.matrix <- corr.matrix[ fg.only.lo, ]
 # prepare frame for plotting (items/variables in columns, dietary patterns in rows)
 rp.all.gg <- setNames( data.frame( bind_rows(
   setNames( matrix( rp.matrix[, 1 ], nrow = 1 ), fg.only ),
+  setNames( matrix( rp.matrix[, 2 ], nrow = 1 ), fg.only ),
   setNames( matrix( rp.matrix[, 3 ], nrow = 1 ), fg.only ),
-  setNames( matrix( rp.matrix[, 5 ], nrow = 1 ), fg.only ),
-  setNames( matrix( rp.matrix[, 6 ], nrow = 1 ), fg.only ), ) ),
+  setNames( matrix( rp.matrix[, 4 ], nrow = 1 ), fg.only ), ) ),
   fg.only ) %>%
   
   mutate( across( where( is.numeric ), ~ (.x + 1 ) / 2 ) ) %>% # map -1-1 scale to 0-1 scale
   data.frame()
 
 # set column names and row names
-colnames( rp.all.gg ) <- c (fg.only.lo )
-rownames( rp.all.gg ) <- c( "Food Insecurity (FI)", "Food Assistance\n (SNAP)", "Prudent #1", "Prudent #2" )
+colnames( rp.all.gg ) <- c ( fg.only.lo )
+rownames( rp.all.gg ) <- c( "Food Insecurity (FI)", "Prudent #1", "Prudent #2",
+                            "HEI-2015" )
 
 # need to add the group names as the first column of the dataset you feed to `ggradar` since it looks for those in column #1
 # and begins looking at numeric values in column #2 and onward
@@ -317,10 +317,10 @@ colors.line <- c( rgb(0.529,0.808,0.98,0.9), rgb(0,0,0.502,0.9), rgb(0.55,0.10,0
                   legend.title = "Dietary Pattern",
                   axis.label.size = 7.4,
                   x.centre.range = 1.31 ,
-                  legend.labels = c( unname( TeX( "Food Insecurity (FI)$^\\dagger$" ) ), 
-                                     unname( TeX( "Food Assistance\n (SNAP)$^\\dagger$" ) ), 
+                  legend.labels = c( unname( TeX( "Food Insecurity (FI)$^\\dagger$" ) ),
                                      unname( TeX("Prudent #1$^\\ddagger$" ) ),
-                                     unname( TeX("Prudent #2$^\\ddagger$" ) ) ),
+                                     unname( TeX("Prudent #2$^\\ddagger$" ) ),
+                                     unname( TeX( "HEI-2015" ) ) ),
                   group.colours = colors.line ) +
     theme( legend.title = element_text( face = "bold"),
            legend.text = element_text( size = 19, margin = margin(t = 10, b = 10, l = 0.1) ), # margins for legend text
@@ -337,7 +337,7 @@ g.1$layers[[5]]$aes_params <- c( g.1$layers[[5]]$aes_params, colour = "grey40" )
 g.1
 
 ggsave( "04-Tables-Figures/figures/04-ggradar-all.png",
-        width = 14.8, height = 11.9 )
+        width = 14.8, height = 11.9, plot = g.1 )
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -348,13 +348,11 @@ ggsave( "04-Tables-Figures/figures/04-ggradar-all.png",
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # diet pattern variable names
-diet.patt.names <- c( "fs_enet", "age_enet", 
-                      "fdas_enet", "hhs_enet", "pc1", "pc2", "hei.2015" )
+diet.patt.names <- c( "fs_enet", "pc1", "pc2", "hei.2015" )
 
 # how we want them presented in the table
-diet.patt.names.table <- c( "Food Security Pattern", "Age Pattern", 
-                      "SNAP Pattern", "Household Size Pattern", "Modified Western Pattern",
-                      "Prudent Pattern", "HEI-2015" )
+diet.patt.names.table <- c( "Food Security Pattern", "Prudent #1",
+                      "Prudent #2", "HEI-2015" )
 
 diets.t <- data.frame() # initialize frame
 for ( i in seq_along( diet.patt.names ) ){

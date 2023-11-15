@@ -634,7 +634,7 @@ enet_pat <- function( xmat, yvec, wts, plot.title ){
     set.seed( 28 ) # seed to reproduce results
     
     # call glmnet with 10-fold cv
-    enetr <- cv.glmnet( x = xmat, y = yvec, family ='binomial', weights = wts,
+    enetr <- cv.glmnet( x = xmat, y = yvec, family = 'binomial', weights = wts,
                         nfold = 10, alpha = alpha.grid[ i ] )
     
     # bind values of lambda to cross validation error
@@ -658,7 +658,7 @@ enet_pat <- function( xmat, yvec, wts, plot.title ){
     
     if ( i == 1 ){ # for the first value of 'i'
       plot( x = enetr$lambda, y = enetr$cvm, type ='l', 
-            ylim = c( min( enetr$cvm )-0.02, max( enetr$cvm )-0.02 ),
+            ylim = c( min( enetr$cvm ) - 0.02, max( enetr$cvm ) - 0.02 ),
             xlim = c( min( evm$lambda ), ( resdf$lambda*1.05 ) ), 
             las = 0, 
             cex.axis = 0.7 )

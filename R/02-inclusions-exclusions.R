@@ -92,10 +92,6 @@ ex.2c <- nrow( step2c.data )
               !is.na( education_bin ) &
               !is.na( cci_score ) &
               !is.na( alc_cat ) &
-              !is.na( fs_enet ) &
-              !is.na( hhs_enet ) &
-              !is.na( age_enet ) &
-              !is.na( fdas_enet ) &
               !is.na( stime ) &
               !is.na( mortstat ) ) %>%
     mutate( inc = 1 ) ) %>% # final sample indicator
@@ -104,7 +100,7 @@ ex.2c <- nrow( step2c.data )
 
 
 # subjects.remaining subjects.excluded
-#               2495                884
+#               2493                884
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
