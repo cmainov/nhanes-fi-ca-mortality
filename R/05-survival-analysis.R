@@ -9,13 +9,11 @@ library( latex2exp )
 source( "R/utils.R" ) # read in helper functions
 source( "R/old/surv-miner-bug-fix.R" ) # bug fix for generating survival curves with `survminer`
 
-d <- readRDS( "03-Data-Rodeo/04-Analytic-Data.rds")
+d <- readRDS( "03-Data-Rodeo/01-analytic-data.rds")
 
 
 # x variables
 indices <- c( "fs_enet", "age_enet", "hhs_enet", "fdas_enet", "pc1", "pc2", "hei.2015" )
-
-
 
 
 ### Analyses on the Cancer Survivor Population ###
@@ -69,31 +67,7 @@ for( i in seq_along( indices ) ){
 }
 
 
-# cvd mortality
-out.res.cvd <- list()
-fin.res.cvd <- data.frame()
-for( i in seq_along( indices ) ){
-  
-  out.res.cvd[[i]] <- res( df = d, x = indices[i], 
-                          subs = "inc == 1", 
-                          cuts = 5, 
-                          id.col = "seqn", 
-                          covars = covars.surv, 
-                          time = "stime", 
-                          mort.ind = "cvdstat",
-                          scale.y = 1.5, # for shifting y axis max value
-                          int.knots = 2,
-                          sample.name = "All Cancer Survivors" ) 
-  
-  fin.res.cvd <- rbind( fin.res.cvd, out.res.cvd[[i]]$frame )
-}
-
-
-
-
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
 
 
 
@@ -149,32 +123,7 @@ for( i in seq_along( indices ) ){
 }
 
 
-# cvd mortality
-## NOTE: Too few deaths for this subanalysis, the model does not converge
-out.res.fi.cvd <- list()
-fin.res.cvd.fi <- data.frame()
-for( i in seq_along( indices ) ){
-  
-  out.res.fi.cvd[[i]] <- res( df = d, x = indices[i], 
-                           subs = c("inc == 1", "binfoodsechh == 'Low'"), 
-                           cuts = 5, 
-                           id.col = "seqn", 
-                           covars = covars.surv.fi, 
-                           time = "stime", 
-                           mort.ind = "cvdstat",
-                           scale.y = 1.3, # for shifting y axis max value
-                           int.knots = 2,
-                           sample.name = "Food Insecure Cancer Survivors" ) 
-  
-  fin.res.cvd.fi <- rbind( fin.res.cvd.fi, out.res.fi.cvd[[i]]$frame)
-  
-}
-
-
-
-
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
-
 
 
 
@@ -225,38 +174,15 @@ for( i in seq_along( indices ) ){
 }
 
 
-# cvd mortality
-out.res.s.cvd <- list()
-fin.res.s.cvd <- data.frame()
-for( i in seq_along( indices ) ){
-  
-  out.res.s.cvd[[i]] <- res( df = d, x = indices[i], 
-                           subs = "test.set == 1", 
-                           cuts = 5, 
-                           id.col = "seqn", 
-                           covars = covars.surv.s, 
-                           time = "stime", 
-                           mort.ind = "cvdstat",
-                           scale.y = 1.3, # for shifting y axis max value
-                           int.knots = 2,
-                           sample.name = "All Cancer Survivors" ) 
-  
-  fin.res.s.cvd <- rbind( fin.res.s.cvd, out.res.s.cvd[[i]]$frame )
-  
-}
-
-
-
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
-
 
 
 
 ### Sensitivity Analysis: Only Those within 5 Years of a Primary Cancer Diagnosis ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
 ## All Cancer Survivors ##
+
 # all-cause mortality
 out.sens.res <- list()
 fin.res.sens <- data.frame()
@@ -299,35 +225,12 @@ for( i in seq_along( indices ) ){
 }
 
 
-# cvd mortality
-out.sens.res.cvd <- list()
-fin.res.sens.cvd <- list()
-for( i in seq_along( indices ) ){
-  
-  out.sens.res.cvd[[i]] <- res( df = d, x = indices[i], 
-                           subs = c( "inc == 1", "timesincecadxmn <= 60" ), 
-                           cuts = 5, 
-                           id.col = "seqn", 
-                           covars = covars.surv, 
-                           time = "stime", 
-                           mort.ind = "cvdstat",
-                           scale.y = 1.3, # for shifting y axis max value
-                           int.knots = 2,
-                           sample.name = "All Cancer Survivors" ) 
-  
-  fin.res.sens.cvd <- rbind( fin.res.sens.cvd, out.sens.res.cvd[[i]]$frame )
-}
-
-
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
 
 
 
 ### Assemble Tables ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
-
 
 ## All-cause mortality ##
 
@@ -351,69 +254,49 @@ ca.table <- bind_rows( fin.res.ca, fin.res.ca.fi ) %>%
            sample )
 
 
-## CVD-specific mortality ##
-
-cvd.table <- bind_rows( fin.res.cvd ) %>%
-  data.frame() %>%
-  
-  # arrange tables first by custom order and second by sample so that ALL Survivors are situated next to estimates for FI cvd survivors for a given diet index
-  arrange( factor(index, levels = c("fs_enet", "age_enet", "hhs_enet", 
-                                    "fdas_enet", "pc1", "pc2" ) ),
-           sample )
-
 
 ## Adjust for ADL Score Models ##
 s.table <- bind_rows( data.frame( index = "All-Cause Mortality"),
            fin.res.s, 
            data.frame( index = "Cancer-Specific Mortality"),
-           fin.res.s.ca, 
-           data.frame( index = "Cardiovascular Disease Mortality"),
-           fin.res.s.cvd )
+           fin.res.s.ca )
 
 
 ## Sensitivity analysis excluding those >60 mos since dx ##
 sens.60.table <- bind_rows( data.frame( index = "All-Cause Mortality"),
                             fin.res.sens, 
                       data.frame( index = "Cancer-Specific Mortality"),
-                      fin.res.sens.ca, 
-                      data.frame( index = "Cardiovascular Disease Mortality"),
-                      fin.res.sens.cvd )
+                      fin.res.sens.ca )
 
 # rename the dietary patterns in these tables
 ac.table[ac.table=="fs_enet"] <- "Food Insecurity"
 ca.table[ca.table=="fs_enet"] <- "Food Insecurity"
-cvd.table[cvd.table=="fs_enet"] <- "Food Insecurity"
 s.table[s.table=="fs_enet"] <- "Food Insecurity"
 sens.60.tablesens.60.table <- "Food Insecurity"
 
 
 ac.table[ac.table=="age_enet"] <- "Age"
 ca.table[ca.table=="age_enet"] <- "Age"
-cvd.table[cvd.table=="age_enet"] <- "Age"
 s.table[s.table=="age_enet"] <- "Age"
 sens.60.table[sens.60.table=="age_enet"] <- "Age"
 
 ac.table[ac.table=="fdas_enet"] <- "Food Assistance (SNAP)"
 ca.table[ca.table=="fdas_enet"] <- "Food Assistance (SNAP)"
-cvd.table[cvd.table=="fdas_enet"] <- "Food Assistance (SNAP)"
 s.table[s.table=="fdas_enet"] <- "Food Assistance (SNAP)"
 sens.60.table[sens.60.table=="fdas_enet"] <- "Food Assistance (SNAP)"
 
 ac.table[ac.table=="hhs_enet"] <- "Household Size"
 ca.table[ca.table=="hhs_enet"] <- "Household Size"
-cvd.table[cvd.table=="hhs_enet"] <- "Household Size"
 s.table[s.table=="hhs_enet"] <- "Household Size"
 sens.60.table[sens.60.table=="hhs_enet"] <- "Household Size"
 
 ac.table[ac.table=="pc1"] <- "Prudent #1"
 ca.table[ca.table=="pc1"] <- "Prudent #1"
-cvd.table[cvd.table=="pc1"] <- "Prudent #1"
 s.table[s.table=="pc1"] <- "Prudent #1"
 sens.60.table[sens.60.table=="pc1"] <- "Prudent #1"
 
 ac.table[ac.table=="pc2"] <- "Prudent #2"
 ca.table[ca.table=="pc2"] <- "Prudent #2"
-cvd.table[cvd.table=="pc2"] <- "Prudent #2"
 s.table[s.table=="pc2"] <- "Prudent #2"
 sens.60.table[sens.60.table=="pc2"] <- "Prudent #2"
 
@@ -423,9 +306,7 @@ sens.60.table[sens.60.table=="pc2"] <- "Prudent #2"
 all.table <- bind_rows( data.frame( index = "All-Cause Mortality"),
                         ac.table, 
                       data.frame( index = "Cancer-Specific Mortality"),
-                      ca.table, 
-                      data.frame( index = "Cardiovascular Disease Mortality"),
-                      cvd.table )
+                      ca.table )
 
 
 
@@ -433,10 +314,11 @@ all.table <- bind_rows( data.frame( index = "All-Cause Mortality"),
 
 write.table( ac.table, "04-Tables-Figures/tables/04-table-4-ac.txt", sep = "," )
 write.table( ac.table, "04-Tables-Figures/tables/05-table-4-ca.txt", sep = "," )
-write.table( ac.table, "04-Tables-Figures/tables/06-table-4-cvd.txt", sep = "," )
 write.table( all.table, "04-Tables-Figures/tables/07-table-4-all.txt", sep = "," )
 write.table( s.table, "04-Tables-Figures/tables/08-table-s3.txt", sep = "," )
 write.table( sens.60.table, "04-Tables-Figures/tables/09-table-s4.txt", sep = "," )
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 

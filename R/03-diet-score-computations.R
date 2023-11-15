@@ -5,13 +5,15 @@
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 # 
 # In this script, we will extract dietary patterns using penalized logistic regression and then principal components
-# analysis.
+# analysis. all dietary patterns scores will be energy adjusted in the final dataset.
 # 
 # INPUT DATA FILE: "02-Data-Wrangled/02-inclusions-exclusions.rds" 
 #
 # OUTPUT FILES: "03-Data-Rodeo/01-analytic-data.rds"
 #
 # Resources: 
+# i. reference for penalized logistic regression: https://teazrq.github.io/SMLR/logistic-regression.html
+# ii. adjustment for total energy paper: https://doi.org/10.1093/ajcn/65.4.1220S
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 library( glmnet ) # fit penalized regression models
@@ -22,118 +24,28 @@ library( jtools ) # svycor function
 library( weights )
 library( latex2exp ) # to add LaTeX to plots
 
+source( "R/utils.R" ) # read in helper and internal functions
 
-xdata <- readRDS( "02-Data-Wrangled/02-inclusions-exclusions.rds" )
-
+# data read-in
+dat <- readRDS( "02-Data-Wrangled/02-inclusions-exclusions.rds" )
 
 # collapse red mt and organ mt to same group give very low intake of organ mts
-xdata$meat <- xdata$redmts + xdata$organmts
-
-# copy
-x.data <- xdata
+dat$meat <- dat$redmts + dat$organmts
 
 
-### Dietary Patterns Extraction: Penalized Logistic Regression ###
+### (0.0) Prep Data for Penalized Logistic Regression ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
+# subset data for those included in analysis
+caonly <- dat[ which( dat$inc == 1 ), ] # those included after inclusions/exclusions steps
 
-# function for extracting patterns with penalized logit
-
-## START FUNCTION ##
-enet_pat <- function( xmat, yvec, wts, plot.title ){
-  
-  colorss <- c( "black", "red", "green3", "navyblue",   "cyan",   "magenta", "gold", "gray",
-                'pink', 'brown', 'goldenrod' ) # colors for plot
-  
-  # initialize lists to store outputs
-  store <- list( )
-  coefsdt <- list( )
-  
-  alpha.grid <- seq( 0, 1, 0.1 ) # range of alpha values for tuning grid
-  
-  for ( i in 1:length( alpha.grid ) ){ # set the grid of alpha values
-    
-    set.seed( 28 ) # seed to reproduce results
-    
-    # call glmnet with 10-fold cv
-    enetr <- cv.glmnet( x = xmat, y = yvec, family ='binomial', weights = wts,
-                        nfold = 10, alpha = alpha.grid[ i ] )
-    
-    # bind values of lambda to cross validation error
-    evm <- data.frame( cbind( enetr$lambda, enetr$cvm ) )
-    colnames( evm ) <- c( 'lambda', 'av.error' )
-    
-    # now create a list that stores each coefficients matrix for each value of alpha
-    # at the lambda minimizer
-    coefsdt[[ i ]] <- list( alpha = paste0( alpha.grid )[ i ], 
-                            coefs = coef( enetr, s = "lambda.min" ) )
-    
-    # create a dataframe that houses the alpha, min lambda, and average error
-    resdf <- data.frame( alpha = alpha.grid[ i ], 
-                         evm[ which( evm$av.error == min( evm$av.error ) ), 'lambda' ],
-                         av.error = evm[ which( evm$av.error == min( evm$av.error ) ), 'av.error' ] )
-    colnames( resdf ) <- c( 'alpha', 'lambda', 'av.error' )
-    
-    store[[ i ]] <- resdf
-    
-    ## generate plot ##
-    
-    if ( i == 1 ){ # for the first value of 'i'
-      plot( x = enetr$lambda, y = enetr$cvm, type ='l', 
-            ylim = c( min( enetr$cvm )-0.02, max( enetr$cvm )-0.02 ),
-            xlim = c( min( evm$lambda ), ( resdf$lambda*1.05 ) ), 
-            las = 0, 
-            cex.axis = 0.7 )
-    }
-    else if ( i != 1 ){ # each additional line will be superimposed on the plot with a different color
-      lines( x = enetr$lambda, 
-             y = enetr$cvm, 
-             col = colorss[ i ] )
-    }
-  }
-  
-  ## superimpose intersecting lines at the minimizer ## 
-  cverr <- do.call( 'rbind', store ) # this gives the table of errors for each combination of alpha and lambda
-  abline( h = cverr[ which( cverr$av.error == min( cverr$av.error ) ), 'av.error' ],
-          lty = 2 )
-  abline( v = cverr[ which( cverr$av.error == min( cverr$av.error ) ), 'lambda' ],
-          lty = 2 )
-  
-  
-  ## add optimal lambda and alpha values to plot title ## 
-  optimall <- cverr[ which( cverr$av.error == min( cverr$av.error ) ), ] # here I extract the optimal combination of
-  
-  # lambda and alpha
-  optlam <- signif( optimall[ 2 ], 2 )
-  opta <- optimall[ 1 ]
-  title( main = TeX( paste0( plot.title, ' ( $\\lambda_{optimal} =$', optlam, ' and $\\alpha_{optimal} =$', opta, ' )' ) ),
-         cex.main = 0.8,
-         cex.lab = 0.8,
-         xlab = TeX( '$\\lambda$' ), 
-         mgp = c( 2, 1, 0 ),
-         ylab ='Deviance', mgp = c( 2, 1, 0 ) )
-  
-  
-  
-  # the function returns the optimal lambda alpha combo and the set of coefficients that 
-  # correspond to that combination of parameters
-  return( list( optimall, coefs = as.matrix( coefsdt[[ which( alpha.grid == optimall$alpha ) ]]$coefs )[ -1, ] ) )
-}
-## END FUNCTION ##
-
-
-
-## Subset Data for Penalized Logit Procedure ##
-caonly <- x.data[ which( x.data$inc == 1 ), ]
-
-# random sample of included
+# random sample of included subjects for training the penalized logit models #
 set.seed( 0872645 ) # set seed for reproducibility
-sz <- ceiling( nrow( caonly ) * 0.5 ) # size of sample
+sz <- ceiling( nrow( caonly ) * 0.5 ) # size of sample (50-50 split into training and test sets)
 train <- caonly[ caonly$seqn %in% sample( x = caonly$seqn, size = sz ), ] # training dataset
-test <- caonly[ caonly$seqn %notin% train$seqn, ]
+test <- caonly[ caonly$seqn %notin% train$seqn, ] # test set for later in the analysis
 
 # set categories to numerical dummy variables for glmnet model
-
 train <- train %>%
   mutate( foodasstpnowic = ifelse( foodasstpnowic =='yes', 1,
                                    ifelse( foodasstpnowic =='no', 0, NA ) ) ) %>%
@@ -156,8 +68,9 @@ fdgrp.columns <- which( colnames( train ) %in% c( 'processedmts','meat','poultry
                                                   'soy','refinedgrain','wholegrain',
                                                   'nuts','addedsugars') )
 
-fdgrp.columns <- fdgrp.columns[ c( 1, 26, 2:25 ) ] # re-arrange so that Meat column index is second column index
+fdgrp.columns <- fdgrp.columns[ c( 1, 26, 2:25 ) ] # re-arrange so that meat column index is second column index
 
+# other relevant columns and their indices that we will need for the procedure
 fs.outcome.column <- which( colnames( train ) =='binfsh' )
 fdas.outcome.column <- which( colnames( train ) =='foodasstpnowic' )
 age.outcome.column <- which( colnames( train ) =='agecat' )
@@ -166,25 +79,33 @@ weight.column <- which( colnames( train ) =='wtdr18yr' )
 kcal.column <- which( colnames( train ) =='kcal' )
 seqn.column <- which( colnames( train ) =='seqn' )
 
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-##############################################################################
-#################### Run Function for Patterns Extraction #################### 
-##############################################################################
 
-for ( j in fdgrp.columns ){# ensure proper variables are indicated by the column index in this line of code before proceeding
+### (1.0) Patterns Extraction with Penalized Logistic Regression ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# normalize variables prior to regression since they are all in different units
+
+for ( j in fdgrp.columns ){ # ensure proper variables are indicated by the column index in this line of code before proceeding
+  
   train[ , j ] <- ( train[ , j ] - mean( train[ , j ], na.rm = TRUE ) ) / sd( train[ , j ], na.rm = TRUE )
-}
 
-# Save plot figure
+  }
 
-# Food insecurity binary outcome
+# **NOTE: we will include the calories column in these procedures so that the coefficients for the food groups are adjusted for calories (standard multivariate method)
+# internal function is `enet_pat` that is written in the "utils.R" file
+
+par( mfrow = c( 2, 2 ), mar = c( 3, 3, 2, 1 ) ) # multi panel figure for finding optimizer
+
+## food insecurity binary outcome/dietary pattern ##
 mat <- na.omit( as.matrix( train[ , c( fdgrp.columns, kcal.column, fs.outcome.column, weight.column ) ] ) )
 xmat <- mat[ , 1:27 ] # food grps
 yvec <- mat[ , 28 ] # binary response
 xwts <- mat[ , 29 ] / mean( mat[ , 29 ] ) # normalize weights
 
-fsoc <- enet_pat( xmat, yvec, xwts, plot.title ='Food Insecurity' ) 
+fsoc <- enet_pat( xmat, yvec, xwts, plot.title = 'Food Insecurity' ) 
 
 # add legend
 colorss <- c( "black", "red", "green3", "navyblue",   "cyan",   "magenta", "gold", "gray",
@@ -195,92 +116,87 @@ legend( "bottomright",
         cex = 0.6, inset = 0, y.intersp = 0.5 )
 
 
-# Age outcome
+## age outcome/dietary pattern ##
 mat <- na.omit( as.matrix( train[ , c( fdgrp.columns, kcal.column, age.outcome.column, weight.column ) ] ) )
 xmat <- mat[ , 1:27 ] # food grps
 yvec <- mat[ , 28 ] # binary response
 xwts <- mat[ , 29 ] / mean( mat[ , 29 ] ) # normalize weights
+
 ageoc <- enet_pat( xmat, yvec, xwts, plot.title = 'Age' )
 
 
 
-# Receipt of food assistance outcome
+## receipt of food assistance outcome/dietary pattern ##
 mat <- na.omit( as.matrix( train[ , c( fdgrp.columns, kcal.column, fdas.outcome.column, weight.column ) ] ) )
 xmat <- mat[ , 1:27 ] # food grps
 yvec <- mat[ , 28 ] # binary response
 xwts <- mat[ , 29 ] / mean( mat[ , 29 ] ) # normalize weights
+
 fdasoc <- enet_pat( xmat, yvec, xwts, plot.title = 'Food Assistance ( SNAP )' )
 
 
-# HHSize outcome
+## household size outcome/dietary pattern ##
 mat <- na.omit( as.matrix( train[ , c( fdgrp.columns, kcal.column, hhsize.outcome.column, weight.column ) ] ) )
 xmat <- mat[ , 1:27 ] # food grps
 yvec <- mat[ , 28 ] # binary response
 xwts <- mat[ , 29 ] / mean( mat[ , 29 ] ) # normalize weights
-hhssoc <- enet_pat( xmat, yvec, xwts, plot.title ='Household Size' )
 
+hhssoc <- enet_pat( xmat, yvec, xwts, plot.title ='Household Size' )
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
-
-### Generate Pattern Scores in the Data ###
+### (2.0) Generate Pattern Scores in the Data ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # generate scores on data
-xmatrix <- as.matrix( x.data[ which( x.data$inc == 1 ), c( fdgrp.columns, kcal.column ) ] ) # subset as a matrix
-d <- x.data[ which( x.data$inc == 1 ), ] # keep only those satisfying inclusions/exclusions
+xmatrix <- as.matrix( dat[ which( dat$inc == 1 ), c( fdgrp.columns ) ] ) # subset as a matrix for matrix multiplication in next step
+d <- dat[ which( dat$inc == 1 ), ] # keep only those satisfying inclusions/exclusions as dataframe to then merge matrix products back into dataframe format
 
-# remove kcal column
-xmatrix <- xmatrix[ , -ncol( xmatrix ) ]
-
-# center and scale testing data before generating scores
+# center and scale testing data (in the matrix format) before generating scores
 for ( i in 1:ncol( xmatrix ) ){
   xmatrix[ , i ] <- ( xmatrix[ , i ] - mean( xmatrix[ , i ], na.rm = T ) ) / sd( xmatrix[ , i ], na.rm = T )
 }
 
-
-# matrix multiplication
-d$fs_enet <- t( fsoc$coefs[1:26] %*% t( xmatrix ) )
-d$age_enet <- t( ageoc$coefs[1:26]  %*% t( xmatrix ) )
-d$fdas_enet <- t( fdasoc$coefs[1:26]  %*% t( xmatrix ) )
-d$hhs_enet <- t( hhssoc$coefs[1:26]  %*% t( xmatrix ) )
+# matrix multiplication and add score columns back to dataframe
+d$fs_enet <- t( fsoc$coefs[1:length(fdgrp.columns)] %*% t( xmatrix ) )
+d$age_enet <- t( ageoc$coefs[1:length(fdgrp.columns)]  %*% t( xmatrix ) )
+d$fdas_enet <- t( fdasoc$coefs[1:length(fdgrp.columns)]  %*% t( xmatrix ) )
+d$hhs_enet <- t( hhssoc$coefs[1:length(fdgrp.columns)]  %*% t( xmatrix ) )
 
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
-
-### Patterns Extraction with PCA ###
+### (3.0) Dietary Patterns Extraction with PCA ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # to have weights and no missing weights
 
-pca.design <- svydesign( id = ~sdmvpsu, weights = ~wtdr18yr, strata = ~sdmvstra, 
-                         nest = TRUE, survey.lonely.psu = "adjust", data = x.data )
+svy.design <- svydesign( id = ~sdmvpsu, weights = ~wtdr18yr, strata = ~sdmvstra, 
+                         nest = TRUE, survey.lonely.psu = "adjust", data = dat )
 
-varest <- subset( pca.design, diet.ext.ind.pca == 1 &
+varest <- subset( svy.design, diet.ext.ind.pca == 1 &
                     seqn %in% train$seqn ) # inclusions
 
 
-# PCA using svyprcomp
-pcaobj <- svyprcomp( ~ processedmts+meat+poultry+
-                     fish_hi+fish_lo+eggs+
-                     solidfats+oils+milk+
-                     yogurt+cheese+alcohol+
-                     fruitother+f_citmelber+
-                     tomatoes+greenleafy+
-                     darkylveg+otherveg+potatoes+
-                     otherstarchyveg+legumes+
-                     soy+refinedgrain+wholegrain+
-                     nuts+addedsugars, design = varest, center = T,
-                     scale = T, 
+# pca using svyprcomp
+pcaobj <- svyprcomp( ~ processedmts + meat + poultry + 
+                     fish_hi + fish_lo + eggs + 
+                     solidfats + oils + milk + 
+                     yogurt + cheese + alcohol + 
+                     fruitother + f_citmelber + 
+                     tomatoes + greenleafy + 
+                     darkylveg + otherveg + potatoes + 
+                     otherstarchyveg + legumes + 
+                     soy + refinedgrain + wholegrain + 
+                     nuts + addedsugars, design = varest, center = T,
+                     scale = T, # center and scale variables using internal arguments
                      scores = TRUE )
 
 # scree plot
-# eigenvalues/Scree plot
 plot( pcaobj$sdev, type = 'b',
       main = 'Scree Plot for Diet Patterns PCA', xlab = 'Component', ylab = 'Eigenvalue' )
 abline( h = 1, lty = 2 )
@@ -289,17 +205,11 @@ abline( h = 1, lty = 2 )
 # assign factor loading matrix
 coefspc <- pcaobj$rotation
 
-# save raw loading matrix
-# write.table( round( coefspc[ , 1:2 ], digits = 2 ), "04-Manuscript/Tables/PCA-Factorloadings.txt", sep =", ", row.names = FALSE )
-
-
-sum( pcaobj$sdev[ 1:2 ] / sum( pcaobj$sdev ) ) # percent of variation accounted for by first two components ( 0.1412 )
+# percent of variation accounted for by first two components ( 15.79 % )
+sum( pcaobj$sdev[ 1:2 ] / sum( pcaobj$sdev ) ) 
 
 # generate scores
-xmatrix <- as.matrix( x.data[ which( x.data$inc == 1 ), c( fdgrp.columns, kcal.column ) ] )
-
-# remove kcal column
-xmatrix <- xmatrix[ , -ncol( xmatrix ) ]
+xmatrix <- as.matrix( dat[ which( dat$inc == 1 ), c( fdgrp.columns ) ] )
 
 # center and scale testing data before generating scores
 for ( i in 1:ncol( xmatrix ) ){
@@ -311,18 +221,32 @@ d$pc1 <- t( coefspc[ , 1 ] %*% t( xmatrix ) )
 d$pc2 <- t( coefspc[ , 2 ] %*% t( xmatrix ) )
 
 # add to original data and save
-
-( x.data3 <- left_join( xdata, d[ , c( "seqn", "fs_enet", "age_enet",
+d.2 <- left_join( dat, d[ , c( "seqn", "fs_enet", "age_enet",
                                        "fdas_enet", "hhs_enet", "pc1", "pc2" ) ] ) %>%
-    mutate( test.set = ifelse( seqn %in% test$seqn, 1, 0 ) ) ) %>% # add indicator variable for membership in test set
-   
-  # ---------------------------------------------------------------------------------------------------------------------------------------------------------
+    mutate( test.set = ifelse( seqn %in% test$seqn, 1, 0 ) ) # add indicator variable for membership in test set
 
-### Save Analytic Data ###
-# ---------------------------------------------------------------------------------------------------------------------------------------------------------
-saveRDS( ., "03-Data-Rodeo/01-analytic-data.rds" )
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+
+### (4.0) Energy Adjust Principal Component Scores using Residual Method (Willett) ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+adj.des <- subset( svy.design, inc == 1 ) # survey design object
+
+d.3 <- svy_energy_residual( nutr = c( "pc1", "pc2" ), # columns to be energy adjusted
+                            design = adj.des, # design object
+                            calories = "kcal", # calories column
+                            overwrite = "yes" ) # keep original column names
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+### (5.0) Save Analytic Data ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+saveRDS( xdata4, "03-Data-Rodeo/01-analytic-data.rds" )
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 
