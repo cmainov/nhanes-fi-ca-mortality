@@ -48,7 +48,7 @@ for( i in seq_along( indices ) ){
        time = "stime",       # survival time column
        mort.ind = "mortstat",
        scale.y = 1.5, # for shifting y axis max value
-       int.knots = 2, # interior knots for spline models
+       int.knots = 1, # interior knots for spline models
        sample.name = "All Cancer Survivors",
        model.name = c( "Null Model", "Basic Model", "Full Model" )[j] )    # mortality indicator column
   
@@ -78,7 +78,7 @@ for( i in seq_along( indices ) ){
                          time = "stime", 
                          mort.ind = "castat",
                          scale.y = 1.5, # for shifting y axis max value
-                         int.knots = 2,
+                         int.knots = 1,
                          sample.name = "All Cancer Survivors",
                          model.name = c( "Null Model", "Basic Model", "Full Model" )[j]) 
     
@@ -123,7 +123,7 @@ for( i in seq_along( indices ) ){
                        time = "stime",       # survival time column
                        mort.ind = "mortstat",
                        scale.y = 1.3, # for shifting y axis max value
-                       int.knots = 2,
+                       int.knots = 1,
                        sample.name = "Food Insecure Cancer Survivors",
                        model.name = c( "Null Model", "Basic Model", "Full Model" )[j]) 
 
@@ -154,7 +154,7 @@ for( i in seq_along( indices ) ){
                              time = "stime",       # survival time column
                              mort.ind = "castat",
                              scale.y = 1.3, # for shifting y axis max value
-                             int.knots = 2,
+                             int.knots = 1,
                              sample.name = "Food Insecure Cancer Survivors",
                              model.name = c( "Null Model", "Basic Model", "Full Model" )[j]) 
     
@@ -190,7 +190,7 @@ for( i in seq_along( indices ) ){
                        time = "stime",       # survival time column
                        mort.ind = "mortstat",
                        scale.y = 1.3, # for shifting y axis max value
-                       int.knots = 2,
+                       int.knots = 1,
                        sample.name = "All Cancer Survivors",
                        model.name = "Full Model" )    # mortality indicator column
   
@@ -212,7 +212,7 @@ for( i in seq_along( indices ) ){
                           time = "stime", 
                           mort.ind = "castat",
                           scale.y = 1.3, # for shifting y axis max value
-                          int.knots = 2,
+                          int.knots = 1,
                           sample.name = "All Cancer Survivors",
                           model.name = "Full Model") 
   
@@ -242,7 +242,7 @@ for( i in seq_along( indices ) ){
                        time = "stime",       # survival time column
                        mort.ind = "mortstat",
                        scale.y = 1.3, # for shifting y axis max value
-                       int.knots = 2,
+                       int.knots = 1,
                        sample.name = "All Cancer Survivors",
                        model.name = "Full Model" )    # mortality indicator column
   
@@ -264,7 +264,7 @@ for( i in seq_along( indices ) ){
                           time = "stime", 
                           mort.ind = "castat",
                           scale.y = 1.3, # for shifting y axis max value
-                          int.knots = 2,
+                          int.knots = 1,
                           sample.name = "All Cancer Survivors",
                           model.name = "Full Model" ) 
   
@@ -390,104 +390,82 @@ all.table.nb <- bind_rows( data.frame( index = "All-Cause Mortality"),
 ## Save tables ##
 
 write.table( ac.table, "04-Tables-Figures/tables/04-table-4-ac.txt", sep = "," )
-write.table( ac.table, "04-Tables-Figures/tables/05-table-4-ca.txt", sep = "," )
-write.table( all.table, "04-Tables-Figures/tables/07-table-4-all.txt", sep = "," )
-write.table( s.table, "04-Tables-Figures/tables/08-table-s3.txt", sep = "," )
-write.table( sens.60.table, "04-Tables-Figures/tables/09-table-s4.txt", sep = "," )
-write.table( all.table.nb, "04-Tables-Figures/tables/09-table-s5.txt", sep = "," )
+write.table( ca.table, "04-Tables-Figures/tables/05-table-4-ca.txt", sep = "," )
+write.table( all.table, "04-Tables-Figures/tables/06-table-4-all.txt", sep = "," )
+write.table( s.table, "04-Tables-Figures/tables/09-table-s4.txt", sep = "," ) # ADL score sensitivity analysis results
+write.table( sens.60.table, "04-Tables-Figures/tables/08-table-s3.txt", sep = "," ) # limit to those with cancer < 5 yrs ago results
+write.table( all.table.nb, "04-Tables-Figures/tables/07-table-s1.txt", sep = "," ) # null and basic model results
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
-### Survival Curves ###
+### Survival Curves and Spline Plots ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-## FI pattern survival curves
-( fi.sc <- ggadjustedcurves( fit = out.res[[1]]$q.obj,
-                 variable ="fs_enet.q",
-                 data = out.res[[1]]$dat,
-                 method = "conditional",
-                 title = "Food Insecurity (FI) Pattern",
-                 font.title = c(16, "bold"),
-                 legend.title = "Quintile",
-                 font.legend = c(10, "bold"),
-                 legend = c(0.14,0.34),
-                 ylab = "Adjusted Survival Rate",
-                 xlab = "Follow-up (Months)",
-                 size = 0.6) +
-  theme( text = element_text( family = "Avenir" ),
-         axis.title.y = element_text( size = 13, margin = unit(c(0,6,6,0), 'pt') ) ,
-         axis.text.y = element_text( size = 10, color = "grey30" ),
-         axis.title.x = element_text( size = 13 ) ,
-         axis.text.x = element_text( size = 10, color = "grey30" ) )+ 
-  scale_color_ordinal() )
+## spline plots ##
+model.index <- 1:4 
+diet.names <- c( "FI Pattern", "Western Pattern", 
+                 "Mixed Pattern", "HEI-2015$^a$" ) # x-axis labels
 
-ggsave( "04-Tables-Figures/figures/02a-fi-surv-curve.png", 
-        height = 7.21, 
-        width = 6.42 )
-
-# snap pattern survival curves
-( prud1.sc <- ggadjustedcurves( fit =  out.res[[2]]$q.obj,
-                 variable = "pc1.q",
-                 data = out.res[[2]]$dat,
-                 method = "conditional",
-                 title = "Prudent Pattern #1",
-                 font.title = c(16, "bold"),
-                 legend.title = "Quintile",
-                 font.legend = c(10, "bold"),
-                 legend = c(0.14,0.31),
-                 ylab = "",
-                 xlab = "Follow-up (Months)",
-                 size = 0.6) +
-  theme(text=element_text(family="Avenir") ) + 
-  scale_color_ordinal() + 
+sp.plots.list <- Map( function( x, y ){
+  prud1.sp <- out.res[[x]]$spline.plot +
+    xlab( unname( TeX( y ) ) ) +
     theme( legend.position = "none",
            text = element_text( family = "Avenir" ),
            axis.title.y = element_text( size = 13 ) ,
            axis.text.y = element_text( size = 10, color = "grey30" ),
            axis.title.x = element_text( size = 13 ) ,
-           axis.text.x = element_text( size = 10, color = "grey30" ) ) )
+           axis.text.x = element_text( size = 10, color = "grey30" ) ) +
+    ylab( "" ) +
+    coord_cartesian( ylim = c( 0.2, max = 1.8 ) ) 
+}, x = model.index, y = diet.names )
 
-ggsave( "04-Tables-Figures/figures/02b-prud1-surv-curve.png", 
-        height = 7.21, 
-        width = 6.42 )
 
+## survival curves ##
+vars.q <- c( "fs_enet.q", "pc1.q", "pc2.q", "hei.2015.q" ) # cut variable names
 
-## Arrange with Spline Plots (Only Food Insecurity and SNAP Patterns) ##
+leg.pos <- list( c(0.15,0.35), "none", "none", "none" ) # legend positions
 
-# FI pattern
-fi.sp <- out.res[[1]]$spline.plot +
-  xlab( unname( TeX( "FI Pattern Score$^a$" ) ) ) +
-  theme( 
-         text = element_text( family = "Avenir" ),
-         axis.title.y = element_text( size = 13 ) ,
-         axis.text.y = element_text( size = 10, color = "grey30" ),
-         axis.title.x = element_text( size = 13 ) ,
-         axis.text.x = element_text( size = 10, color = "grey30" ),
-         legend.text = element_text( size = 10 ) ) 
+sc.plots.list <- Map( function( x, y, z, l ){
+  ggadjustedcurves( fit =  out.res[[x]]$q.obj,
+                    variable = y,
+                    data = out.res[[x]]$dat,
+                    method = "conditional",
+                    title = unname( TeX( z ) ),
+                    font.title = c(16, "bold"),
+                    legend.title = "Quintile",
+                    font.legend = c(10, "bold"),
+                    legend = c(0.14,0.31),
+                    ylab = "",
+                    xlab = "Follow-up (Months)",
+                    size = 0.6) +
+    theme(text=element_text(family="Avenir") ) + 
+    scale_color_ordinal() + 
+    theme( legend.position = l,
+           text = element_text( family = "Avenir" ),
+           axis.title.y = element_text( size = 13 ) ,
+           axis.text.y = element_text( size = 10, color = "grey30" ),
+           axis.title.x = element_text( size = 13 ) ,
+           axis.text.x = element_text( size = 10, color = "grey30" ) )
+},
+x = model.index,
+y = vars.q,
+z = diet.names,
+l = leg.pos)
 
-# prudent #1 pattern
-prud1.sp <- out.res[[2]]$spline.plot +
-  xlab( unname( TeX( "Prudent #1 Pattern Score$^a$" ) ) ) +
-  theme( legend.position = "none",
-         text = element_text( family = "Avenir" ),
-         axis.title.y = element_text( size = 13 ) ,
-         axis.text.y = element_text( size = 10, color = "grey30" ),
-         axis.title.x = element_text( size = 13 ) ,
-         axis.text.x = element_text( size = 10, color = "grey30" ) ) +
-  ylab( "" ) +
-  coord_cartesian( ylim = c( 0.7, max = 2.8 ) ) 
-
-ggarrange( ggarrange( fi.sc, fi.sp, nrow = 2, labels = list( "A", "B" ) ),
-           ggarrange( prud1.sc, prud1.sp, nrow = 2,labels = list( "C", "D" ) ),
-           nrow = 1, ncol = 2 )
-
-## arrange into large ggarrange object
+# arrange into final figure
+( sp.sc.comb <- ggarrange( ggarrange( sc.plots.list[[1]], sp.plots.list[[1]], nrow = 2, labels = list( "A", "B" ) ),
+           ggarrange( sc.plots.list[[2]], sp.plots.list[[2]], nrow = 2 ),
+           ggarrange( sc.plots.list[[3]], sp.plots.list[[3]], nrow = 2 ),
+           ggarrange( sc.plots.list[[4]], sp.plots.list[[4]], nrow = 2 ),
+           nrow = 1, ncol = 4 ) )
 
 ggsave( "04-Tables-Figures/figures/03-surv-spline-comb.png",
-        height = 7.4, 
-        width = 8.96 )
+        height = 8, 
+        width = 13,
+        plot = sp.sc.comb,
+        dpi = 400 )
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 

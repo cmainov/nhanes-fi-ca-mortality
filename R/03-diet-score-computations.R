@@ -41,7 +41,7 @@ caonly <- dat[ which( dat$inc == 1 ), ] # those included after inclusions/exclus
 
 # random sample of included subjects for training the penalized logit models #
 set.seed( 0872645 ) # set seed for reproducibility
-sz <- ceiling( nrow( caonly ) * 0.5 ) # size of sample (50-50 split into training and test sets)
+sz <- ceiling( nrow( caonly ) * 0.3 ) # size of sample (50-50 split into training and test sets)
 train <- caonly[ caonly$seqn %in% sample( x = caonly$seqn, size = sz ), ] # training dataset
 test <- caonly[ caonly$seqn %notin% train$seqn, ] # test set for later in the analysis
 

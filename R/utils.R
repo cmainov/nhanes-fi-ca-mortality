@@ -215,7 +215,7 @@ res <- function( df, x, subs, cuts, id.col, covars, time, mort.ind, sample.name,
   
   # natural cubic spline 
   # degrees of freedom are the no. of interior knots + 2 (also the no. of basis functions required)--(see "Elements of Statistical Learning" by Hastie, Tibshirani and Friedman and https://stats.stackexchange.com/questions/490306/natural-splines-degrees-of-freedom and https://stats.stackexchange.com/questions/7316/setting-knots-in-natural-cubic-splines-in-r) (also note that when we specify df = 4 we assume three interior knots and 2 boundary knots--this syntax does not include the basis function for the intercept in the count)
-  m.cs <- svycoxph( formula( paste0( "Surv(", time, ",",mort.ind," ) ~ ", paste0( "ns(", x,", df =", ( int.knots + 1 )," )", {if( !is.null( covars ) ) "+"} ), 
+  m.cs <- svycoxph( formula( paste0( "Surv(", time, ",", mort.ind," ) ~ ", paste0( "ns(", x,", df =", ( int.knots + 1 )," )", {if( !is.null( covars ) ) "+"} ), 
                                      paste0( covars, collapse = " + ") ) ),
                     design = des )
   
@@ -612,13 +612,14 @@ svy_energy_residual <- function( design, nutr, calories, overwrite = "no" ){
 ####################################################################################################
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
-enet_pat <- function( xmat, yvec, wts, plot.title ){
+enet_pat <- function( xmat, yvec, wts, plot.title, seed = 28 ){
   
   # performs penalized logistic regression with the elastic net penalty
   
   # xmat = the x matrix with columns being the features and rows the observations
   # yvec = the y vector. must be of the same length as the number of rows of `xmat`
   # wts = the weights vector. must be the same length as `yvec`
+  # seed = seed set for reproducibility. a default value is provided
   
   colorss <- c( "black", "red", "green3", "navyblue",   "cyan",   "magenta", "gold", "gray",
                 'pink', 'brown', 'goldenrod' ) # colors for plot
@@ -631,7 +632,7 @@ enet_pat <- function( xmat, yvec, wts, plot.title ){
   
   for ( i in 1:length( alpha.grid ) ){ # set the grid of alpha values
     
-    set.seed( 28 ) # seed to reproduce results
+    set.seed( seed ) # seed to reproduce results
     
     # call glmnet with 10-fold cv
     enetr <- cv.glmnet( x = xmat, y = yvec, family = 'binomial', weights = wts,

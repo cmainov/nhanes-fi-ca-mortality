@@ -57,7 +57,7 @@
 
 \section{Dietary Patterns Extraction with Penalized Logit}
 \subsection{Rationale}
-\hspace{\parindent} We implemented penalized logistic regression with an elastic net penalty to extract dietary patterns from observed dietary intake data from 24-hour recalls as explained in the main text. The theory and rationale for the elastic net is proposed by Zou and Hastie. \supercite{zou2005regularization} The idea involves having a regularization technique that accomplishes both \textit{shrinkage} and \textit{variable selection} simultaneously. The goal was to extract dietary patterns associated with a given binary characteristic. We chose the elastic net given the high correlation amongst dietary variables in epidemiologic studies and the unique ability of elastic net to handle correlated variables. Unlike ridge regression, elastic net allows us to achieve parsimony without the sparse representation of the LASSO model.\supercite{zou2005regularization}
+\hspace{\parindent} We implemented penalized logistic regression with an elastic net penalty to extract dietary patterns from observed dietary intake data from 24-hour recalls as explained in the main text. The theory and rationale for the elastic net is proposed by Zou and Hastie. \supercite{zou2005regularization} The idea involves having a regularization technique that accomplishes both \textit{shrinkage} and \textit{variable selection} simultaneously. The goal was to extract dietary patterns associated with a given binary characteristic. We chose the elastic net given the high correlation amongst dietary variables in epidemiologic studies and the unique ability of elastic net to handle correlated variables. Unlike ridge regression, elastic net allows us to achieve parsimony and also avoids the sparsity that often accompanies the LASSO model.\supercite{zou2005regularization}
 
 \subsection{Implementation}
  \hspace{\parindent}The elastic net algorithm begins by the specification of a logistic regression model with the elastic net penalty, which is often conceptualized as a mixture of the LASSO penalty ($\ell_1$) and ridge regression penalty ($\ell_2$)  terms. Equation 1 demonstrates the formulation of the objective function. The penalty term is introduced for logistic regression case is introduced into the likelihood function used to fit the model:
@@ -71,7 +71,7 @@ The $-2\text{log-likelihood}$ includes the $-2\text{log-likelihood}$ function fo
 \subsection{Dependent and Explanatory Variables}
  \hspace{\parindent} As indicated in the main text, we selected four outcome variables associated with food insecurity or directly measuring food insecurity. These included household food insecurity status (Constructed using variable \texttt{FSDHH} in the NHANES dataset), Age $\ge$ 60 (constructed from the \texttt{RIDAGEYR} variable in NHANES), household receipt of SNAP benefits in the previous 12 months (constructed from the \texttt{FSQ17} and \texttt{FSD170N} variables in NHANES), and household size $\ge$5 (constructed from \texttt{DMDHHSIZ} in NHANES).
  
-  \hspace{\parindent} The explanatory variables were intake equivalents for 26 food group variables from the USDA Food Patterns Equivalents Database (FPED) and the MyPyramid Equivalents Database (MPED) data. The exact variables are provided in the main text in Table 2. All food group variables were centered, standardized (by their standard deviation), and energy adjusted prior to fitting the elastic net models.
+  \hspace{\parindent} The explanatory variables were intake equivalents for 26 food group variables from the USDA Food Patterns Equivalents Database (FPED) and the MyPyramid Equivalents Database (MPED) data. The exact variables are provided in the main text in Table 2. All food group variables were centered and scaled (by their standard deviation) prior to fitting the elastic net models.
  
 \subsection{Implementation in R}
  \hspace{\parindent} The \texttt{glmnet} and \texttt{caret} packages in \texttt{R} can be used to fit models with elastic net, LASSO, and ridge penalization. R code to extract the dietary patterns in available in the following GitHub repository: \textcolor{blue}{\url{https://github.com/cmainov/NHANES-Diet-Penalized-Regression/blob/main/R/04-Dietary-patterns-extraction.R}}.
@@ -91,7 +91,7 @@ $$Y=\sum_{m=1}^{M}{\beta_mh_m(X)+\gamma V}$$
 
 $$Y=\sum_{j=1}^{J}\sum_{m=1}^{M_j}{\beta_{jm}{h_{jm}}(X_j)+\gamma V}$$
 
-\noindent where $j$ is the index of variables. The set of fixed basis functions is of interest, as are the \textit{knots} and \textit{knot locations}, which are the locations along the domain where separate local piecewise polynomials are fit. Uniform or non-uniform spacing can be used to specify the knots, although a set of quantiles of the exposure are conventionally used as the knot locations. \supercite{james_introduction_2013} To achieve smoothness in the spline curve across these disjoint regions, a continuity constraint is applied. Using a truncated power basis, we achieve the continuity constraint:
+\noindent where $j$ is the index of variables. The set of fixed basis functions is of interest, as are the \textit{knots} and \textit{knot locations}, which are the regions along the domain where separate local piecewise polynomials are fit. Uniform or non-uniform spacing can be used to specify the knots, although a set of quantiles of the exposure are conventionally used as the knot locations. \supercite{james_introduction_2013} To achieve smoothness in the spline curve across these disjoint regions, a continuity constraint is applied. Using a truncated power basis, we achieve the continuity constraint:
 
 \begin{equation}
 (x-\xi_\ell)^{g}_{+}=\begin{cases}
@@ -114,7 +114,7 @@ $$4(K+1)-3K=4(2+1)-(3)(2)=6\text{ }{df}$$
 \subsection{Natural Cubic Splines}
 \hspace{\parindent} A cited limitation of cubic splines is the high variance in the spline estimates at the extremes of the data (i.e., in the highest and lowest intervals). \supercite{hastie_elements_2009} Natural cubic splines take cubic splines and apply two additional constraints: that the function is linear beyond the boundary knots (i.e., the exterior knots--if we have two interior knots, then we have two additional exterior or boundary knots). $Y''$ and $Y'''$ will be zero at these knot boundaries, and we will have $K$ basis functions for a natural cubic spline with $K$ knots ($K$ here assumes we count the two exterior or boundary knots in addition to the interior knots--for a spline with two interior knots we have $K=4$). 
 
-\hspace{\parindent} In our analysis, we specify the diet quality indices using a basis expansion for a natural cubic spline with two interior knots ($K=4$). These basis functions are provided below.
+\hspace{\parindent} In our analysis, we specify the diet quality indices using a basis expansion for a natural cubic spline with one interior knots ($K=3$). These basis functions are provided below.
 \newline
 \newline
 \textit{In a general form}\supercite{hastie_elements_2009} :
@@ -123,8 +123,8 @@ $$h_1(x)=1,h_2(x)=x, h_{k+2}(x)=d_k(x)-d_{K-1}(x)$$
 $$\text{where } d_k(x)=\frac{(x-\xi_k)^3_+-(x-\xi_K)^3_+}{\xi_K-\xi_k} \text{ and } k\in\{1...K-2\}$$
 \\
 \\
-\textit{And in the case of $K=4$}:
-$$h_1(x)=1,h_2(x)=x, h_{3}(x)=d_1(x)-d_{3}(x),h_{4}(x)=d_2(x)-d_{3}(x),$$
+\textit{And in the case of $K=3$}:
+$$h_1(x)=1, h_2(x)=x, h_{3}(x)=d_1(x)-d_{2}(x)$$
 \\
 \\
 
@@ -187,7 +187,7 @@ lm( y ~ ns( x, df = 3 ) )
  \vspace{0.5cm}
 \noindent The output reflects the parameter estimates for the four basis functions we detailed above (including one for the intercept).\\
 \\
-\noindent \textbf{Note}: we can supply R with the exact locations of the interior and boundary knots and get the same basis matrix (instead of specifying the  {\ttfamily{df}} argument).
+\noindent \textbf{Note}: we can supply R with the exact locations of the interior and boundary knots and get the same basis matrix (instead of specifying the  {\ttfamily{df}} argument--note there might be a slight rounding error in this matrix compared to the one above).
 
 \vspace{0.5cm}
  
