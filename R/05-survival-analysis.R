@@ -50,7 +50,7 @@ for( i in seq_along( indices ) ){
        scale.y = 1.5, # for shifting y axis max value
        int.knots = 1, # interior knots for spline models
        sample.name = "All Cancer Survivors",
-       model.name = c( "Null Model", "Basic Model", "Full Model" )[j] )    # mortality indicator column
+       model.name = c( "Null Model", "Basic Model", "Full Model" )[j] )    # sequential adjustment
   
      fin.res <- rbind( fin.res, int.list[[j]]$frame )
      
@@ -80,7 +80,7 @@ for( i in seq_along( indices ) ){
                          scale.y = 1.5, # for shifting y axis max value
                          int.knots = 1,
                          sample.name = "All Cancer Survivors",
-                         model.name = c( "Null Model", "Basic Model", "Full Model" )[j]) 
+                         model.name = c( "Null Model", "Basic Model", "Full Model" )[j]) # sequential adjustment
     
     fin.res.ca <- rbind( fin.res.ca, int.list.ca[[j]]$frame)
   }
@@ -125,7 +125,7 @@ for( i in seq_along( indices ) ){
                        scale.y = 1.3, # for shifting y axis max value
                        int.knots = 1,
                        sample.name = "Food Insecure Cancer Survivors",
-                       model.name = c( "Null Model", "Basic Model", "Full Model" )[j]) 
+                       model.name = c( "Null Model", "Basic Model", "Full Model" )[j]) # sequential adjustment
 
     fin.res.fi <- rbind( fin.res.fi, int.list.fi[[j]]$frame)
   }
@@ -156,7 +156,7 @@ for( i in seq_along( indices ) ){
                              scale.y = 1.3, # for shifting y axis max value
                              int.knots = 1,
                              sample.name = "Food Insecure Cancer Survivors",
-                             model.name = c( "Null Model", "Basic Model", "Full Model" )[j]) 
+                             model.name = c( "Null Model", "Basic Model", "Full Model" )[j]) # sequential adjustment
     
     fin.res.fi.ca <- rbind( fin.res.fi.ca, int.list.fi.ca[[j]]$frame)
   }
@@ -192,7 +192,7 @@ for( i in seq_along( indices ) ){
                        scale.y = 1.3, # for shifting y axis max value
                        int.knots = 1,
                        sample.name = "All Cancer Survivors",
-                       model.name = "Full Model" )    # mortality indicator column
+                       model.name = "Full Model" )    # full model
   
   fin.res.s <- rbind( fin.res.s, out.res.s[[i]]$frame)
   
@@ -224,7 +224,7 @@ for( i in seq_along( indices ) ){
 
 
 
-### Sensitivity Analysis: Only Those within 5 Years of a Primary Cancer Diagnosis ###
+### Sensitivity Analysis: Only Those within 4 Years of a Primary Cancer Diagnosis ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## All Cancer Survivors ##
@@ -235,7 +235,7 @@ fin.res.sens <- data.frame()
 for( i in seq_along( indices ) ){
   
   out.sens.res[[i]] <- res( df = d, x = indices[i],   # data and x variable for model
-                       subs = c( "test.set == 1", "timesincecadxmn <= 60" ),    # subset of data to use
+                       subs = c( "test.set == 1", "timesincecadxmn <= 48" ),    # subset of data to use
                        cuts = 5,             # quantiles to use for categorization
                        id.col = "seqn",      # subject id column
                        covars = covars.surv, # covariates
@@ -244,7 +244,7 @@ for( i in seq_along( indices ) ){
                        scale.y = 1.3, # for shifting y axis max value
                        int.knots = 1,
                        sample.name = "All Cancer Survivors",
-                       model.name = "Full Model" )    # mortality indicator column
+                       model.name = "Full Model" )    # full model
   
   fin.res.sens <- rbind( fin.res.sens, out.sens.res[[i]]$frame )
 }
@@ -257,7 +257,7 @@ fin.res.sens.ca <- data.frame()
 for( i in seq_along( indices ) ){
   
   out.sens.res.ca[[i]] <- res( df = d, x = indices[i], 
-                          subs = c( "test.set == 1", "timesincecadxmn <= 60" ), 
+                          subs = c( "test.set == 1", "timesincecadxmn <= 48" ), 
                           cuts = 5, 
                           id.col = "seqn", 
                           covars = covars.surv, 
@@ -312,7 +312,7 @@ s.table <- bind_rows( data.frame( index = "All-Cause Mortality"),
 
 
 ## Sensitivity analysis excluding those >60 mos since dx ##
-sens.60.table <- bind_rows( data.frame( index = "All-Cause Mortality"),
+sens.48.table <- bind_rows( data.frame( index = "All-Cause Mortality"),
                             fin.res.sens, 
                       data.frame( index = "Cancer-Specific Mortality"),
                       fin.res.sens.ca )
@@ -321,22 +321,22 @@ sens.60.table <- bind_rows( data.frame( index = "All-Cause Mortality"),
 ac.table[ac.table == "fs_enet"] <- "Food Insecurity"
 ca.table[ca.table == "fs_enet"] <- "Food Insecurity"
 s.table[s.table == "fs_enet"] <- "Food Insecurity"
-sens.60.table[sens.60.table == "fs_enet"] <- "Food Insecurity"
+sens.48.table[sens.48.table == "fs_enet"] <- "Food Insecurity"
 
 ac.table[ac.table == "pc1"] <- "Prudent #1"
 ca.table[ca.table == "pc1"] <- "Prudent #1"
 s.table[s.table == "pc1"] <- "Prudent #1"
-sens.60.table[sens.60.table == "pc1"] <- "Prudent #1"
+sens.48.table[sens.48.table == "pc1"] <- "Prudent #1"
 
 ac.table[ac.table == "pc2"] <- "Prudent #2"
 ca.table[ca.table == "pc2"] <- "Prudent #2"
 s.table[s.table == "pc2"] <- "Prudent #2"
-sens.60.table[sens.60.table == "pc2"] <- "Prudent #2"
+sens.48.table[sens.48.table == "pc2"] <- "Prudent #2"
 
 ac.table[ac.table == "hei.2015"] <- "HEI-2015"
 ca.table[ca.table == "hei.2015"] <- "HEI-2015"
 s.table[s.table == "hei.2015"] <- "HEI-2015"
-sens.60.table[sens.60.table == "hei.2015"] <- "HEI-2015"
+sens.48.table[sens.48.table == "hei.2015"] <- "HEI-2015"
 
 
 ## Generate one table (main analysis) with all causes of death ##
@@ -393,7 +393,7 @@ write.table( ac.table, "04-Tables-Figures/tables/04-table-4-ac.txt", sep = "," )
 write.table( ca.table, "04-Tables-Figures/tables/05-table-4-ca.txt", sep = "," )
 write.table( all.table, "04-Tables-Figures/tables/06-table-4-all.txt", sep = "," )
 write.table( s.table, "04-Tables-Figures/tables/09-table-s4.txt", sep = "," ) # ADL score sensitivity analysis results
-write.table( sens.60.table, "04-Tables-Figures/tables/08-table-s3.txt", sep = "," ) # limit to those with cancer < 5 yrs ago results
+write.table( sens.48.table, "04-Tables-Figures/tables/08-table-s3.txt", sep = "," ) # limit to those with cancer < 4 yrs ago results
 write.table( all.table.nb, "04-Tables-Figures/tables/07-table-s1.txt", sep = "," ) # null and basic model results
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -409,6 +409,7 @@ diet.names <- c( "FI Pattern", "Western Pattern",
                  "Mixed Pattern", "HEI-2015$^a$" ) # x-axis labels
 
 sp.plots.list <- Map( function( x, y ){
+  
   prud1.sp <- out.res[[x]]$spline.plot +
     xlab( unname( TeX( y ) ) ) +
     theme( legend.position = "none",
@@ -419,7 +420,8 @@ sp.plots.list <- Map( function( x, y ){
            axis.text.x = element_text( size = 10, color = "grey30" ) ) +
     ylab( "" ) +
     coord_cartesian( ylim = c( 0.2, max = 1.8 ) ) 
-}, x = model.index, y = diet.names )
+}, 
+x = model.index, y = diet.names )
 
 
 ## survival curves ##
