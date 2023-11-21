@@ -86,7 +86,7 @@ for( i in seq_along( indices ) ){
   }
   
   model.index <- which( fin.res.ca$model == "Full Model" )[1]
-  out.res.ca[[i]] <- int.list[[model.index]] # save full model results (to obtain spline model and create tables for null/basic and full models separately)
+  out.res.ca[[i]] <- int.list.ca[[model.index]] # save full model results (to obtain spline model and create tables for null/basic and full models separately)
   
 }
 
@@ -131,7 +131,7 @@ for( i in seq_along( indices ) ){
   }
   
   model.index <- which( fin.res.fi$model == "Full Model" )[1]
-  out.res.fi[[i]] <- int.list[[model.index]] # save full model results (to obtain spline model and create tables for null/basic and full models separately)
+  out.res.fi[[i]] <- int.list.fi[[model.index]] # save full model results (to obtain spline model and create tables for null/basic and full models separately)
   
 }
 
@@ -162,7 +162,7 @@ for( i in seq_along( indices ) ){
   }
   
   model.index <- which( fin.res.fi.ca$model == "Full Model" )[1]
-  out.res.fi.ca[[i]] <- int.list[[model.index]] # save full model results (to obtain spline model and create tables for null/basic and full models separately)
+  out.res.fi.ca[[i]] <- int.list.fi.ca[[model.index]] # save full model results (to obtain spline model and create tables for null/basic and full models separately)
   
 }
 

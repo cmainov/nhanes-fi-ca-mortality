@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.8.14)  17 NOV 2023 08:29
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.8.14)  21 NOV 2023 14:03
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -646,9 +646,9 @@ Package biblatex Info: Reference segment=0 on input line 50.
  [1
 
 {/usr/local/texlive/2023/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
-Overfull \hbox (56.99652pt too wide) in paragraph at lines 77--78
-\OT1/cmtt/m/n/10 NHANES-[]Diet-[]Penalized-[]Regression / blob / main / R / 04-
-[]Dietary-[]patterns-[]extraction .
+Overfull \hbox (46.22018pt too wide) in paragraph at lines 77--78
+\OT1/cmr/m/n/10 avail-able in the fol-low-ing file: [][]$\OT1/cmtt/m/n/10 https
+ : / / github . com / cmainov / nhanes-[]fi-[]ca-[]mortality /
  []
 
 [2] [3]
@@ -674,12 +674,12 @@ Underfull \hbox (badness 10000) in paragraph at lines 117--122
 
  []
 
-
+[4]
 Underfull \hbox (badness 10000) in paragraph at lines 123--127
 
  []
 
-[4]
+
 Underfull \hbox (badness 10000) in paragraph at lines 127--130
 
  []
@@ -715,12 +715,12 @@ Overfull \hbox (97.25867pt too wide) in paragraph at lines 198--200
 ][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
  []
 
-[6] [7] (./01-ncs-supplement.aux)
+[6] [7] [8] (./01-ncs-supplement.aux)
 
 LaTeX Warning: There were undefined references.
 
 Package rerunfilecheck Info: File `01-ncs-supplement.out' has not changed.
-(rerunfilecheck)             Checksum: 19F418D4A66693F3677544A4892573E3;1730.
+(rerunfilecheck)             Checksum: 29AA68FE029313045692297501D0790D;1905.
 
 Package biblatex Warning: Please (re)run BibTeX on the file(s):
 (biblatex)                01-ncs-supplement
@@ -731,13 +731,13 @@ Package logreq Info: Writing requests to '01-ncs-supplement.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 19296 strings out of 476025
- 327742 string characters out of 5790017
- 1906388 words of memory out of 5000000
- 39490 multiletter control sequences out of 15000+600000
+ 19319 strings out of 476025
+ 328642 string characters out of 5790017
+ 1928388 words of memory out of 5000000
+ 39507 multiletter control sequences out of 15000+600000
  518951 words of font info for 56 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,9n,76p,1901b,1796s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,9n,76p,1901b,2621s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb
 ></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb>
 </usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmcsc10.pfb>
@@ -754,10 +754,10 @@ ive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texliv
 e/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive
 /2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb></usr/local/texlive/
 2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb>
-Output written on 01-ncs-supplement.pdf (7 pages, 230153 bytes).
+Output written on 01-ncs-supplement.pdf (8 pages, 236740 bytes).
 PDF statistics:
- 268 PDF objects out of 1000 (max. 8388607)
- 224 compressed objects within 3 object streams
- 73 named destinations out of 1000 (max. 500000)
- 81 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 288 PDF objects out of 1000 (max. 8388607)
+ 243 compressed objects within 3 object streams
+ 79 named destinations out of 1000 (max. 500000)
+ 89 words of extra memory for PDF output out of 10000 (max. 10000000)
 

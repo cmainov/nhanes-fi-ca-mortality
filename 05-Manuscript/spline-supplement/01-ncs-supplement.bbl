@@ -345,5 +345,159 @@
     \field{urlmonth}{11}
     \field{urlyear}{2022}
   \endentry
+
+  \entry{austin2009relative}{article}{}
+    \name{author}{1}{}{%
+      {{hash=APC}{%
+         family={Austin},
+         familyi={A\bibinitperiod},
+         given={Peter\bibnamedelima C},
+         giveni={P\bibinitperiod\bibinitdelim C\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Sage Publications Sage CA: Los Angeles, CA}%
+    }
+    \strng{namehash}{APC1}
+    \strng{fullhash}{APC1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{number}{6}
+    \field{pages}{661\bibrangedash 677}
+    \field{title}{The relative ability of different propensity score methods to
+  balance measured covariates between treated and untreated subjects in
+  observational studies}
+    \field{volume}{29}
+    \field{journaltitle}{Medical decision making}
+    \field{year}{2009}
+  \endentry
+
+  \entry{garrido2014methods}{article}{}
+    \name{author}{7}{}{%
+      {{hash=GMM}{%
+         family={Garrido},
+         familyi={G\bibinitperiod},
+         given={Melissa\bibnamedelima M},
+         giveni={M\bibinitperiod\bibinitdelim M\bibinitperiod},
+      }}%
+      {{hash=KAS}{%
+         family={Kelley},
+         familyi={K\bibinitperiod},
+         given={Amy\bibnamedelima S},
+         giveni={A\bibinitperiod\bibinitdelim S\bibinitperiod},
+      }}%
+      {{hash=PJ}{%
+         family={Paris},
+         familyi={P\bibinitperiod},
+         given={Julia},
+         giveni={J\bibinitperiod},
+      }}%
+      {{hash=RK}{%
+         family={Roza},
+         familyi={R\bibinitperiod},
+         given={Katherine},
+         giveni={K\bibinitperiod},
+      }}%
+      {{hash=MDE}{%
+         family={Meier},
+         familyi={M\bibinitperiod},
+         given={Diane\bibnamedelima E},
+         giveni={D\bibinitperiod\bibinitdelim E\bibinitperiod},
+      }}%
+      {{hash=MRS}{%
+         family={Morrison},
+         familyi={M\bibinitperiod},
+         given={R\bibnamedelima Sean},
+         giveni={R\bibinitperiod\bibinitdelim S\bibinitperiod},
+      }}%
+      {{hash=AMD}{%
+         family={Aldridge},
+         familyi={A\bibinitperiod},
+         given={Melissa\bibnamedelima D},
+         giveni={M\bibinitperiod\bibinitdelim D\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Wiley Online Library}%
+    }
+    \strng{namehash}{GMM+1}
+    \strng{fullhash}{GMMKASPJRKMDEMRSAMD1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{number}{5}
+    \field{pages}{1701\bibrangedash 1720}
+    \field{title}{Methods for constructing and assessing propensity scores}
+    \field{volume}{49}
+    \field{journaltitle}{Health services research}
+    \field{year}{2014}
+  \endentry
+
+  \entry{austin2014comparison}{article}{}
+    \name{author}{1}{}{%
+      {{hash=APC}{%
+         family={Austin},
+         familyi={A\bibinitperiod},
+         given={Peter\bibnamedelima C},
+         giveni={P\bibinitperiod\bibinitdelim C\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Wiley Online Library}%
+    }
+    \strng{namehash}{APC1}
+    \strng{fullhash}{APC1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{number}{6}
+    \field{pages}{1057\bibrangedash 1069}
+    \field{title}{A comparison of 12 algorithms for matching on the propensity
+  score}
+    \field{volume}{33}
+    \field{journaltitle}{Statistics in medicine}
+    \field{year}{2014}
+  \endentry
+
+  \entry{matchitpackage}{article}{}
+    \name{author}{4}{}{%
+      {{hash=HDE}{%
+         family={Ho},
+         familyi={H\bibinitperiod},
+         given={Daniel\bibnamedelima E.},
+         giveni={D\bibinitperiod\bibinitdelim E\bibinitperiod},
+      }}%
+      {{hash=IK}{%
+         family={Imai},
+         familyi={I\bibinitperiod},
+         given={Kosuke},
+         giveni={K\bibinitperiod},
+      }}%
+      {{hash=KG}{%
+         family={King},
+         familyi={K\bibinitperiod},
+         given={Gary},
+         giveni={G\bibinitperiod},
+      }}%
+      {{hash=SEA}{%
+         family={Stuart},
+         familyi={S\bibinitperiod},
+         given={Elizabeth\bibnamedelima A.},
+         giveni={E\bibinitperiod\bibinitdelim A\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{HDE+1}
+    \strng{fullhash}{HDEIKKGSEA1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \verb{doi}
+    \verb 10.18637/jss.v042.i08
+    \endverb
+    \field{number}{8}
+    \field{pages}{1\bibrangedash 28}
+    \field{title}{{MatchIt}: Nonparametric Preprocessing for Parametric Causal
+  Inference}
+    \field{volume}{42}
+    \field{journaltitle}{Journal of Statistical Software}
+    \field{year}{2011}
+  \endentry
 \enddatalist
 \endinput

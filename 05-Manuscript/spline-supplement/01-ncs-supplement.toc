@@ -1,10 +1,11 @@
 \contentsline {section}{\numberline {1}Dietary Patterns Extraction with Penalized Logit}{1}{section.1}%
 \contentsline {subsection}{\numberline {1.1}Rationale}{1}{subsection.1.1}%
-\contentsline {subsection}{\numberline {1.2}Implementation}{1}{subsection.1.2}%
+\contentsline {subsection}{\numberline {1.2}Implementation}{2}{subsection.1.2}%
 \contentsline {subsection}{\numberline {1.3}Dependent and Explanatory Variables}{2}{subsection.1.3}%
 \contentsline {subsection}{\numberline {1.4}Implementation in R}{2}{subsection.1.4}%
-\contentsline {section}{\numberline {2}Cubic Splines}{2}{section.2}%
-\contentsline {subsection}{\numberline {2.1}Background}{2}{subsection.2.1}%
+\contentsline {section}{\numberline {2}Cubic Splines}{3}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Background}{3}{subsection.2.1}%
 \contentsline {subsection}{\numberline {2.2}Basis Representation for Cubic Splines}{3}{subsection.2.2}%
 \contentsline {subsection}{\numberline {2.3}Natural Cubic Splines}{4}{subsection.2.3}%
 \contentsline {subsection}{\numberline {2.4}Implementation in R}{5}{subsection.2.4}%
+\contentsline {section}{\numberline {3}Propensity Score Matching}{7}{section.3}%

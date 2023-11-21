@@ -43,7 +43,7 @@
 \setlength\parindent{24pt}
 
 \title{Supplementary File: Methods}
-\author{Christian A. Maino Vieytes}
+\author{Christian A. Maino Vieytes, Ruoqing Zhu}
 \date{}
 
 
@@ -60,7 +60,7 @@
 \hspace{\parindent} We implemented penalized logistic regression with an elastic net penalty to extract dietary patterns from observed dietary intake data from 24-hour recalls as explained in the main text. The theory and rationale for the elastic net is proposed by Zou and Hastie. \supercite{zou2005regularization} The idea involves having a regularization technique that accomplishes both \textit{shrinkage} and \textit{variable selection} simultaneously. The goal was to extract dietary patterns associated with a given binary characteristic. We chose the elastic net given the high correlation amongst dietary variables in epidemiologic studies and the unique ability of elastic net to handle correlated variables. Unlike ridge regression, elastic net allows us to achieve parsimony and also avoids the sparsity that often accompanies the LASSO model.\supercite{zou2005regularization}
 
 \subsection{Implementation}
- \hspace{\parindent}The elastic net algorithm begins by the specification of a logistic regression model with the elastic net penalty, which is often conceptualized as a mixture of the LASSO penalty ($\ell_1$) and ridge regression penalty ($\ell_2$)  terms. Equation 1 demonstrates the formulation of the objective function. The penalty term is introduced for logistic regression case is introduced into the likelihood function used to fit the model:
+ \hspace{\parindent}The elastic net algorithm begins by the specification of a logistic regression model with the elastic net penalty, which is often conceptualized as a mixture of the LASSO penalty ($\ell_1$) and ridge regression penalty ($\ell_2$)  terms. Equation 1 demonstrates the formulation of the objective function. The penalty term introduced for the logistic regression case is introduced into the likelihood function used to fit the model:
 
 \begin{equation}
 	-2[\ell(\beta)]=-2\sum_{i=1}^nlog({Pr(Y_i|X_i,\beta)+\lambda[(1-\alpha)]||\beta||_2^2+\alpha||\beta||_1]]}) \tag{1}
@@ -74,7 +74,7 @@ The $-2\text{log-likelihood}$ includes the $-2\text{log-likelihood}$ function fo
   \hspace{\parindent} The explanatory variables were intake equivalents for 26 food group variables from the USDA Food Patterns Equivalents Database (FPED) and the MyPyramid Equivalents Database (MPED) data. The exact variables are provided in the main text in Table 2. All food group variables were centered and scaled (by their standard deviation) prior to fitting the elastic net models.
  
 \subsection{Implementation in R}
- \hspace{\parindent} The \texttt{glmnet} and \texttt{caret} packages in \texttt{R} can be used to fit models with elastic net, LASSO, and ridge penalization. R code to extract the dietary patterns in available in the following GitHub repository: \textcolor{blue}{\url{https://github.com/cmainov/NHANES-Diet-Penalized-Regression/blob/main/R/04-Dietary-patterns-extraction.R}}.
+ \hspace{\parindent} The \texttt{glmnet} and \texttt{caret} packages in \texttt{R} can be used to fit models with elastic net, LASSO, and ridge penalization. R code to extract the dietary patterns in available in the following file: \textcolor{blue}{\url{https://github.com/cmainov/nhanes-fi-ca-mortality/blob/main/R/utils.R}}.
 
 \section{Cubic Splines}
 % first subsection on splines
@@ -83,13 +83,13 @@ The $-2\text{log-likelihood}$ includes the $-2\text{log-likelihood}$ function fo
 
 \vspace{0.5cm} % space between paragraphs
 \subsection{Basis Representation for Cubic Splines} % add indentation below
-\hspace{\parindent} Fitting spline models involves applying a set of transformations to the exposure variable, $X$. In the regression model, we replace the original variable with the set of transformations (which we term \textit{basis functions}) and estimate parameters for each of those transformations:
+\hspace{\parindent} Fitting spline models involves applying a set of transformations to the exposure variable, $X$, including them in an additive model, and estimating parameters as is conventional in regression. In the regression model, we replace the original variable with the set of transformations (which we term \textit{basis functions}) and estimate parameters for each of those transformations:
 
-$$Y=\sum_{m=1}^{M}{\beta_mh_m(X)+\gamma V}$$
+$$E[Y|X,V]=\sum_{m=1}^{M}{\beta_mh_m(X)+\gamma V}$$
 
 \noindent which is a linear basis expansion in $X$, where $h_m$ is the $m^{th}$ basis function (of which there are $M$), and $\gamma V$ is a term for an additional covariate we may want to adjust for (no basis expansion on this term).\supercite{hastie_elements_2009} We generalize this approach to the multivariable setting where we desire basis expansions in several variables:
 
-$$Y=\sum_{j=1}^{J}\sum_{m=1}^{M_j}{\beta_{jm}{h_{jm}}(X_j)+\gamma V}$$
+$$E[Y|X,V]=\sum_{j=1}^{J}\sum_{m=1}^{M_j}{\beta_{jm}{h_{jm}}(X_j)+\gamma V}$$
 
 \noindent where $j$ is the index of variables. The set of fixed basis functions is of interest, as are the \textit{knots} and \textit{knot locations}, which are the regions along the domain where separate local piecewise polynomials are fit. Uniform or non-uniform spacing can be used to specify the knots, although a set of quantiles of the exposure are conventionally used as the knot locations. \supercite{james_introduction_2013} To achieve smoothness in the spline curve across these disjoint regions, a continuity constraint is applied. Using a truncated power basis, we achieve the continuity constraint:
 
@@ -114,7 +114,7 @@ $$4(K+1)-3K=4(2+1)-(3)(2)=6\text{ }{df}$$
 \subsection{Natural Cubic Splines}
 \hspace{\parindent} A cited limitation of cubic splines is the high variance in the spline estimates at the extremes of the data (i.e., in the highest and lowest intervals). \supercite{hastie_elements_2009} Natural cubic splines take cubic splines and apply two additional constraints: that the function is linear beyond the boundary knots (i.e., the exterior knots--if we have two interior knots, then we have two additional exterior or boundary knots). $Y''$ and $Y'''$ will be zero at these knot boundaries, and we will have $K$ basis functions for a natural cubic spline with $K$ knots ($K$ here assumes we count the two exterior or boundary knots in addition to the interior knots--for a spline with two interior knots we have $K=4$). 
 
-\hspace{\parindent} In our analysis, we specify the diet quality indices using a basis expansion for a natural cubic spline with one interior knots ($K=3$). These basis functions are provided below.
+\hspace{\parindent} In our analysis, we specify the diet quality indices using a basis expansion for a natural cubic spline with one interior knot ($K=3$). These basis functions are provided below.
 \newline
 \newline
 \textit{In a general form}\supercite{hastie_elements_2009} :
@@ -208,7 +208,11 @@ head( k2.v2, 5 ) # print first 5 rows of the basis matrix
 \end{lstlisting}
 %% end R code chunk %%
 
-\noindent \textbf{A final note}: the {\ttfamily{ns()}} implements a slightly modified version of the basis functions for the natural cubic spline (which is why we do not get the exact values in the basis matrix that we would have otherwise predicted). Indeed, {\ttfamily{ns()}} implements a linear transformation of the basis to generate a B-spline basis matrix for the natural cubic spline we seek to fit (done for computational reasons).
+\noindent \textbf{Final notes}: (i) the {\ttfamily{ns()}} implements a slightly modified version of the basis functions for the natural cubic spline (which is why we do not get the exact values in the basis matrix that we would have otherwise predicted). Indeed, {\ttfamily{ns()}} implements a linear transformation of the basis to generate a B-spline basis matrix for the natural cubic spline we seek to fit (done for computational reasons). (ii) We note that an extension of the natural cubic spline approach we present would be to use \textit{smoothing splines} which we did not use in our analysis and that allow for a more objective conclusion on the number of knots to assign to the data.\supercite{hastie_elements_2009}
+
+\section{Propensity Score Matching}
+\hspace{\parindent}As described in the main text, we carried out a sensitivity analysis whereby the analytic sample was refined based on matched samples in high and low fractions of the dietary patterns scores that had similar covariate values.\supercite{austin2009relative} Specifically, we used weighted logistic regression model to estimate the probability of having a high dietary pattern score (``high" was defined as having a dietary pattern index score $\ge$ the median value). We then assesed for overlap in the propensity scores across ``high" and ``low" groups of the diet scores  (i.e., ``common support"), effectively removing subjects from the sample that lacked a potential match (based on the similarity of the propensity score).\supercite{garrido2014methods} Finally, Nearest Neighbor matching was used to assign matches in the `high" and ``low" groups of the diet scores. \supercite{austin2014comparison} Propensity score estimation and the matching steps were implemented with the  {\ttfamily{matchit}} function from the  {\ttfamily{MatchIt}} R package.\supercite{matchitpackage} Because there is no software for this type of procedure that accounts for all aspects of the survey design, we used normalized weights in the weighted logistic regression models that estimated the propensity scores. The code for this analysis is found at: \textcolor{blue}{\url{https://github.com/cmainov/nhanes-fi-ca-mortality/blob/main/R/utils.R}}.
+
 
 % print bibliography
 \printbibliography[title={References}]
