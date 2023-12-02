@@ -2,8 +2,8 @@
 \usepackage[svgnames]{xcolor}
 \usepackage{listings}
 
-
-\usepackage{hyperref}
+\usepackage{enumitem} % for ordered list (i.e., using roman numerals instead of arabic numbers for any `enumerate` environment)
+\usepackage{hyperref} % for url's and links
 
 
 \lstset{language=R,
@@ -42,7 +42,7 @@
 % set the indentation length
 \setlength\parindent{24pt}
 
-\title{Supplementary File: Methods}
+\title{Supplementary Methods}
 \author{Christian A. Maino Vieytes, Ruoqing Zhu}
 \date{}
 
@@ -69,12 +69,15 @@
 The $-2\text{log-likelihood}$ includes the $-2\text{log-likelihood}$ function for a logistic regression model plus an additional penalty term, $\lambda[(1-\alpha)]||\beta||_2^2+\alpha||\beta||_1]]$, which involves a combination of the ($\ell_1$) and ($\ell_2$) penalities and two tuning parameters, $\lambda$ and $\alpha$, which are unknown and conventionally optimized via $K$-fold cross-validation. Optimizing this objective function relies on numerical methods. \supercite{jin2009elastic} We used $10$-fold cross-validation and minimized the deviance to find the optimal combination of $\lambda$ and $\alpha$. A grid of $\alpha$ values from 0 to 1 in 0.1 increments was used. 
 
 \subsection{Dependent and Explanatory Variables}
- \hspace{\parindent} As indicated in the main text, we selected four outcome variables associated with food insecurity or directly measuring food insecurity. These included household food insecurity status (Constructed using variable \texttt{FSDHH} in the NHANES dataset), Age $\ge$ 60 (constructed from the \texttt{RIDAGEYR} variable in NHANES), household receipt of SNAP benefits in the previous 12 months (constructed from the \texttt{FSQ17} and \texttt{FSD170N} variables in NHANES), and household size $\ge$5 (constructed from \texttt{DMDHHSIZ} in NHANES).
- 
-  \hspace{\parindent} The explanatory variables were intake equivalents for 26 food group variables from the USDA Food Patterns Equivalents Database (FPED) and the MyPyramid Equivalents Database (MPED) data. The exact variables are provided in the main text in Table 2. All food group variables were centered and scaled (by their standard deviation) prior to fitting the elastic net models.
+ \hspace{\parindent} As indicated in the main text, we selected the binary household food insecurity status (constructed using variable \texttt{FSDHH} in the NHANES dataset) for the penalized logitic regression model. The explanatory variables were intake equivalents for 26 food group variables from the USDA Food Patterns Equivalents Database (FPED) and the MyPyramid Equivalents Database (MPED) data. The exact variables are provided in the main text in Table 2. All food group variables were centered and scaled (by their standard deviation) prior to fitting the elastic net models. We also included total calories (not scaled or centered) in the model to adjust for total energy intake via the standard multivariate method.\supercite{willett1997adjustment} All data wrangling and management steps done prior to the analysis are provided in the following file: \textcolor{blue}{\url{https://github.com/cmainov/nhanes-fi-ca-mortality/blob/main/R/01-covariate-mortality-data-linkage.R}}.
  
 \subsection{Implementation in R}
- \hspace{\parindent} The \texttt{glmnet} and \texttt{caret} packages in \texttt{R} can be used to fit models with elastic net, LASSO, and ridge penalization. R code to extract the dietary patterns in available in the following file: \textcolor{blue}{\url{https://github.com/cmainov/nhanes-fi-ca-mortality/blob/main/R/utils.R}}.
+ \hspace{\parindent} The \texttt{glmnet} and \texttt{caret} packages in \texttt{R} can be used to fit models with elastic net, LASSO, and ridge penalization. R code to extract the dietary patterns is available in the following files:
+\begin{enumerate}[label=(\roman*)]
+ 	\item \textcolor{blue}{\url{https://github.com/cmainov/nhanes-fi-ca-mortality/blob/main/R/03-diet-score-computations.R}} (\textit{All steps going from data import to outputting a dataset with the diet pattern scores})
+ 	\item \textcolor{blue}{\url{https://github.com/cmainov/nhanes-fi-ca-mortality/blob/main/R/utils.R}} (\textit{Helper functions written for use in the above script})
+ \end{enumerate}
+  
 
 \section{Cubic Splines}
 % first subsection on splines
@@ -208,10 +211,10 @@ head( k2.v2, 5 ) # print first 5 rows of the basis matrix
 \end{lstlisting}
 %% end R code chunk %%
 
-\noindent \textbf{Final notes}: (i) the {\ttfamily{ns()}} implements a slightly modified version of the basis functions for the natural cubic spline (which is why we do not get the exact values in the basis matrix that we would have otherwise predicted). Indeed, {\ttfamily{ns()}} implements a linear transformation of the basis to generate a B-spline basis matrix for the natural cubic spline we seek to fit (done for computational reasons). (ii) We note that an extension of the natural cubic spline approach we present would be to use \textit{smoothing splines} which we did not use in our analysis and that allow for a more objective conclusion on the number of knots to assign to the data.\supercite{hastie_elements_2009}
+\noindent \textbf{Final notes}: (i) the {\ttfamily{ns()}} implements a slightly modified version of the basis functions for the natural cubic spline (which is why we do not get the exact values in the basis matrix that we would have otherwise predicted). Indeed, {\ttfamily{ns()}} implements a linear transformation of the basis to generate a B-spline basis matrix for the natural cubic spline we seek to fit (done for computational reasons). (ii) We note that an extension of the natural cubic spline approach we present would be to use \textit{smoothing splines}, which we did not use in our analysis and that allow for a more objective conclusion on the number of knots to assign to the data.\supercite{hastie_elements_2009}
 
 \section{Propensity Score Matching}
-\hspace{\parindent}As described in the main text, we carried out a sensitivity analysis whereby the analytic sample was refined based on matched samples in high and low fractions of the dietary patterns scores that had similar covariate values.\supercite{austin2009relative} Specifically, we used weighted logistic regression model to estimate the probability of having a high dietary pattern score (``high" was defined as having a dietary pattern index score $\ge$ the median value). We then assesed for overlap in the propensity scores across ``high" and ``low" groups of the diet scores  (i.e., ``common support"), effectively removing subjects from the sample that lacked a potential match (based on the similarity of the propensity score).\supercite{garrido2014methods} Finally, Nearest Neighbor matching was used to assign matches in the `high" and ``low" groups of the diet scores. \supercite{austin2014comparison} Propensity score estimation and the matching steps were implemented with the  {\ttfamily{matchit}} function from the  {\ttfamily{MatchIt}} R package.\supercite{matchitpackage} Because there is no software for this type of procedure that accounts for all aspects of the survey design, we used normalized weights in the weighted logistic regression models that estimated the propensity scores. The code for this analysis is found at: \textcolor{blue}{\url{https://github.com/cmainov/nhanes-fi-ca-mortality/blob/main/R/utils.R}}.
+\hspace{\parindent}As described in the main text, we conducted a sensitivity analysis whereby the analytic sample was refined based on matched samples in high and low fractions of the dietary patterns scores with similar covariate values.\supercite{austin2009relative} Specifically, we used weighted logistic regression model to estimate the probability of having a high dietary pattern score (``high" was defined as having a dietary pattern index score $\ge$ the median value). We then assessed for overlap in the propensity scores across ``high" and ``low" groups of the diet scores  (i.e., ``common support"), effectively removing subjects from the sample that lacked a potential match (based on the similarity of the propensity score).\supercite{garrido2014methods} Finally, Nearest Neighbor matching was used to assign matches in the ``high" and ``low" groups of the diet scores. \supercite{austin2014comparison} Propensity score estimation and the matching steps were implemented with the  {\ttfamily{matchit}} function from the  {\ttfamily{MatchIt}} R package.\supercite{matchitpackage} Because no software for this type of procedure accounts for all aspects of the survey design, we used normalized weights in the weighted logistic regression models that estimated the propensity scores. The code for this analysis is found at: \textcolor{blue}{\url{https://github.com/cmainov/nhanes-fi-ca-mortality/blob/main/R/06-ps-matching-sensitivity.R}}.
 
 
 % print bibliography

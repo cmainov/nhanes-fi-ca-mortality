@@ -42,7 +42,7 @@ dat <- readRDS( "03-Data-Rodeo/01-analytic-data.rds") %>%
   
 ( pm <- sum( gen$variables$stime ) ) # person-months
 
-pm/12 # person-years 
+pm / 12 # person-years 
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
   
@@ -295,7 +295,7 @@ rp.all.gg <- setNames( data.frame( bind_rows(
 
 # set column names and row names
 colnames( rp.all.gg ) <- c ( fg.only.lo )
-rownames( rp.all.gg ) <- c( "Food Insecurity (FI)", "Prudent #1", "Prudent #2",
+rownames( rp.all.gg ) <- c( "Pattern #1", "Pattern #2", "Pattern #3",
                             "HEI-2015" )
 
 # need to add the group names as the first column of the dataset you feed to `ggradar` since it looks for those in column #1
@@ -317,10 +317,10 @@ colors.line <- c( rgb(0.529,0.808,0.98,0.9), rgb(0,0,0.502,0.9), rgb(0.55,0.10,0
                   legend.title = "Dietary Pattern",
                   axis.label.size = 7.4,
                   x.centre.range = 1.31 ,
-                  legend.labels = c( unname( TeX( "Food Insecurity (FI)$^\\dagger$" ) ),
-                                     unname( TeX("Prudent #1$^\\ddagger$" ) ),
-                                     unname( TeX("Prudent #2$^\\ddagger$" ) ),
-                                     unname( TeX( "HEI-2015$^a$" ) ) ),
+                  legend.labels = c( unname( TeX( "Pattern #1$^{\\dagger a}$" ) ),
+                                     unname( TeX("Pattern #2$^{\\ddagger b}$" ) ),
+                                     unname( TeX("Pattern #3$^{\\ddagger c}$" ) ),
+                                     unname( TeX( "HEI-2015$^d$" ) ) ),
                   group.colours = colors.line ) +
     theme( legend.title = element_text( face = "bold"),
            legend.text = element_text( size = 19, margin = margin(t = 10, b = 10, l = 0.1) ), # margins for legend text
@@ -337,7 +337,16 @@ g.1$layers[[5]]$aes_params <- c( g.1$layers[[5]]$aes_params, colour = "grey40" )
 g.1
 
 ggsave( "04-Tables-Figures/figures/04-ggradar-all.png",
-        width = 14.8, height = 11.9, plot = g.1 )
+        height = 14.8, 
+        width = 11.9,
+        plot = g.1,
+        dpi = 500 )
+
+ggsave( "04-Tables-Figures/figures/04-ggradar-all.tiff",
+        height = 14.8, 
+        width = 11.9,
+        plot = g.1,
+        dpi = 500 )
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -351,8 +360,8 @@ ggsave( "04-Tables-Figures/figures/04-ggradar-all.png",
 diet.patt.names <- c( "fs_enet", "pc1", "pc2", "hei.2015" )
 
 # how we want them presented in the table
-diet.patt.names.table <- c( "Food Security Pattern", "Prudent #1",
-                      "Prudent #2", "HEI-2015" )
+diet.patt.names.table <- c( "Pattern #1", "Pattern #2",
+                      "Pattern #3", "HEI-2015" )
 
 diets.t <- data.frame() # initialize frame
 for ( i in seq_along( diet.patt.names ) ){

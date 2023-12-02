@@ -318,20 +318,20 @@ sens.48.table <- bind_rows( data.frame( index = "All-Cause Mortality"),
                       fin.res.sens.ca )
 
 
-ac.table[ac.table == "fs_enet"] <- "Food Insecurity"
-ca.table[ca.table == "fs_enet"] <- "Food Insecurity"
-s.table[s.table == "fs_enet"] <- "Food Insecurity"
-sens.48.table[sens.48.table == "fs_enet"] <- "Food Insecurity"
+ac.table[ac.table == "fs_enet"] <- "Pattern #1"
+ca.table[ca.table == "fs_enet"] <- "Pattern #1"
+s.table[s.table == "fs_enet"] <- "Pattern #1"
+sens.48.table[sens.48.table == "fs_enet"] <- "Pattern #1"
 
-ac.table[ac.table == "pc1"] <- "Prudent #1"
-ca.table[ca.table == "pc1"] <- "Prudent #1"
-s.table[s.table == "pc1"] <- "Prudent #1"
-sens.48.table[sens.48.table == "pc1"] <- "Prudent #1"
+ac.table[ac.table == "pc1"] <- "Pattern #2"
+ca.table[ca.table == "pc1"] <- "Pattern #2"
+s.table[s.table == "pc1"] <- "Pattern #2"
+sens.48.table[sens.48.table == "pc1"] <- "Pattern #2"
 
-ac.table[ac.table == "pc2"] <- "Prudent #2"
-ca.table[ca.table == "pc2"] <- "Prudent #2"
-s.table[s.table == "pc2"] <- "Prudent #2"
-sens.48.table[sens.48.table == "pc2"] <- "Prudent #2"
+ac.table[ac.table == "pc2"] <- "Pattern #3"
+ca.table[ca.table == "pc2"] <- "Pattern #3"
+s.table[s.table == "pc2"] <- "Pattern #3"
+sens.48.table[sens.48.table == "pc2"] <- "Pattern #3"
 
 ac.table[ac.table == "hei.2015"] <- "HEI-2015"
 ca.table[ca.table == "hei.2015"] <- "HEI-2015"
@@ -369,14 +369,14 @@ ca.table.nb <- bind_rows( fin.res.ca %>% filter( model %in% c( "Null Model", "Ba
            sample )
 
 # change names inside table
-ac.table.nb[ac.table.nb == "fs_enet"] <- "Food Insecurity"
-ca.table.nb[ca.table.nb == "fs_enet"] <- "Food Insecurity"
+ac.table.nb[ac.table.nb == "fs_enet"] <- "Pattern #1"
+ca.table.nb[ca.table.nb == "fs_enet"] <- "Pattern #1"
 
-ac.table.nb[ac.table.nb == "pc1"] <- "Prudent #1"
-ca.table.nb[ca.table.nb == "pc1"] <- "Prudent #1"
+ac.table.nb[ac.table.nb == "pc1"] <- "Pattern #2"
+ca.table.nb[ca.table.nb == "pc1"] <- "Pattern #2"
 
-ac.table.nb[ac.table.nb == "pc2"] <- "Prudent #2"
-ca.table.nb[ca.table.nb == "pc2"] <- "Prudent #2"
+ac.table.nb[ac.table.nb == "pc2"] <- "Pattern #3"
+ca.table.nb[ca.table.nb == "pc2"] <- "Pattern #3"
 
 ac.table.nb[ac.table.nb == "hei.2015"] <- "HEI-2015"
 ca.table.nb[ca.table.nb == "hei.2015"] <- "HEI-2015"
@@ -405,8 +405,8 @@ write.table( all.table.nb, "04-Tables-Figures/tables/07-table-s1.txt", sep = ","
 
 ## spline plots ##
 model.index <- 1:4 
-diet.names <- c( "FI Pattern", "Western Pattern", 
-                 "Mixed Pattern", "HEI-2015$^a$" ) # x-axis labels
+diet.names <- c( "Pattern #1$^{\\dagger a}$", "Pattern #2$^{\\ddagger b}$", 
+                 "Pattern #3$^{\\ddagger c}$", "HEI-2015$^d$" ) # x-axis labels
 
 sp.plots.list <- Map( function( x, y ){
   
@@ -416,7 +416,7 @@ sp.plots.list <- Map( function( x, y ){
            text = element_text( family = "Avenir" ),
            axis.title.y = element_text( size = 13 ) ,
            axis.text.y = element_text( size = 10, color = "grey30" ),
-           axis.title.x = element_text( size = 13 ) ,
+           axis.title.x = element_text( size = 15 ) ,
            axis.text.x = element_text( size = 10, color = "grey30" ) ) +
     ylab( "" ) +
     coord_cartesian( ylim = c( 0.2, max = 1.8 ) ) 
@@ -467,7 +467,13 @@ ggsave( "04-Tables-Figures/figures/03-surv-spline-comb.png",
         height = 8, 
         width = 13,
         plot = sp.sc.comb,
-        dpi = 400 )
+        dpi = 500 )
+
+ggsave( "04-Tables-Figures/figures/03-surv-spline-comb.tiff",
+        height = 8, 
+        width = 13,
+        plot = sp.sc.comb,
+        dpi = 500 )
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 

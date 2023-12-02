@@ -85,6 +85,42 @@
     \field{year}{2009}
   \endentry
 
+  \entry{willett1997adjustment}{article}{}
+    \name{author}{3}{}{%
+      {{hash=WWC}{%
+         family={Willett},
+         familyi={W\bibinitperiod},
+         given={Walter\bibnamedelima C},
+         giveni={W\bibinitperiod\bibinitdelim C\bibinitperiod},
+      }}%
+      {{hash=HGR}{%
+         family={Howe},
+         familyi={H\bibinitperiod},
+         given={Geoffrey\bibnamedelima R},
+         giveni={G\bibinitperiod\bibinitdelim R\bibinitperiod},
+      }}%
+      {{hash=KLH}{%
+         family={Kushi},
+         familyi={K\bibinitperiod},
+         given={Lawrence\bibnamedelima H},
+         giveni={L\bibinitperiod\bibinitdelim H\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Elsevier}%
+    }
+    \strng{namehash}{WWC+1}
+    \strng{fullhash}{WWCHGRKLH1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{number}{4}
+    \field{pages}{S1220\bibrangedash S1228}
+    \field{title}{Adjustment for total energy intake in epidemiologic studies}
+    \field{volume}{65}
+    \field{journaltitle}{The American journal of clinical nutrition}
+    \field{year}{1997}
+  \endentry
+
   \entry{greenland_dose-response_1995}{article}{}
     \name{author}{1}{}{%
       {{hash=GS}{%
