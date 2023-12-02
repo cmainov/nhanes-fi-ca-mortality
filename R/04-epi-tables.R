@@ -336,15 +336,16 @@ g.1$layers[[5]]$aes_params <- c( g.1$layers[[5]]$aes_params, colour = "grey40" )
 # save
 g.1
 
+
 ggsave( "04-Tables-Figures/figures/04-ggradar-all.png",
-        height = 14.8, 
-        width = 11.9,
+        width = 14.8, 
+        height = 11.9,
         plot = g.1,
         dpi = 500 )
 
 ggsave( "04-Tables-Figures/figures/04-ggradar-all.tiff",
-        height = 14.8, 
-        width = 11.9,
+        width = 14.8, 
+        height = 11.9,
         plot = g.1,
         dpi = 500 )
 
