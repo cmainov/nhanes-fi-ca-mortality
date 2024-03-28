@@ -1,25 +1,51 @@
+###---------------------------------------------------
+###   05-VALIDATION ANALYSIS/SURVIVAL ANALYSIS
+###---------------------------------------------------
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+# 
+# In this script, we perform the validation survival analysis on the testing
+# subsample of the dataset. Note this script makes use of several results-
+# generating functions we wrote and that are stored in the utils.R file.
+# 
+# INPUT DATA FILE: 
+# i."03-Data-Rodeo/01-analytic-data.rds"
+#
+# OUTPUT FILES: 
+# Several results files (tables--.txt files--and figures--.png and .tiff files)
+#
+# Resources: 
+#
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
 library( tidyverse )
-library( glue )
-library( splines )
-library( survey )
+library( glue )      # for string gluing
+library( splines )   # for spline functions
+library( survey )    # survey commands
 library( survminer ) # for adjusted survival curves
-library( ggsci )
-library( latex2exp )
+library( ggsci )     # pallettes
+library( latex2exp ) # for latex in plots
 
 source( "R/utils.R" ) # read in helper functions
 source( "R/old/surv-miner-bug-fix.R" ) # bug fix for generating survival curves with `survminer`
 
-d <- readRDS( "03-Data-Rodeo/01-analytic-data.rds")
 
-
-# x variables
-indices <- c( "fs_enet", "pc1", "pc2", "hei.2015" )
-
-
-### Analyses on the Cancer Survivor Population ###
+### (0.0) Read-in Data ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# covariates to include in model
+d <- readRDS( "03-Data-Rodeo/01-analytic-data.rds")
+
+# specify x variables in the analyses
+indices <- c( "fs_enet", "pc1", "pc2", "hei.2015" )
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+### (1.0) Analyses on the Entire Cancer Survivor Population ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+## (1.1) Specify covariates to include in model ##
 covars.surv <- c( "race", "gender", "age", "bmxbmi", "hhsize", "fipr",
                   "smokstat", "kcal", "weekmetmin", "education_bin",
                   "cci_score", "alc_cat", "ins.status", "binfoodsechh",
@@ -31,7 +57,11 @@ covars.null <- c() # null model covariates
 
 covars.list <- list( covars.null, covars.base, covars.surv )
 
-# all-cause mortality
+## ---o--- ##
+
+
+## (1.2) All-cause mortality ##
+
 out.res <- list()
 fin.res <- data.frame()
 
@@ -61,8 +91,11 @@ for( i in seq_along( indices ) ){
     
 }
 
+## ---o--- ##
 
-# cancer mortality
+
+## (1.3) Cancer mortality ##
+
 out.res.ca <- list()
 fin.res.ca <- data.frame()
 for( i in seq_along( indices ) ){
@@ -95,10 +128,11 @@ for( i in seq_along( indices ) ){
 
 
 
-### Analyses on the Food Insecure Cancer Survivor Population ###
+### (2.0) Analyses on the Food Insecure Cancer Survivor Population ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# covariates to include in model
+## (2.1) Specify covariates to include in model ##
+
 covars.surv.fi <- c( "race", "gender", "age", "bmxbmi", "hhsize", "fipr",
                      "smokstat", "kcal", "weekmetmin", "education_bin",
                      "cci_score", "ins.status",
@@ -106,7 +140,10 @@ covars.surv.fi <- c( "race", "gender", "age", "bmxbmi", "hhsize", "fipr",
 
 covars.list.fi <- list( covars.null, covars.base, covars.surv.fi )
 
-# all-cause mortality
+## ---o--- ##
+
+
+## (2.2) All-cause mortality ##
 out.res.fi <- list()
 fin.res.fi <- data.frame()
 
@@ -135,9 +172,11 @@ for( i in seq_along( indices ) ){
   
 }
 
+## ---o--- ##
 
 
-# cancer mortality
+## (2.3) Cancer mortality ##
+
 out.res.fi.ca <- list()
 fin.res.fi.ca <- data.frame()
 
@@ -171,13 +210,17 @@ for( i in seq_along( indices ) ){
 
 
 
-### Further Adjust for NHANES ADL Score (Analysis on the Cancer Survivor Population) ###
+### (3.0) Further Adjust for NHANES ADL Score (Analysis on the Cancer Survivor Population) ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# covariates to include in model
+## (3.1) Specify covariates to include in model ##
 covars.surv.s <- c( covars.surv, "adl.score" )
 
-# all-cause mortality
+## ---o--- ##
+
+
+## (3.2) All-cause mortality ##
+
 out.res.s <- list()
 fin.res.s <- data.frame()
 for( i in seq_along( indices ) ){
@@ -198,8 +241,10 @@ for( i in seq_along( indices ) ){
   
   }
 
+## ---o--- ##
 
-# cancer mortality
+
+## (3.3) Cancer mortality ##
 out.res.s.ca <- list()
 fin.res.s.ca <- data.frame()
 for( i in seq_along( indices ) ){
@@ -224,12 +269,13 @@ for( i in seq_along( indices ) ){
 
 
 
-### Sensitivity Analysis: Only Those within 4 Years of a Primary Cancer Diagnosis ###
+### (4.0) Sensitivity Analysis: Only Those within 4 Years of a Primary Cancer Diagnosis ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## All Cancer Survivors ##
 
-# all-cause mortality
+## (4.1 ) All-cause mortality ##
+
 out.sens.res <- list()
 fin.res.sens <- data.frame()
 for( i in seq_along( indices ) ){
@@ -249,9 +295,11 @@ for( i in seq_along( indices ) ){
   fin.res.sens <- rbind( fin.res.sens, out.sens.res[[i]]$frame )
 }
 
+## ---o--- ##
 
 
-# cancer mortality
+## (4.2) Cancer mortality ##
+
 out.sens.res.ca <- list()
 fin.res.sens.ca <- data.frame()
 for( i in seq_along( indices ) ){
@@ -277,10 +325,10 @@ for( i in seq_along( indices ) ){
 
 
 
-### Assemble Tables ###
+### (5.0) Assemble Tables ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-## All-cause mortality ##
+## (5.1) All-cause mortality results ##
 
 # full model results only
 ac.table <- bind_rows( fin.res %>% filter( model == "Full Model" ), 
@@ -291,8 +339,10 @@ ac.table <- bind_rows( fin.res %>% filter( model == "Full Model" ),
   arrange( factor(index, levels = c("fs_enet", "pc1", "pc2", "hei.2015" ) ),
                   sample )
 
+## ---o--- ##
 
-## Cancer-specific mortality ##
+
+## (5.2) Cancer-specific mortality ##
 
 ca.table <- bind_rows( fin.res.ca %>% filter( model == "Full Model" ), 
                        fin.res.fi.ca %>% filter( model == "Full Model" ) ) %>%
@@ -302,22 +352,28 @@ ca.table <- bind_rows( fin.res.ca %>% filter( model == "Full Model" ),
   arrange( factor(index, levels = c("fs_enet", "pc1", "pc2", "hei.2015" ) ),
            sample )
 
+## ---o--- ##
 
 
-## Adjust for ADL Score Models ##
+## (5.3) Adjust for ADL Score Models ##
 s.table <- bind_rows( data.frame( index = "All-Cause Mortality"),
            fin.res.s, 
            data.frame( index = "Cancer-Specific Mortality"),
            fin.res.s.ca )
 
+## ---o--- ##
 
-## Sensitivity analysis excluding those >60 mos since dx ##
+
+## (5.4) Sensitivity analysis excluding those >60 mos since dx ##
 sens.48.table <- bind_rows( data.frame( index = "All-Cause Mortality"),
                             fin.res.sens, 
                       data.frame( index = "Cancer-Specific Mortality"),
                       fin.res.sens.ca )
 
+## ---o--- ##
 
+
+## (5.5) Rename patterns in table ##
 ac.table[ac.table == "fs_enet"] <- "Pattern #1"
 ca.table[ca.table == "fs_enet"] <- "Pattern #1"
 s.table[s.table == "fs_enet"] <- "Pattern #1"
@@ -338,15 +394,20 @@ ca.table[ca.table == "hei.2015"] <- "HEI-2015"
 s.table[s.table == "hei.2015"] <- "HEI-2015"
 sens.48.table[sens.48.table == "hei.2015"] <- "HEI-2015"
 
+## ---o--- ##
 
-## Generate one table (main analysis) with all causes of death ##
+
+## (5.6) Generate one table (main analysis) with all causes of death ##
 
 all.table <- bind_rows( data.frame( index = "All-Cause Mortality"),
                         ac.table, 
                       data.frame( index = "Cancer-Specific Mortality"),
                       ca.table )
 
-## Generate one table with all causes of death for basic and null models only ##
+## ---o--- ##
+
+
+## (5.7) Generate one table with all causes of death for basic and null models only ##
 
 # null and basic model results only
 ac.table.nb <- bind_rows( fin.res %>% filter( model %in% c( "Null Model", "Basic Model" ) ), 
@@ -387,7 +448,10 @@ all.table.nb <- bind_rows( data.frame( index = "All-Cause Mortality"),
                         data.frame( index = "Cancer-Specific Mortality"),
                         ca.table.nb )
 
-## Save tables ##
+## ---o--- ##
+
+
+## (5.8) Save tables ##
 
 write.table( ac.table, "04-Tables-Figures/tables/04-table-4-ac.txt", sep = "," )
 write.table( ca.table, "04-Tables-Figures/tables/05-table-4-ca.txt", sep = "," )
@@ -400,10 +464,11 @@ write.table( all.table.nb, "04-Tables-Figures/tables/07-table-s1.txt", sep = ","
 
 
 
-### Survival Curves and Spline Plots ###
+### (6.0) Survival Curves and Spline Plots ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-## spline plots ##
+## (6.1) Spline plots ##
+
 model.index <- 1:4 
 diet.names <- c( "Pattern #1$^{\\dagger a}$", "Pattern #2$^{\\ddagger b}$", 
                  "Pattern #3$^{\\ddagger c}$", "HEI-2015$^d$" ) # x-axis labels
@@ -423,8 +488,10 @@ sp.plots.list <- Map( function( x, y ){
 }, 
 x = model.index, y = diet.names )
 
+## ---o--- ##
 
-## survival curves ##
+
+## (6.2) Survival curves ##
 vars.q <- c( "fs_enet.q", "pc1.q", "pc2.q", "hei.2015.q" ) # cut variable names
 
 leg.pos <- list( c(0.15,0.35), "none", "none", "none" ) # legend positions
@@ -456,18 +523,27 @@ y = vars.q,
 z = diet.names,
 l = leg.pos)
 
-# arrange into final figure
-( sp.sc.comb <- ggarrange( ggarrange( sc.plots.list[[1]], sp.plots.list[[1]], nrow = 2, labels = list( "A", "B" ) ),
+## ---o--- ##
+
+
+## (6.3) Arrange into final figure ##
+( sp.sc.comb <- ggarrange( ggarrange( sc.plots.list[[1]] + ylab( "Survival Probability" ) + theme( axis.title.y = element_text(margin = margin( t = 0, r = 9, b = 0, l = 0 ) ) ), # add y axis label for first plot in row with spacing between axis text and title 
+                                      sp.plots.list[[1]] + ylab( "Hazard Ratio (HR)" ), # add y axis label for first plot in row
+                                      nrow = 2, labels = list( "A", "B" ) ),
            ggarrange( sc.plots.list[[2]], sp.plots.list[[2]], nrow = 2 ),
            ggarrange( sc.plots.list[[3]], sp.plots.list[[3]], nrow = 2 ),
            ggarrange( sc.plots.list[[4]], sp.plots.list[[4]], nrow = 2 ),
            nrow = 1, ncol = 4 ) )
 
+## ---o--- ##
+
+
+## (6.4) Save Figures ##
 ggsave( "04-Tables-Figures/figures/03-surv-spline-comb.png",
         height = 8, 
         width = 13,
         plot = sp.sc.comb,
-        dpi = 500 )
+        dpi = 800 )
 
 ggsave( "04-Tables-Figures/figures/03-surv-spline-comb.tiff",
         height = 8, 

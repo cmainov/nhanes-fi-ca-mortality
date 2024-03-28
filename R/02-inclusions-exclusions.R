@@ -1,7 +1,32 @@
+###------------------------------------------------------------
+###   01-INCLUSIONS AND EXCLUSIONS
+###------------------------------------------------------------
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+# 
+# In this script, we run through the exclusion and inclusion criteria for the 
+# analysis that is then reflected in Figure 1 of the manuscript. We generate
+# a new dataset that has an indicator variable that indicates membership in the
+# final analytic sample.
+#
+# INPUT DATA FILES: 
+# i."02-Data-Wrangled/01-covariate-mortality-linkage.rds"
+#
+# OUPUT FILES:
+# i."02-Data-Wrangled/02-inclusions-exclusions.rds"
+#
+# Resources:
+#
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
 library( tidyverse ) 
 library( survey )    # for complex survey data model-fitting
 
 source( "R/utils.R" )
+
+
+### (0.0) Read in Working Data ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ( d <- readRDS( "02-Data-Wrangled/01-covariate-mortality-linkage.rds" ) ) %>%
   summarise( n.total = n(), unique = length( unique( .$seqn ) ) ) 
@@ -9,11 +34,14 @@ source( "R/utils.R" )
 # n.total unique
 # 1   78964  78964
 
-
-### Step 1 ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-## age >= 20 and response of "1" ( "yes" ) to the MCQ220 probe on cancer history ##
+
+
+### (1.0) Step 1 ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+## (1.0) Age >= 20 and response of "1" ( "yes" ) to the MCQ220 probe on cancer history ##
 ( ex.1 <- as.numeric( ( step1.data <- d %>%
                           filter( age >= 20 & ca == 1 ) ) %>%
                         summarise( subjects.remaining = n( ) ) ) ) # 4079 subjects remain
@@ -22,10 +50,10 @@ source( "R/utils.R" )
 
 
 
-### Step 2 ###
+### (2.0) Step 2 ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-## exclude those without complete dietary data/missing weights from the 24-hr recall subsample ##
+## (2.1) Exclude those without complete dietary data/missing weights from the 24-hr recall subsample ##
 
 ( step2a.data <- step1.data %>%
     filter( is.na( wtdr18yr ) == F & wtdr18yr != 0 ) ) %>%
@@ -36,8 +64,10 @@ source( "R/utils.R" )
 
 ex.2a <- nrow( step2a.data )
 
+## ---o--- ##
 
-## exclude those with a history of non-melanoma skin cancer as their only cancer diagnosis or ##
+
+## (2.2) Exclude those with a history of non-melanoma skin cancer as their only cancer diagnosis or ##
 ## outright missing cancer diagnosis data ##
 
 ( step2b.data <- step2a.data %>%
@@ -49,8 +79,10 @@ ex.2a <- nrow( step2a.data )
 
 ex.2b <- nrow( step2b.data )
 
+## ---o--- ##
 
-## missing age at diagnosis of first cancer ##
+
+## (2.3) Missing age at diagnosis of first cancer ##
 
 ( step2c.data <- step2b.data %>% 
     rowwise( ) %>%
@@ -59,21 +91,21 @@ ex.2b <- nrow( step2b.data )
     ungroup( ) %>%
     filter( is.na( first.age ) == F ) ) %>%
   data.frame( ) %>%
-  summarise( subjects.remaining = n( ) , subjects.excluded = ex.2b - n( ) )
+  summarise( subjects.remaining = n( ), subjects.excluded = ex.2b - n( ) )
 
 # subjects.remaining subjects.excluded
 #               3379                 4
 
 ex.2c <- nrow( step2c.data )
+
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
-
-### Step 3 ###
+### (3.0) Step 3 ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-## missing covariate and survival data
+## (3.1) Missing covariate and survival data
 
 
 ( step3.data <- step2c.data %>%
@@ -104,20 +136,20 @@ ex.2c <- nrow( step2c.data )
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-### Bind Indicated Data Back and Save ###
+### (4.0) Bind Indicated Data Back and Save ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-(d.1 <- d %>%
+( d.1 <- d %>%
   filter( seqn %notin% step3.data$seqn ) %>%
   bind_rows( ., step3.data ) )%>%
-  summarise( final.n = n())
+  summarise( final.n = n() )
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-### Save ###  
+### (5.0) Save ###  
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
-saveRDS( d.1, "02-Data-Wrangled/02-inclusions-exclusions.rds")
+saveRDS( d.1, "02-Data-Wrangled/02-inclusions-exclusions.rds" )
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 

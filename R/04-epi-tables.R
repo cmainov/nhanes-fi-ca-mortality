@@ -1,7 +1,30 @@
-library( survey )
+###------------------------------------------------------------
+###   04-DESCRIPTIVES
+###------------------------------------------------------------
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+# 
+# In this script, we will generate table 1 (epidemiological characteristics of the 
+# study sample), a correlation matrix and a radar chart with the dietary pattern 
+# correlations with the dietary patterns loadings, and a radar chart. Also, we
+# will generate a table examining differences in the dietary pattern scores
+# across food security status.
+#
+# INPUT DATA FILES: 
+# "03-Data-Rodeo/01-analytic-data.rds"
+#
+# OUPUT FILES:
+# i."04-Tables-Figures/figures/04-ggradar-all.png"
+# ii. "04-Tables-Figures/tables/01-table-1.txt"
+# iii. "04-Tables-Figures/tables/02-table-2-corr.txt"
+# iv. "04-Tables-Figures/tables/03-table-3-diet-fi.txt"
+#
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+library( survey )    # survey commands
 library( tidyverse )
 library( jtools ) # for svycor function
-# library( ggradar ) # for radar chart plotting
+# library( ggradar ) # for radar chart plotting; see note below with modified and debugged code
 library( latex2exp ) # for latex in plots
 
 source( "R/old/ggradar-newoption.R" ) # modified ggradar code so that we don't actually need to load in the library above
@@ -10,8 +33,10 @@ source( "R/old/ggradar-newoption.R" ) # modified ggradar code so that we don't a
 source( "R/utils.R" )
 
 
+### 0.0 Read in Data ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-dat <- readRDS( "03-Data-Rodeo/01-analytic-data.rds") %>%
+dat <- readRDS( "03-Data-Rodeo/01-analytic-data.rds" ) %>%
   dplyr::filter( is.na( wtdr18yr ) == F ) %>% # subset to those having non -missing weights 
   
   dplyr::mutate( 
@@ -37,7 +62,9 @@ dat <- readRDS( "03-Data-Rodeo/01-analytic-data.rds") %>%
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-### Person-Years and -Months Calculations ###
+  
+  
+### (1.0) Person-Years and -Months Calculations ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
   
 ( pm <- sum( gen$variables$stime ) ) # person-months
@@ -47,10 +74,11 @@ pm / 12 # person-years
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
   
   
-### Table 1 ###
+
+### (2.0) Table 1 ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# write function to return table 1 with specific variables
+## (2.1) Write function to return table 1 with specific variables ##
 
 cafs_table1 <- function( design, df ){
   
@@ -80,9 +108,11 @@ cafs_table1 <- function( design, df ){
   
 }
 
+## ---o--- ##
 
 
-# generate table columns for each of the subsets described above
+## (2.2) Generate table columns for each of the subsets described above ##
+
 fiw.tab <- cafs_table1( design = fiw, df = dat )
 fsw.tab <- cafs_table1( design = fsw, df = dat )
 gen.tab <- cafs_table1( design = gen, df = dat )
@@ -90,8 +120,10 @@ gen.tab <- cafs_table1( design = gen, df = dat )
 # merge columns into table
 final.tab <- cbind( gen.tab, fiw.tab, fsw.tab )
 
+## ---o--- ##
 
-## add column for p value for t tests and chi square test ##
+
+## (2.3) Add column for p value for t tests and chi square tests ##
 
 # vector of strings containing elements that maps to a given row in the table
 chi  <- c( "Smoking", "Alcohol", "Gender", "Income", "Size", "Education", "Race",
@@ -119,6 +151,11 @@ for ( i in 1:length( tt ) ){
                                                                             round( svyttest( as.formula( paste0( these.b[i], "~binfoodsechh" ) ), design = gen )$p.value, digits = 2 ) )
   
 }
+
+## ---o--- ##
+
+
+## (2.4) Final table clean up ##
 
 # remove empty "( )" in table
 final.tab[ final.tab == "  ( )" ] <- ""
@@ -154,9 +191,10 @@ write.table( t.1, "04-Tables-Figures/tables/01-table-1.txt", sep = ", ", row.nam
 
 
 
-
-### Correlation Matrix (Diet Patterns--(Table 2) ###
+### (3.0) Correlation Matrix (Diet Patterns--(Table 2) ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+## (3.1) Prep data ##
 
 # subset individuals meeting criteria
 cordata <- dat[ which( dat$inc == 1 & dat$test.set == 1 ), ]
@@ -204,7 +242,10 @@ fdgrp.diet.names <- c( "processedmts", "meat", "poultry", "fish_hi", "fish_lo",
 
 diet.patt.names <- c( "fs_enet", "pc1", "pc2", "hei.2015" )
 
-## Loop to generate correlation matrix using svycor function ##
+## ---o--- ##
+
+
+## (3.2) Loop to generate correlation matrix using `svycor` function ##
 
 # initialize matrix
 corr.matrix <- matrix( NA, ncol = length( diet.patt.names ), nrow = length( fdgrp.diet.names ) )
@@ -223,8 +264,10 @@ for ( g in 1:length( diet.patt.names ) ){
   
 }
 
+## ---o--- ##
 
-## text-process correlation matrix ##
+
+## (3.3) Text-process correlation matrix ##
 
 # assign column names and rownames to matrix
 
@@ -256,11 +299,14 @@ write.table( corr.matrix.b, "04-Tables-Figures/tables/02-table-2-corr.txt", sep 
 
 
 
-### Radar Chart for Select Dietary Patterns ###
+### (4.0) Radar Chart for Select Dietary Patterns ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## NOTE: code below requires that some of the above code is run prior to running this one.
-# specifically, the code chunk in the Correlation Matrix section needs to be run
+# specifically, the code chunk in the (3.0) Correlation Matrix (Diet Patterns--(Table 2)
+# section needs to be run
+
+## (4.1) Prep names and labels for plot ##
 
 # axis labels
 fg.only <- c( "Processed\n Meat", "Meat", "Poultry", "Fish,\n High n-3", "Fish,\n Low n-3", 
@@ -279,8 +325,10 @@ fg.only.lo <- c( "processedmts", "meat", "poultry", "fish_hi", "fish_lo",
 
 rp.matrix <- corr.matrix[ fg.only.lo, ]
 
+## ---o--- ##
 
-## radar plot for food insecurity pattern ##
+
+## (4.2) Radar chart using `ggradar` ##
 
 # prepare frame for plotting (items/variables in columns, dietary patterns in rows)
 rp.all.gg <- setNames( data.frame( bind_rows(
@@ -290,7 +338,7 @@ rp.all.gg <- setNames( data.frame( bind_rows(
   setNames( matrix( rp.matrix[, 4 ], nrow = 1 ), fg.only ), ) ),
   fg.only ) %>%
   
-  mutate( across( where( is.numeric ), ~ (.x + 1 ) / 2 ) ) %>% # map -1-1 scale to 0-1 scale
+  mutate( across( where( is.numeric ), ~ ( .x + 1 ) / 2 ) ) %>% # map -1-1 scale to 0-1 scale
   data.frame()
 
 # set column names and row names
@@ -309,7 +357,7 @@ colors.line <- c( rgb(0.529,0.808,0.98,0.9), rgb(0,0,0.502,0.9), rgb(0.55,0.10,0
 
 # plot
 ( g.1 <- ggradar( rp.all.gg, values.radar = c("-1.0", "0.0", "1.0"),
-                  font.grid.label = "Avenir Next LT Pro Bold", # new option added
+                  font.grid.label = "Avenir Next LT Pro Bold", # new option added (modified source code)
                   grid.label.size =  8,
                   font.radar = "Avenir",
                   axis.labels = fg.only,
@@ -333,15 +381,12 @@ colors.line <- c( rgb(0.529,0.808,0.98,0.9), rgb(0,0,0.502,0.9), rgb(0.55,0.10,0
 # change axis label text to grey
 g.1$layers[[5]]$aes_params <- c( g.1$layers[[5]]$aes_params, colour = "grey40" )
 
-# save
-g.1
-
 
 ggsave( "04-Tables-Figures/figures/04-ggradar-all.png",
         width = 14.8, 
         height = 11.9,
         plot = g.1,
-        dpi = 500 )
+        dpi = 800 )
 
 ggsave( "04-Tables-Figures/figures/04-ggradar-all.tiff",
         width = 14.8, 
@@ -353,9 +398,10 @@ ggsave( "04-Tables-Figures/figures/04-ggradar-all.tiff",
 
 
 
-
-### Diet Patterns Across Food Security Status ###
+### (5.0) Diet Patterns Across Food Security Status ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+## (5.1) Variables and labels ##
 
 # diet pattern variable names
 diet.patt.names <- c( "fs_enet", "pc1", "pc2", "hei.2015" )
@@ -363,6 +409,10 @@ diet.patt.names <- c( "fs_enet", "pc1", "pc2", "hei.2015" )
 # how we want them presented in the table
 diet.patt.names.table <- c( "Pattern #1", "Pattern #2",
                       "Pattern #3", "HEI-2015" )
+
+## ---o--- ##
+
+## (5.2) Generate results with `svy` commands ##
 
 diets.t <- data.frame() # initialize frame
 for ( i in seq_along( diet.patt.names ) ){
@@ -376,7 +426,6 @@ for ( i in seq_along( diet.patt.names ) ){
 
   diets.t <- rbind( diets.t, all.three.c )
 }
-
 
 # remove redundant "characteristics" columns
 not.these <- vector()
@@ -392,7 +441,11 @@ these.cols <- which( not.these != 1 | is.na( not.these) )
 
 diets.t <- diets.t[, these.cols ] # subset and keep only non redundant columns
 
-# cohen's d column
+## ---o--- ##
+
+
+## (5.3) Cohen's D ##
+
 for ( i in seq_along( diet.patt.names ) ){
   
   cd.col <- round( svycd( x = diet.patt.names[i], design.1 = subset( mod1, binfoodsechh == "Low" ), 
@@ -401,8 +454,10 @@ for ( i in seq_along( diet.patt.names ) ){
   diets.t[ which( str_detect( diets.t[ , 1 ], diet.patt.names.table[i] ) ), 5 ] <- cd.col
 }
 
+## ---o--- ##
 
-# t test to compare across food security status
+
+## (5.4) T-test to compare across food security status ##
 for ( i in seq_along( diet.patt.names ) ){
   
   diets.t[ which( str_detect( diets.t[ , 1 ], diet.patt.names.table[i] ) ), 6 ] <- ifelse( svyttest( as.formula( paste0( diet.patt.names[i], "~binfoodsechh" ) ), design = mod1 )$p.value < 0.01, "< 0.01",

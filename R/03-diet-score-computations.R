@@ -4,12 +4,17 @@
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 # 
-# In this script, we will extract dietary patterns using penalized logistic regression and then principal components
-# analysis. all dietary patterns scores will be energy adjusted in the final dataset.
+# In this script, we will extract dietary patterns using penalized logistic 
+# regression and then principal components analysis. We also separate the data 
+# into two random subsets, a "training" subset, for extracting the dietary patterns, 
+# and a "testing" subset, that is used later for the validation survival analysis. 
+# All dietary patterns scores will be energy adjusted in the final dataset.
 # 
-# INPUT DATA FILE: "02-Data-Wrangled/02-inclusions-exclusions.rds" 
+# INPUT DATA FILE: 
+# i."02-Data-Wrangled/02-inclusions-exclusions.rds" 
 #
-# OUTPUT FILES: "03-Data-Rodeo/01-analytic-data.rds"
+# OUTPUT FILES: 
+# i. "03-Data-Rodeo/01-analytic-data.rds"
 #
 # Resources: 
 # i. reference for penalized logistic regression: https://teazrq.github.io/SMLR/logistic-regression.html
@@ -19,12 +24,18 @@
 library( glmnet ) # fit penalized regression models
 library( caret ) # control tuning parameters in penalized regression
 library( tidyverse )
-library( survey ) # complex survey design models
+library( survey ) # complex survey design models and commands
 library( jtools ) # svycor function
 library( weights )
 library( latex2exp ) # to add LaTeX to plots
 
 source( "R/utils.R" ) # read in helper and internal functions
+
+
+### (0.0) Prep Data for Penalized Logistic Regression ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+## (0.1) Read-in inclusions/exclusions data ##
 
 # data read-in
 dat <- readRDS( "02-Data-Wrangled/02-inclusions-exclusions.rds" )
@@ -32,16 +43,17 @@ dat <- readRDS( "02-Data-Wrangled/02-inclusions-exclusions.rds" )
 # collapse red mt and organ mt to same group give very low intake of organ mts
 dat$meat <- dat$redmts + dat$organmts
 
-
-### (0.0) Prep Data for Penalized Logistic Regression ###
-# ---------------------------------------------------------------------------------------------------------------------------------------------------------
-
 # subset data for those included in analysis
 caonly <- dat[ which( dat$inc == 1 ), ] # those included after inclusions/exclusions steps
 
-# random sample of included subjects for training the penalized logit models #
+## ---o--- ##
+
+
+## (0.2) Generate random sample of included subjects for training the penalized logit models ##
+
 set.seed( 0872645 ) # set seed for reproducibility
-sz <- ceiling( nrow( caonly ) * 0.3 ) # size of sample (50-50 split into training and test sets)
+
+sz <- ceiling( nrow( caonly ) * 0.3 ) # size of sample (30-70 split into training and test sets)
 train <- caonly[ caonly$seqn %in% sample( x = caonly$seqn, size = sz ), ] # training dataset
 test <- caonly[ caonly$seqn %notin% train$seqn, ] # test set for later in the analysis
 
@@ -50,7 +62,11 @@ train <- train %>%
   mutate( binfsh = ifelse( binfoodsechh =='Low', 1,
                            ifelse( binfoodsechh =='High', 0, NA ) ) )
 
-# food groups columns used for the procedure
+## ---o--- ##
+
+
+## (0.3) Set up names and labels of food groups for the extraction analyses ##
+
 fdgrp.columns <- which( colnames( train ) %in% c( 'processedmts','meat','poultry',
                                                   'fish_hi','fish_lo','eggs',
                                                   'solidfats','oils','milk',
@@ -77,7 +93,7 @@ seqn.column <- which( colnames( train ) =='seqn' )
 ### (1.0) Patterns Extraction with Penalized Logistic Regression ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# normalize variables prior to regression since they are all in different units
+## (1.1) Normalize variables prior to regression since they are all in different units ##
 
 for ( j in fdgrp.columns ){ # ensure proper variables are indicated by the column index in this line of code before proceeding
   
@@ -88,53 +104,72 @@ for ( j in fdgrp.columns ){ # ensure proper variables are indicated by the colum
 # **NOTE: we will include the calories column in these procedures so that the coefficients for the food groups are adjusted for calories (standard multivariate method)
 # internal function is `enet_pat` that is written in the "utils.R" file
 
-## food insecurity binary outcome/dietary pattern ##
+## ---o--- ##
+
+
+## (1.2) Setup matrices and vectors to feed to `glmnet` functions ## 
+
+# food insecurity binary outcome/dietary pattern (i.e., Pattern #1)
 design.matrix <- na.omit( as.matrix( train[ , c( fdgrp.columns, kcal.column, fs.outcome.column, weight.column ) ] ) )
 matrix.x <- design.matrix[ , 1:27 ] # food grps and kcal data matrix
 vector.y <- design.matrix[ , 28 ] # binary response vector
 vector.wts <- design.matrix[ , 29 ] / mean( design.matrix[ , 29 ] ) # generate vector of normalized weights
 
+## ---o--- ##
+
+## (1.3) Use internal function `enet_pat` to extract dietary pattern using penalized logit ## 
+
 fsoc <- enet_pat( xmat = matrix.x, 
                   yvec = vector.y, 
                   wts = vector.wts,
-                  plot.title = "Food Insecurity" ) 
+                  plot.title = "Food Insecurity" ) # Pattern # 1
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
-### (2.0) Generate Pattern Scores in the Data ###
+### (2.0) Generate Pattern #1 Scores in the Dataset ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# generate scores on data
+## (2.1) Prep Data ##
+
 xmatrix <- as.matrix( dat[ which( dat$inc == 1 ), c( fdgrp.columns ) ] ) # subset as a matrix for matrix multiplication in next step
 d <- dat[ which( dat$inc == 1 ), ] # keep only those satisfying inclusions/exclusions as dataframe to then merge matrix products back into dataframe format
 
-# center and scale testing data (in the matrix format) before generating scores
+## ---o--- ##
+
+
+## (2.2) Center and scale data (in the matrix format) before generating scores ##
 for ( i in 1:ncol( xmatrix ) ){
   xmatrix[ , i ] <- ( xmatrix[ , i ] - mean( xmatrix[ , i ], na.rm = T ) ) / sd( xmatrix[ , i ], na.rm = T )
 }
 
-# matrix multiplication and add score columns back to dataframe
-d$fs_enet <- t( fsoc$coefs[1:length(fdgrp.columns)] %*% t( xmatrix ) )
+## ---o--- ##
+
+
+## (2.3) Matrix multiplication and add score columns back to dataframe ##
+d$fs_enet <- t( fsoc$coefs[ 1:length(fdgrp.columns) ] %*% t( xmatrix ) )
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
-### (3.0) Dietary Patterns Extraction with PCA ###
+### (3.0) Dietary Patterns (Patterns #2 and #3) Extraction with PCA ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# to have weights and no missing weights
+## (3.1) Survey design object ##
 
 svy.design <- svydesign( id = ~sdmvpsu, weights = ~wtdr18yr, strata = ~sdmvstra, 
                          nest = TRUE, survey.lonely.psu = "adjust", data = dat )
 
 varest <- subset( svy.design, diet.ext.ind.pca == 1 &
-                    seqn %in% train$seqn ) # inclusions
+                    seqn %in% train$seqn ) # inclusions (training data)
+
+## ---o--- ##
 
 
-# pca using svyprcomp
+## (3.2) PCA using `svyprcomp` ##
+
 pcaobj <- svyprcomp( ~ processedmts + meat + poultry + 
                      fish_hi + fish_lo + eggs + 
                      solidfats + oils + milk + 
@@ -160,7 +195,11 @@ coefspc <- pcaobj$rotation
 # percent of variation accounted for by first two components ( 15.79 % )
 sum( pcaobj$sdev[ 1:2 ] / sum( pcaobj$sdev ) ) 
 
-# generate scores
+## ---o--- ##
+
+
+## (3.3) Generate index scores in the dataset for patterns #2 and #3 ##
+
 xmatrix <- as.matrix( dat[ which( dat$inc == 1 ), c( fdgrp.columns ) ] )
 
 # center and scale testing data before generating scores
@@ -183,11 +222,17 @@ d.2 <- left_join( dat, d[ , c( "seqn", "fs_enet", "pc1", "pc2" ) ] ) %>%
 ### (4.0) Energy Adjust Principal Component Scores using Residual Method (Willett) ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
+## (4.1) Survey design object ##
 
 svy.design.2 <- svydesign( id = ~sdmvpsu, weights = ~wtdr18yr, strata = ~sdmvstra, 
                          nest = TRUE, survey.lonely.psu = "adjust", data = d.2 )
 
 adj.des <- subset( svy.design.2, inc == 1 ) # survey design object
+
+## ---o--- ##
+
+
+## (4.2) Use internal helper function (`svy_energy_residual`) for energy adjusting the pattern scores ##
 
 d.3 <- svy_energy_residual( nutr = c( "pc1", "pc2", "hei.2015" ), # columns to be energy adjusted
                             design = adj.des, # design object

@@ -1,31 +1,50 @@
+###------------------------------------------------------------
+###   01-DATA MERGE AND WRANGLING
+###------------------------------------------------------------
 
-
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+# 
+# In this script, we will import the NHANES survey study data and merge it with
+# the linked mortality data from the CDC/NCHS linkage file. We use the provided
+# R code file for running the merge. 
+#
+# INPUT DATA FILES: 
+# NHANES data from previous analysis stored in a GitHub repository linked in code below.
+#
+# OUPUT FILES:
+# i."02-Data-Wrangled/01-covariate-mortality-linkage.rds"
+#
 # Resources:
 #   i. NCHS NHIS/NHANES Mortality Data Linkage Codebook: https://www.cdc.gov/nchs/data/datalinkage/public-use-linked-mortality-files-data-dictionary.pdf
+#   ii. `hei` source code: https://github.com/timfolsom/hei
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
-library( survey )
+library( survey )     # survey commands
 library( tidyverse )
-library( RNHANES )
-library( haven )
-# library( hei ) we modify the `hei` code to support the solumn names
-# read in helper functions
-source( "R/utils.R" )
+library( RNHANES )    # for downloading NHANES data
+library( haven )      # for reading/saving alternative formats of data
+library( hei ) # we modify the `hei` code to support the column names in our data
+
+source( "R/utils.R" ) # helper functions
 
 
-## Read in data from previous analysis ##
+## (0.0) Read in Data from Previous Analysis ##
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
 url.raw <- "https://github.com/cmainov/NHANES-Diet-Penalized-Regression/blob/main/03-Data-Rodeo/04-Analytic-Data.rds?raw=true"
 
 d <- readRDS( url( url.raw ) ) %>%
   rename_all( tolower ) # lower case all column names
 
-
-
-### Read in Mortality Files ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-## Download raw files (Accessed 14 November 2022) ##
+
+### (1.0) Read in Mortality Files ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+## (1.1) Download raw files (Accessed 14 November 2022) ##
 
 yrs <- c( "1999_2000", "2001_2002", "2003_2004", "2005_2006", "2007_2008",
           "2009_2010", "2011_2012", "2013_2014", "2015_2016", "2017_2018")
@@ -46,9 +65,10 @@ for( i in 1:length( yrs ) ) {
 
 }
 
+## ---o--- ##
 
 
-## Use provided code to piece together data ##
+## (1.2) Use NCHS-provided code to piece together data ##
 
 dir.files <- paste0( "01-Data-Raw/", dir( "01-Data-Raw" ) )
 
@@ -139,11 +159,10 @@ for( i in 1:length( dir.files ) ){
 
 
 
-
-
-### Merge, Wrangle, and Save ###
+### (2.0) Merge, Wrangle, and Save ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
+## (2.1) Clean up mortality variables ##
 
 dat <- left_join( d, datout %>% mutate( seqn = as.numeric( seqn ) ), by = "seqn" ) %>%
   
@@ -183,10 +202,10 @@ dat <- left_join( d, datout %>% mutate( seqn = as.numeric( seqn ) ), by = "seqn"
 
 
 
-### Fix Issues with Duplicates in Mortality-Linked Data ###
+### (3.0) Fix Issues with Duplicates in Mortality-Linked Data ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# separate those with mortstat == 1 and mortstat == 0 and mortstat == NA
+## (3.1) Separate those with mortstat == 1 and mortstat == 0 and mortstat == NA ##
 
 ( d.01 <- dat %>%
     filter( mortstat == 1 ) ) %>%
@@ -204,8 +223,10 @@ dat <- left_join( d, datout %>% mutate( seqn = as.numeric( seqn ) ), by = "seqn"
   summarise( n.total = n(), unique = length( unique( .$seqn ) ),
              duplicated = n.total - unique )
 
+## ---o--- ##
 
-## Mortstat == 0 first ##
+
+## (3.2) Mortstat == 0 first ##
 
 
 # look at columns of interest first
@@ -252,8 +273,10 @@ d.00.2 %>%
 
 # resolved
 
+## ---o--- ##
 
-## Mortstat == 1 ## 
+
+## (3.3) Mortstat == 1 ## 
 
 # look at columns of interest first
 d.01 %>%
@@ -272,8 +295,10 @@ d.01 %>%
 
 # duplicates resolved
 
+## ---o--- ##
 
-## Mortstat == NA ##
+
+## (3.4) Mortstat == NA ##
 
 # look at columns of interest first
 d.na %>%
@@ -306,8 +331,10 @@ d.na.1 %>%
              duplicated = n.total - unique )
 # resolved
 
+## ---o--- ##
 
-## Bind data with non-duplicates back together ##
+
+## (3.5) Bind data with non-duplicates back together ##
 
 ( d.1 <- bind_rows( d.na.2, d.01.1, d.00.3 ) %>% data.frame() ) %>%
   summarise( n.total = n(), unique = length( unique( .$seqn ) ),
@@ -332,13 +359,15 @@ d.1.dups <- d.1[ duplicated( d.1$seqn ), "seqn"]
   summarise( n.total = n(), unique = length( unique( .$seqn ) ),
              duplicated = n.total - unique )
 # duplicates have been rectified and d.2 is final
+
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
-
-### Health Insurance Data ###
+### (4.0) Health Insurance Data ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+## (4.1) Set-up data query details ##
 
 yrs.nh <- c( "1999-2000", "2001-2002", "2003-2004", "2005-2006", "2007-2008",
              "2009-2010", "2011-2012", "2013-2014" )
@@ -348,9 +377,12 @@ these.i <- seq_along(yrs.nh)
 yrs.short <- c( 99,1,3,5,7,9,11,13 ) 
 yrs.short<- ifelse( yrs.short < 10 , paste0( "0", yrs.short ), yrs.short )
 
-## Import LDL/triglycerides data ##
-
 hiq.surveys <- c( "HIQ", paste0( "HIQ_", LETTERS[2:8] ) )
+
+## ---o--- ##
+
+
+## (4.2) Use RHANES package to import data ##
 
 l.hiq <- lapply( these.i,
                   
@@ -376,25 +408,33 @@ d.hiq <- do.call( "bind_rows", l.hiq ) %>%
                                                           NA )))))))
 
 
+## ---o--- ##
 
-# bind non-duplicates with rectified duplicates data frame
+
+## (4.3) Merge with working data ##
+
 ( d.3 <- d.2 %>%
     left_join(., d.hiq %>%
                 select( seqn, ins.status ) ) ) %>%
   summarise( n.total = n(), unique = length( unique( .$seqn ) ),
              duplicated = n.total - unique )
+
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
 
-### Physical Functioning Survey (ADL Scale) ###
+### (5.0) Physical Functioning Survey (ADL Scale) ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
-## Import PFQ surveys ##
+## (5.1) Set-up data query details ##
 
 pfq.surveys <- c( "PFQ", paste0( "PFQ_", LETTERS[2:8] ) )
+
+## ---o--- ##
+
+
+## (5.2) Use RHANES package to import data ##
 
 l.pfq <- lapply( these.i,
                  
@@ -405,9 +445,20 @@ l.pfq <- lapply( these.i,
                  }
 )
 
+## ---o--- ##
+
+
+## (5.3) 2015-2018 data via manual download ##
+
+# mot currently available in RHANES package functions
+
 l.pfq[[9]] <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/PFQ_I.XPT" ) # manual 2015 data
 l.pfq[[10]] <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/PFQ_J.XPT" ) # manual 2017 data
 
+## ---o--- ##
+
+
+## (5.4) Clean up imported data and merge to working data ##
 
 # make 1999 names upper case bc they are not
 colnames( l.pfq[[1]] ) <- toupper( colnames( l.pfq[[1]]  ) )
@@ -457,8 +508,11 @@ d.4 <- adl.out %>%
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-### HEI-2015 Scores ###
+
+### (6.0) HEI-2015 Scores ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+## (6.1) Clean up column names ##
 
 d.5 <- d.4 %>% # rename columns for use in `hei` function
   rename( TKCAL = kcal,
@@ -526,20 +580,25 @@ dem.hei <- d.5 %>%
   select( SEQN = seqn,
           SDDSRVYR = cycle )
 
-# use `hei` to compute hei-2015 score and merge
+## ---o--- ##
+
+
+## (6.2) Use `hei` to compute hei-2015 score and merge ##
+
 d.6 <- hei( fped = fped.hei, diet = diet.hei, demograph = dem.hei ) %>%
   select( seqn = SEQN,
           hei.2015 = HEI ) %>%
   left_join( d.4, . ) %>%
   
-  # remove elastic net dietary patterns since they will be recomputed in this analysis
+  # remove elastic net dietary patterns from previous analysis since they will be recomputed in this analysis
   select( -c( fs_enet, fdas_enet, age_enet, hhs_enet,
               pc1, pc2 ) )
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-### Save ###  
+
+### (7.0) Save ###  
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 saveRDS( d.6, "02-Data-Wrangled/01-covariate-mortality-linkage.rds")
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
