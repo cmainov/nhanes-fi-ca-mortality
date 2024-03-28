@@ -14,7 +14,7 @@ Public repository of R code and data for reproducing the analysis in the compani
 
 **/04-Tables-Figures**: Contains figures and tables generated throughout the analysis.
 
-**/05-Manuscript**: Contains a copy of the manuscript.
+**/05-Manuscript**: Contains some manuscript files and supplementary methods `TeX` files.
 
 **/R**: Contains all `.R` files with code to reproduce all data-wrangling steps, analyses, tables, and figures. NOTE: "R/utils.R" contains all internal and helper functions referenced throughout several R scripts in this folder.
 \
