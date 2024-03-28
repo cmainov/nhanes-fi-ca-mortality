@@ -23,4 +23,4 @@ Public repository of R code and data for reproducing the analysis in the compani
 \
 **Contact Me**:
 
-Email: [mainovieytesca\@nih.gov](mailto:mainovieytesca@nih.gov), [cmainov\@gmail.gov](mailto:cmainov@gmail.com)
+Email: [mainovieytesca\@nih.gov](mailto:mainovieytesca@nih.gov), [cmainov\@gmail.com](mailto:cmainov@gmail.com)
